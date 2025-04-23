@@ -12,6 +12,7 @@
 
 ```bash
 git clone https://github.com/wofkof/TravelAgencyFrontendVue.git
+npm install 
 npm run dev
 ```
 
