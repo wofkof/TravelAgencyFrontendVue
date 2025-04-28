@@ -2,17 +2,19 @@
   <header class="hero__header header">
     <!-- logo -->
     <a href="/" class="header__logo logo">
-      <img
-        src="@/assets/images/logo.png"
-        alt="Travellian logo"
-        class="logo__img"
-        style="width: 180px"
-      />
+      <router-link to="/">
+        <img
+          src="@/assets/images/logo.png"
+          alt="Travellian logo"
+          class="logo__img"
+          style="width: 180px"
+        />
+      </router-link>
     </a>
     <!-- 上導覽列 -->
     <nav class="header__menu main-menu">
       <router-link
-        to="/Home"
+        to="/"
         class="main-menu__item"
         active-class="main-menu__item--active"
         exact
