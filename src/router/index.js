@@ -1,14 +1,27 @@
-// import { createMemoryHistory, createRouter } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
+import HomeView from "@/views/HomeView.vue";
+import DomesticView from "@/views/DomesticView.vue";
+import ForeignView from "../views/ForeignView.vue"
+import FreeTravelView from "../views/FreeTravelView.vue"
+import CruiseView from "../views/CruiseView.vue"
+import PricingView from "../views/PricingView.vue"
+import VisaView from "../views/VisaView.vue"
+import ContactView from "../views/ContactView.vue"
 
-// import HomeView from "./HomeView.vue";
-// import AboutView from "./AboutView.vue";
+const routes = [
+  { path: "/Home", name: "Home", component: HomeView },
+  { path: "/Domestic", name: "Domestic", component: DomesticView },
+  { path: "/ForeignView", name: "ForeignView", component: ForeignView },
+  { path: "/FreeTravelView", name: "FreeTravelView", component: FreeTravelView },
+  { path: "/CruiseView", name: "CruiseView", component: CruiseView },
+  { path: "/PricingView", name: "PricingView", component: PricingView },
+  { path: "/VisaView", name: "VisaView", component: VisaView },
+  { path: "/ContactView", name: "ContactView", component: ContactView },
+];
 
-// const routes = [
-//   { path: "/", component: HomeView },
-//   { path: "/about", component: AboutView },
-// ];
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
 
-// const router = createRouter({
-//   history: createMemoryHistory(),
-//   routes,
-// });
+export default router;

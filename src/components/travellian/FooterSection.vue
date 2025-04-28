@@ -3,12 +3,13 @@
     <div class="l-footer-wrapper">
       <div class="logo-copyright">
         <img
-          src="/images/logo.svg"
+          src="@/assets/images/logo.png"
           alt="Travellian logo"
           class="logo-copyright__logo"
+          style="width: 180px"
         />
         <div class="logo-copyright__copyright">
-          Copyright © Travellian 2020 All rights reserved
+          版權所有 © 嶼你同行 2025 保留所有權利
         </div>
       </div>
       <nav class="footer-menu">

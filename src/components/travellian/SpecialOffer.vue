@@ -1,6 +1,6 @@
 <template>
   <section class="offer">
-    <h2 class="offer__hdl">Special Offer</h2>
+    <h2 class="offer__hdl">優惠主題</h2>
     <div class="l-offer-subhdl">
       <nav class="carousel-nav">
         <div class="carousel-nav__left left-btn" @click="prevSlide">
@@ -19,7 +19,7 @@
         </div>
       </nav>
 
-      <h3 class="offer__text">Check out our special offer and discounts</h3>
+      <h3 class="offer__text">查看我們的特別優惠和折扣</h3>
     </div>
 
     <div class="offer__carousel carousel">
@@ -34,10 +34,10 @@
         <div class="carousel-item__desc">{{ offer.description }}</div>
         <div class="l-price-wrapper">
           <span class="carousel-item__price">
-            <span class="carousel-item__price-from">From</span>
+            <span class="carousel-item__price-from">價格</span>
             <span class="carousel-item__price-price">{{ offer.price }}</span>
           </span>
-          <button class="carousel-item__btn">Details</button>
+          <button class="carousel-item__btn">查看</button>
         </div>
       </div>
     </div>
@@ -54,33 +54,33 @@ const offers = ref([
     location: "Lisbon, Portugal",
     description:
       "5 nights and 4 days in 5 star hotel, breakfast and lunch included.Very popular during the renaissance. Passage and going through the cities of the world literature.",
-    price: "€500",
+    price: "NT$500",
   },
   {
     image: "/images/offer2.jpg",
     location: "Athens, Greece",
     description:
       "5 nights and 4 days in 5 star hotel, breakfast and lunch included.Very popular during the renaissance. Passage and going through the cities of the world literature.",
-    price: "€800",
+    price: "NT$500",
   },
   {
     image: "/images/offer3.jpg",
     location: "Rome, Italy",
     description:
       "5 nights and 4 days in 5 star hotel, breakfast and lunch included.Very popular during the renaissance. Passage and going through the cities of the world literature.",
-    price: "€750",
+    price: "NT$500",
   },
   {
     image: "/images/offer1.jpg",
     location: "Berlin, Germany",
     description: "...",
-    price: "€600",
+    price: "NT$500",
   },
   {
     image: "/images/offer2.jpg",
     location: "Paris, France",
     description: "...",
-    price: "€900",
+    price: "NT$500",
   },
 ]);
 

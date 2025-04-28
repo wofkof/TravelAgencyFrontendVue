@@ -1,8 +1,8 @@
 <template>
   <section class="gallery">
-    <h2 class="gallery__hdl">Destination Gallery</h2>
+    <h2 class="gallery__hdl">旅行照片</h2>
     <div class="l-subhdl-wrapper">
-      <p class="gallery__text">Our photo gallery on trip</p>
+      <p class="gallery__text">我們的旅行照片</p>
       <nav class="carousel-nav">
         <div class="carousel-nav__left left-btn" @click="prevSlide">
           <img
@@ -48,7 +48,7 @@ const galleryImages = [
 ];
 
 const currentIndex = ref(0);
-const itemsPerPage = 4; 
+const itemsPerPage = 4;
 
 const visibleImages = computed(() => {
   return galleryImages.slice(

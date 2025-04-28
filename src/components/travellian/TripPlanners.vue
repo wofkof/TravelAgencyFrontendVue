@@ -1,13 +1,10 @@
 <template>
   <section class="planners">
     <div class="planners__sidebar sidebar">
-      <div class="sidebar__hdl">Trip Planners</div>
-      <div class="sidebar__txt">
-        20 years from now you will be more disappointed by the things that you
-        didn't do...
-      </div>
+      <div class="sidebar__hdl">旅行計劃</div>
+      <div class="sidebar__txt">20年後，你會對現在的事情更加失望 沒有做...</div>
       <div class="l-btn-wrapper">
-        <button class="sidebar__btn">View all trip plans</button>
+        <button class="sidebar__btn">查看所有旅行計劃</button>
       </div>
     </div>
 
@@ -37,66 +34,66 @@ const planners = ref([
   {
     image: "/images/planners1.jpg",
     alt: "Colosseum in the evening",
-    title: "Guided tour",
-    price: "€120/Day",
-    location: "Rome City Tour",
-    details: "7 Days tour",
+    title: "導覽",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners2.jpg",
     alt: "Eiffel tower in Autumn",
     title: "Guided tour",
-    price: "€99/Day",
-    location: "Paris City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners3.jpg",
     alt: "Nightlife in Barcelona",
     title: "Guided tour",
-    price: "€89/Day",
-    location: "Barcelona City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners4.jpg",
     alt: "Cathedral in Germany",
     title: "Guided tour",
-    price: "€79/Day",
-    location: "Wittenberg City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners1.jpg",
     alt: "Colosseum in the evening",
     title: "Guided tour",
-    price: "€120/Day",
-    location: "Rome City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners2.jpg",
     alt: "Eiffel tower in Autumn",
     title: "Guided tour",
-    price: "€99/Day",
-    location: "Paris City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners3.jpg",
     alt: "Nightlife in Barcelona",
     title: "Guided tour",
-    price: "€89/Day",
-    location: "Barcelona City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
   {
     image: "/images/planners4.jpg",
     alt: "Cathedral in Germany",
     title: "Guided tour",
-    price: "€79/Day",
-    location: "Wittenberg City Tour",
-    details: "7 Days tour",
+    price: "NT$120/天",
+    location: "羅馬城市之旅",
+    details: "七日遊",
   },
 ]);
 </script>
