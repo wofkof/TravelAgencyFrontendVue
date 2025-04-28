@@ -1,8 +1,8 @@
 <template>
   <section class="testimonial">
-    <h2 class="testimonial__hdl">Traveler's Experiences</h2>
+    <h2 class="testimonial__hdl">旅行者的評論</h2>
     <p class="testimonial__subhdl">
-      Here some awesome feedback from our travelers
+      以下是來自我們旅行者的一些很棒的回饋
     </p>
     <div class="testimonial__carousel carousel">
       <div
@@ -42,19 +42,19 @@ import { ref } from "vue";
 const reviews = ref([
   {
     avatar: "/images/testimonial1.png",
-    text: "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born...",
+    text: "但我必須向你解釋，譴責快樂、讚揚痛苦這種錯誤觀念是如何產生的...",
     name: "John Doe",
     title: "Accountant",
   },
   {
     avatar: "/images/testimonial2.png",
-    text: "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born...",
+    text: "但我必須向你解釋，譴責快樂、讚揚痛苦這種錯誤觀念是如何產生的...",
     name: "John Smith",
     title: "Journalist, HWO News",
   },
   {
     avatar: "/images/testimonial3.png",
-    text: "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born...",
+    text: "但我必須向你解釋，譴責快樂、讚揚痛苦這種錯誤觀念是如何產生的...",
     name: "Tamara Bellis",
     title: "Managing Director, JTH",
   },

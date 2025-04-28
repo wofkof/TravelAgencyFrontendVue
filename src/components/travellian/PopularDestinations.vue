@@ -1,11 +1,10 @@
 <template>
   <section class="destinations">
-    <h2 class="destinations__hdl">Popular Destinations</h2>
+    <h2 class="destinations__hdl">熱門主題</h2>
 
     <div class="l-subhdl-wrapper">
       <h3 class="destinations__text">
-        Most popular destinations around the world, from historical places to
-        natural wonders.
+        世界各地最受歡迎的目的地，從歷史名勝到 自然奇觀。
       </h3>
       <nav class="carousel-nav">
         <div class="carousel-nav__left left-btn">

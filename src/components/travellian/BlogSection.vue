@@ -1,9 +1,7 @@
 <template>
   <section class="blog">
-    <h2 class="blog__hdl">Our Blog</h2>
-    <h3 class="blog__subhdl">
-      An insight the incredible experience in the world
-    </h3>
+    <h2 class="blog__hdl">旅遊部落格</h2>
+    <h3 class="blog__subhdl">洞察世界上令人難以置信的體驗</h3>
     <article class="blog__post post">
       <div class="post__photo">
         <img
@@ -13,17 +11,14 @@
         />
       </div>
       <div class="post__content">
-        <h2 class="post__hdl">Beautiful Italy<br />Let's travel</h2>
+        <h2 class="post__hdl">美麗的義大利<br />一起旅行</h2>
         <p class="post__text">
-          But I must explain to you all this mistaken idea of denouncing
-          pleasure and praising pain was born and I will give you a complete
-          account of the system and expound the actual teachings of the great
-          explorer of the truth, the master- builder of human happiness. No one
-          rejects, dislike, or avoids pleasure itself, because it is pleasure,
-          but because rationally encounter consequences that are extremly
-          painful. Nor again is there anyone who loves or pursues.
+          但我必須向你們解釋，這種譴責快樂、讚揚痛苦的錯誤觀念是如何產生的，
+          我將向你們完整地介紹這個體系，並闡述偉大的真理探索者、人類幸福的總設計師的實際教誨。
+          沒有人會因為快樂本身而拒絕、厭惡或迴避快樂，而是因為理性會遭遇極度痛苦的後果。
+          也不再有人愛，也沒有人追求。
         </p>
-        <span class="post__read-more">Read More</span>
+        <span class="post__read-more">閱讀更多</span>
       </div>
     </article>
   </section>

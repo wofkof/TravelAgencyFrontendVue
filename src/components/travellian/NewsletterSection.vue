@@ -1,6 +1,6 @@
 <template>
   <form class="newsletter">
-    <h2 class="newsletter__hdl">Our Newsletter</h2>
+    <h2 class="newsletter__hdl">獲得最新通知</h2>
     <div class="l-newsletter-wrapper">
       <div class="newsletter__group">
         <label class="newsletter__lbl" for="email">Email</label>
@@ -15,7 +15,7 @@
       </div>
       <input
         type="button"
-        value="Subscribe"
+        value="訂閱"
         class="newsletter__btn"
         @click="subscribe"
       />
