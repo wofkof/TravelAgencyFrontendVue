@@ -2,6 +2,7 @@
 import { RouterView } from "vue-router";
 import Navbar from "@/components/travellian/Navbar.vue";
 import HeroContent from "@/components/travellian/HeroSection.vue";
+import FloatingChat from "@/components/FloatingChat.vue";
 </script>
 
 <template>
@@ -9,5 +10,8 @@ import HeroContent from "@/components/travellian/HeroSection.vue";
     <Navbar />
     <HeroContent />
   </section>
+
   <router-view />
+
+  <FloatingChat />
 </template>
