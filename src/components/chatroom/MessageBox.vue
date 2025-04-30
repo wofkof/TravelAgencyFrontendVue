@@ -10,7 +10,7 @@
       placeholder="輸入訊息..."
       @keydown.enter="send"
     />
-    <button @click="send">發送</button>
+    <ElButton @click="send">送出</ElButton>
   </div>
 </template>
 

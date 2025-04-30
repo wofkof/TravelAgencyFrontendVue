@@ -1,10 +1,15 @@
 <template>
-  <div class="chat-float-button" @click="toggleChat"><ChatDotRound /></div>
-
+  <div class="chat-float-button" @click="toggleChat">
+    <el-icon :size="24">
+      <ChatDotRound />
+    </el-icon>
+  </div>
   <div v-if="showChat" class="chat-popup">
     <div class="chat-popup-header">
       <span>聊天室</span>
-      <Close class="close-btn" @click="toggleChat" />
+      <el-icon class="close-btn" @click="toggleChat">
+        <CloseBold />
+      </el-icon>
     </div>
     <div class="chat-popup-body">
       <ChatRoomList />
@@ -17,7 +22,6 @@
 import { ref } from "vue";
 import ChatRoomList from "@/components/chatroom/ChatRoomList.vue";
 import MessageBox from "@/components/chatroom/MessageBox.vue";
-import { ChatDotRound, Close } from "@element-plus/icons-vue";
 
 const showChat = ref(false);
 function toggleChat() {
@@ -71,9 +75,7 @@ function toggleChat() {
   align-items: center;
 }
 .close-btn {
-  background: none;
-  border: none;
-  color: red;
+  color: white;
   width: 1em;
   cursor: pointer;
 }

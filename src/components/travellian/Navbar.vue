@@ -84,8 +84,25 @@
         href="#"
         class="auth-menu__item auth-menu__item--btn"
         data-text="Sign up"
-        >註冊</a
-      >
+        @click.prevent="showSingUp = true"
+        >註冊
+      </a>
     </nav>
   </header>
+
+  <el-dialog
+    v-model="showSingUp"
+    title="註冊"
+    width="600px"
+    :close-on-click-modal="false"
+  >
+    <SingUp />
+  </el-dialog>
 </template>
+
+<script setup>
+import { ref } from "vue";
+import SingUp from "@/components/singup/SingUp.vue";
+
+const showSingUp = ref(false);
+</script>
