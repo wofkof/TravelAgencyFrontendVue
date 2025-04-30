@@ -28,6 +28,8 @@ declare module 'vue' {
     ElSelectV2: typeof import('element-plus/es')['ElSelectV2']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTimePicker: typeof import('element-plus/es')['ElTimePicker']
+    FloatingChat: typeof import('./components/FloatingChat.vue')['default']
+
     FooterSection: typeof import('./components/travellian/FooterSection.vue')['default']
     GallerySection: typeof import('./components/travellian/GallerySection.vue')['default']
     HeroSection: typeof import('./components/travellian/HeroSection.vue')['default']
@@ -37,7 +39,7 @@ declare module 'vue' {
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SingUp: typeof import('./components/SingUp/SingUp.vue')['default']
+    SingUp: typeof import('./components/singup/SingUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
