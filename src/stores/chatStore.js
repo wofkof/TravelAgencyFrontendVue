@@ -6,8 +6,11 @@ export const useChatStore = defineStore("chat", () => {
   const allChatRooms = ref([]);
   const currentChatRoomId = ref(null);
 
+  const unreadCountMap = reactive({});
+
   const setCurrentChatRoom = (chatRoomId) => {
     currentChatRoomId.value = chatRoomId;
+    unreadCountMap[chatRoomId] = 0;
     if (!chatRooms[chatRoomId]) {
       chatRooms[chatRoomId] = [];
     }
@@ -18,6 +21,9 @@ export const useChatStore = defineStore("chat", () => {
   };
 
   const addMessage = (chatRoomId, message) => {
+    if (!message.sentAt) {
+      message.sentAt = new Date();
+    }
     if (!chatRooms[chatRoomId]) {
       chatRooms[chatRoomId] = [];
     }
@@ -36,5 +42,6 @@ export const useChatStore = defineStore("chat", () => {
     setChatRooms,
     addMessage,
     setMessages,
+    unreadCountMap,
   };
 });

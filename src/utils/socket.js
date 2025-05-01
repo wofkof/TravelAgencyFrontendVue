@@ -16,17 +16,25 @@ export const setupSocket = async () => {
   connection.on(
     "ReceiveMessage",
     (chatRoomId, senderType, senderId, messageType, content, sentAt) => {
-      const isSelf = senderId === chatStore.memberId && senderType === "Member";
+      const chatStore = useChatStore();
 
-      if (!isSelf) {
-        const newMessage = {
-          senderType,
-          senderId,
-          messageType,
-          content,
-          sentAt,
-        };
-        chatStore.addMessage(chatRoomId, newMessage);
+      const isSelf = senderId === chatStore.memberId && senderType === "Member";
+      const isCurrentRoom = chatRoomId === chatStore.currentChatRoomId;
+
+      const newMessage = {
+        senderType,
+        senderId,
+        messageType,
+        content,
+        sentAt,
+        isRead: isCurrentRoom,
+      };
+
+      chatStore.addMessage(chatRoomId, newMessage);
+
+      if (!isSelf && (!isCurrentRoom || !isScrolledToBottom())) {
+        chatStore.unreadCountMap[chatRoomId] =
+          (chatStore.unreadCountMap[chatRoomId] || 0) + 1;
       }
     }
   );
