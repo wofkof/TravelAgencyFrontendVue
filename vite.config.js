@@ -40,10 +40,6 @@ export default defineConfig({
     },
   },
   css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/assets/styles/global.scss";`,
-      },
-    },
+    preprocessorOptions: {},
   },
 });
