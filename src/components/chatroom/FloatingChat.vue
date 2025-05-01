@@ -1,9 +1,14 @@
 <template>
-  <div class="chat-float-button" @click="toggleChat">
-    <el-icon :size="24">
-      <ChatDotRound />
-    </el-icon>
+  <div class="chat-float-wrapper" @click="toggleChat">
+    <div class="chat-float-button">
+      <el-badge :value="totalUnreadCount" :max="99" :show-zero="false">
+        <el-icon :size="30">
+          <ChatDotRound />
+        </el-icon>
+      </el-badge>
+    </div>
   </div>
+
   <div v-if="showChat" class="chat-popup">
     <div class="chat-popup-header">
       <span>聊天室</span>
@@ -12,29 +17,49 @@
       </el-icon>
     </div>
     <div class="chat-popup-body">
-      <ChatRoomList />
-      <MessageBox />
+      <div class="chat-room-list">
+        <ChatRoomList />
+      </div>
+      <div class="chat-message-box">
+        <MessageBox />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import ChatRoomList from "@/components/chatroom/ChatRoomList.vue";
 import MessageBox from "@/components/chatroom/MessageBox.vue";
+import { useChatStore } from "@/stores/chatStore";
 
 const showChat = ref(false);
+const chatStore = useChatStore();
+
+const totalUnreadCount = computed(() => {
+  return Object.values(chatStore.unreadCountMap).reduce((sum, c) => sum + c, 0);
+});
+
 function toggleChat() {
   showChat.value = !showChat.value;
+
+  if (showChat.value) {
+    Object.keys(chatStore.unreadCountMap).forEach((key) => {
+      chatStore.unreadCountMap[key] = 0;
+    });
+  }
 }
 </script>
 
 <style scoped>
-.chat-float-button {
+.chat-float-wrapper {
   position: fixed;
   bottom: 24px;
   right: 24px;
   z-index: 1000;
+}
+
+.chat-float-button {
   background-color: #007bff;
   color: white;
   width: 56px;
@@ -47,7 +72,10 @@ function toggleChat() {
   cursor: pointer;
   font-size: 24px;
   transition: background-color 0.3s;
+
+  position: relative;
 }
+
 .chat-float-button:hover {
   background-color: #0056b3;
   transform: scale(1.1);
@@ -56,7 +84,7 @@ function toggleChat() {
   position: fixed;
   bottom: 90px;
   right: 24px;
-  width: 320px;
+  width: 480px;
   height: 420px;
   background: white;
   border-radius: 12px 12px 0 0;
@@ -85,7 +113,26 @@ function toggleChat() {
 .chat-popup-body {
   flex: 1;
   background: #f8f9fa;
+  overflow: hidden;
+  padding: 0;
+  display: flex; /* ✅ 改為左右排列 */
+  flex-direction: row;
+}
+
+/* 左側聊天室清單 */
+.chat-room-list {
+  width: 120px;
+  border-right: 1px solid #ddd;
+  padding: 8px;
   overflow-y: auto;
-  padding: 10px;
+  background: #fff;
+}
+
+/* 右側訊息區 */
+.chat-message-box {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }
 </style>
