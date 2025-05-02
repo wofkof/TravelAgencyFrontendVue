@@ -92,8 +92,7 @@
 
   <el-dialog
     v-model="showSingUp"
-    title="註冊"
-    width="600px"
+    width="800px"
     :close-on-click-modal="false"
   >
     <SingUp />
