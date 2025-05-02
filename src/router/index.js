@@ -7,6 +7,8 @@ import CruiseView from "@/views/CruiseView.vue";
 import PricingView from "@/views/PricingView.vue";
 import VisaView from "@/views/VisaView.vue";
 import ContactView from "@/views/ContactView.vue";
+import SignUp from "@/components/SignUp/SignUp.vue";
+import Login from "@/components/SignUp/Login.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomeView },
@@ -21,6 +23,9 @@ const routes = [
   { path: "/PricingView", name: "PricingView", component: PricingView },
   { path: "/VisaView", name: "VisaView", component: VisaView },
   { path: "/ContactView", name: "ContactView", component: ContactView },
+  { path: "/login", name: "Login", component: Login },
+  { path: "/signup", name: "SignUp", component: () => import("@/components/SignUp/SignUp.vue") },
+
 ];
 
 const router = createRouter({

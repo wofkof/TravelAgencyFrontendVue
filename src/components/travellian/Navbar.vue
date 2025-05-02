@@ -90,34 +90,41 @@
         href="#"
         class="auth-menu__item auth-menu__item--btn"
         data-text="Sign up"
-        @click.prevent="showSingUp = true"
+        @click.prevent="showSignUp = true"
         >註冊
       </a>
     </nav>
   </header>
 
   <el-dialog
-    v-model="showLogin"
-    width="800px"
-    :close-on-click-modal="false"
-  >
-    <Login />
-  </el-dialog>
+  v-model="showLogin"
+  width="800px"
+  :close-on-click-modal="false"
+>
+  <Login @switchToSignUp="handleSwitchToSignUp" />
+</el-dialog>
 
-  <el-dialog
-    v-model="showSingUp"
-    width="800px"
-    :close-on-click-modal="false"
-  >
-    <SingUp />
-  </el-dialog>
+<el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
+  <SignUp @switch-to-login="handleSwitchToLogin" />
+</el-dialog>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import SingUp from "@/components/singup/SingUp.vue";
-import Login from "@/components/singup/Login.vue";
+import SignUp from "@/components/SignUp/SignUp.vue";
+import Login from "@/components/SignUp/Login.vue";
 
-const showSingUp = ref(false);
+const showSignUp = ref(false);
 const showLogin = ref(false);
+
+function handleSwitchToSignUp() {
+  showLogin.value = false;
+  showSignUp.value = true;
+}
+
+function handleSwitchToLogin() {
+  showSignUp.value = false
+  showLogin.value = true
+}
+
 </script>

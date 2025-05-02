@@ -7,10 +7,7 @@
         <CardContent class="grid p-0 md:grid-cols-2">
             <form class="p-6 md:p-6">
   <div class="flex flex-col gap-8">
-    
-    <!-- ✅ Logo 區塊 -->
     <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />
-
     <!-- ✅ 表單內容區塊 -->
     <div class="flex flex-col gap-8">
       <div class="grid gap-2">
@@ -25,7 +22,6 @@
           請輸入有效的手機號碼或 Email
         </span>
       </div>
-
       <div class="grid gap-2">
         <Label for="password">密碼</Label>
         <Input
@@ -35,31 +31,29 @@
           required
         />
       </div>
-<!-- ✅ 記住我 + 忘記密碼 -->
-<div class="flex items-center justify-between text-sm text-muted-foreground">
-  <label class="flex items-center gap-2 cursor-pointer">
-    <input
-      type="checkbox"
-      class="accent-indigo-600 w-4 h-4 border border-gray-300 rounded focus:ring-indigo-500"
-    />
-    記住我
-  </label>
-  <a href="#" class="text-indigo-600 hover:underline hover:text-indigo-500">
-    忘記密碼？
-  </a>
-</div>
+      <!-- ✅ 記住我 + 忘記密碼 -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            class="accent-indigo-600 w-4 h-4 border border-gray-300 rounded focus:ring-indigo-500"
+          />
+          記住我
+        </label>
+        <a href="#" class="text-indigo-600 hover:underline hover:text-indigo-500">
+          忘記密碼？
+        </a>
+      </div>
       <!-- ✅ 登入按鈕 -->
       <Button type="submit" class="w-full">
         登入
       </Button>
-
       <!-- ✅ 分隔線文字 -->
       <div class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
         <span class="relative z-10 bg-background px-2 text-muted-foreground">
           或以社群帳號登入
         </span>
       </div>
-
       <!-- ✅ Google 登入按鈕 -->
       <div class="grid grid-cols-1 gap-4">
         <button
@@ -74,27 +68,20 @@
         </button>
       </div>
 
-      <!-- ✅ 註冊導引 -->
-      <!-- <div class="text-center text-sm">
-        還不是會員嗎？
-        <a href="#" class="underline underline-offset-4 text-primary hover:text-indigo-500">
-          前往註冊
-        </a>
-      </div> -->
-      <div class="text-center text-sm">
-  還不是會員嗎？
-  <router-link
-    to="/SignUp"
-    class="underline underline-offset-4 text-primary hover:text-indigo-500"
-  >
-    前往註冊
-  </router-link>
-</div>
-
-
-    </div>
-  </div>
-</form>
+       <!-- ✅ 註冊導引 -->
+        <div class="text-center text-sm">
+          還不是會員嗎？
+          <a
+            href="#"
+            class="underline underline-offset-4 text-primary hover:text-indigo-500"
+            @click.prevent="$emit('switchToSignUp')"
+          >
+            前往註冊
+          </a>
+        </div>
+          </div>
+        </div>
+      </form>
 
           <div class="relative hidden bg-muted md:block rounded-[20px]">
             <img
@@ -121,8 +108,8 @@ const form = reactive({
 
   const isValidAccount = computed(() => {
   return (
-    /^09\d{8}$/.test(form.account) ||                // 手機格式
-    /^\S+@\S+\.\S+$/.test(form.account)              // 或 email 格式
+    /^09\d{8}$/.test(form.account) ||                
+    /^\S+@\S+\.\S+$/.test(form.account)           
   );
 });
 

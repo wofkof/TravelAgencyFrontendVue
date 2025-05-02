@@ -1,131 +1,7 @@
-<!-- <script lang="ts" setup>
-import { reactive, ref } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
-
-interface RuleForm {
-  name: string;
-  region: string;
-  count: string;
-  date1: string;
-  date2: string;
-  delivery: boolean;
-  location: string;
-  type: string[];
-  resource: string;
-  desc: string;
-}
-
-const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive<RuleForm>({
-  name: "Hello",
-  region: "",
-  count: "",
-  date1: "",
-  date2: "",
-  delivery: false,
-  location: "",
-  type: [],
-  resource: "",
-  desc: "",
-});
-
-const locationOptions = ["Home", "Company", "School"];
-
-const rules = reactive<FormRules<RuleForm>>({
-  name: [
-    { required: true, message: "Please input Activity name", trigger: "blur" },
-    { min: 3, max: 5, message: "Length should be 3 to 5", trigger: "blur" },
-  ],
-  region: [
-    {
-      required: true,
-      message: "Please select Activity zone",
-      trigger: "change",
-    },
-  ],
-  count: [
-    {
-      required: true,
-      message: "Please select Activity count",
-      trigger: "change",
-    },
-  ],
-  date1: [
-    {
-      type: "date",
-      required: true,
-      message: "Please pick a date",
-      trigger: "change",
-    },
-  ],
-  date2: [
-    {
-      type: "date",
-      required: true,
-      message: "Please pick a time",
-      trigger: "change",
-    },
-  ],
-  location: [
-    {
-      required: true,
-      message: "Please select a location",
-      trigger: "change",
-    },
-  ],
-  type: [
-    {
-      type: "array",
-      required: true,
-      message: "Please select at least one activity type",
-      trigger: "change",
-    },
-  ],
-  resource: [
-    {
-      required: true,
-      message: "Please select activity resource",
-      trigger: "change",
-    },
-  ],
-  desc: [
-    { required: true, message: "Please input activity form", trigger: "blur" },
-  ],
-});
-
-const submitForm = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  await formEl.validate((valid, fields) => {
-    if (valid) {
-      console.log("submit!");
-    } else {
-      console.log("error submit!", fields);
-    }
-  });
-};
-
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-};
-
-const options = Array.from({ length: 10000 }).map((_, idx) => ({
-  value: `${idx + 1}`,
-  label: `${idx + 1}`,
-}));
-</script>  -->
-
-<!-- <script setup lang="ts">
-import { Button } from '@/registry/new-york/ui/button'
-import { Card, CardContent } from '@/registry/new-york/ui/card'
-import { Input } from '@/registry/new-york/ui/input'
-import { Label } from '@/registry/new-york/ui/label'
-</script> -->
-
 <template>
   <div class="flex flex-col gap-3">
     <div class="text-center">
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">歡迎加入嶼你同行，一起探索旅行</h2>
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">嶼你同行，一起探索旅行</h2>
     </div>
     <Card class="overflow-hidden">
       <CardContent class="grid p-0 md:grid-cols-2">
@@ -231,16 +107,17 @@ import { Label } from '@/registry/new-york/ui/label'
           使用Google帳號註冊
         </button>
       </div>
-
       <div class="text-center text-sm">
-        已經是會員嗎?
-        <a href="#" class="underline underline-offset-4">
+        已經是會員嗎？
+        <button
+          @click="$emit('switch-to-login')"
+          class="underline underline-offset-4 text-primary hover:text-indigo-500">
           前往登入
-        </a>
-      </div>
-    </div>
-  </div>
-</form>
+        </button>
+            </div>
+          </div>
+        </div>
+      </form>
 
       </CardContent>
     </Card>
