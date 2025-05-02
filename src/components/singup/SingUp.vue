@@ -125,93 +125,11 @@ import { Label } from '@/registry/new-york/ui/label'
 <template>
   <div class="flex flex-col gap-3">
     <div class="text-center">
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">歡迎加入嶼你同行</h2>
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">歡迎加入嶼你同行，一起探索旅行</h2>
     </div>
     <Card class="overflow-hidden">
       <CardContent class="grid p-0 md:grid-cols-2">
-        <form class="p-6 md:p-6">
-          <div class="flex flex-col gap-4">
-            <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />
-            <div class="flex flex-col items-center text-center">            
-          </div>
-            <div class="grid gap-2">
-              <Label for="name">姓名</Label>
-              <Input
-                id="name"
-                type="name"
-                placeholder="請輸入您的姓名"
-                required
-              />             
-            </div>
-            <div class="grid gap-2">
-              <Label for="phone">聯絡手機</Label>
-              <Input 
-                id="phone"
-                type="phone"
-                placeholder="請輸入您的手機號碼"
-                required
-              />             
-            </div>
-            <div class="grid gap-2">
-              <Label for="email">聯絡信箱</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div class="grid gap-2">
-              <Label for="password">密碼</Label>
-              <Input id="password" type="password" required placeholder="請設定6~12位數密碼" />
-            </div>
-            <div class="grid gap-2">
-              <Label for="password">確認密碼</Label> 
-              <Input id="password" type="password" required placeholder="請再次輸入密碼" />
-            </div>
-           <!-- 假 reCAPTCHA 區塊 -->
-            <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50">
-              <input type="checkbox" id="fake-recaptcha" class="w-5 h-5 accent-blue-600" />
-              <label for="fake-recaptcha" class="text-sm text-gray-700 select-none">
-              我不是機器人
-              </label>
-            <img
-              src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
-              alt="reCAPTCHA"
-              class="ml-auto w-10 h-10"
-            />
-            </div>
-              <Button type="submit" class="w-full">
-                立即註冊
-              </Button>
-            <div class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-              <span class="relative z-10 bg-background px-2 text-muted-foreground">
-                或以社群帳號註冊
-              </span>
-            </div>
-            <div class="grid grid-cols-1 gap-4">            
-               <!-- Google Button -->
-            <button
-              class="w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
-            >
-              <!-- SVG for Google -->
-              <img
-                src="https://raw.githubusercontent.com/sidiDev/remote-assets/7cd06bf1d8859c578c2efbfda2c68bd6bedc66d8/google-icon.svg"
-                alt="Google"
-                class="w-5 h-5"
-              />
-              <!-- Comment: Google Icon SVG here -->
-              使用Google帳號註冊
-            </button>
-            </div>
-            <div class="text-center text-sm">
-              已經是會員嗎?
-              <a href="#" class="underline underline-offset-4">
-                前往登入
-              </a>
-            </div>
-          </div>
-        </form>
+        
         <div class="relative hidden bg-muted md:block rounded-[20px]">
           <img
             src="/images/SignUpImage.jpg"
@@ -219,9 +137,114 @@ import { Label } from '@/registry/new-york/ui/label'
             class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale rounded-[20px]"
           >
         </div>
+        <form class="p-6 md:p-6">
+  <div class="flex flex-col gap-8">
+    
+    <!-- ✅ Logo 區塊 -->
+    <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />
+
+    <!-- ✅ 表單欄位區塊 -->
+    <div class="flex flex-col gap-6">
+      <div class="grid gap-2">
+        <Label for="name">姓名</Label>
+        <Input
+          id="name"
+          type="text"
+          placeholder="請輸入您的姓名"
+          required
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="phone">聯絡手機</Label>
+        <Input
+          id="phone"
+          type="phone"
+          placeholder="請輸入您的手機號碼"
+          required
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="email">聯絡信箱</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="m@example.com"
+          required
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="password">密碼</Label>
+        <Input
+          id="password"
+          type="password"
+          placeholder="請設定6~12位數密碼"
+          required
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="confirm-password">確認密碼</Label>
+        <Input
+          id="confirm-password"
+          type="password"
+          placeholder="請再次輸入密碼"
+          required
+        />
+      </div>
+
+      <!-- ✅ 假 reCAPTCHA -->
+      <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50">
+        <input type="checkbox" id="fake-recaptcha" class="w-5 h-5 accent-blue-600" />
+        <label for="fake-recaptcha" class="text-sm text-gray-700 select-none">
+          我不是機器人
+        </label>
+        <img
+          src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
+          alt="reCAPTCHA"
+          class="ml-auto w-10 h-10"
+        />
+      </div>
+
+      <Button type="submit" class="w-full">
+        立即註冊
+      </Button>
+
+      <div class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+        <span class="relative z-10 bg-background px-2 text-muted-foreground">
+          或以社群帳號註冊
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Google Button -->
+        <button
+          class="w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
+        >
+          <img
+            src="https://raw.githubusercontent.com/sidiDev/remote-assets/7cd06bf1d8859c578c2efbfda2c68bd6bedc66d8/google-icon.svg"
+            alt="Google"
+            class="w-5 h-5"
+          />
+          使用Google帳號註冊
+        </button>
+      </div>
+
+      <div class="text-center text-sm">
+        已經是會員嗎?
+        <a href="#" class="underline underline-offset-4">
+          前往登入
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
+
       </CardContent>
     </Card>
-    <div class="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+    <div class="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary m-2">
       By clicking continue, you agree to our <a href="#">Terms of Service</a>
       and <a href="#">Privacy Policy</a>.
     </div>

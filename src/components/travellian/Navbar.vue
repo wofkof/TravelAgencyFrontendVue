@@ -79,7 +79,13 @@
     </nav>
     <!-- 登入與註冊 -->
     <nav class="header__menu auth-menu">
-      <a href="#" class="auth-menu__item" data-text="Login">登入</a>
+      <a
+        href="#"
+        class="auth-menu__item"
+        data-text="Login"
+        @click.prevent="showLogin = true"
+        >登入
+      </a>
       <a
         href="#"
         class="auth-menu__item auth-menu__item--btn"
@@ -89,6 +95,14 @@
       </a>
     </nav>
   </header>
+
+  <el-dialog
+    v-model="showLogin"
+    width="800px"
+    :close-on-click-modal="false"
+  >
+    <Login />
+  </el-dialog>
 
   <el-dialog
     v-model="showSingUp"
@@ -102,6 +116,8 @@
 <script setup>
 import { ref } from "vue";
 import SingUp from "@/components/singup/SingUp.vue";
+import Login from "@/components/singup/Login.vue";
 
 const showSingUp = ref(false);
+const showLogin = ref(false);
 </script>
