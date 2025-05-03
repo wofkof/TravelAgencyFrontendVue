@@ -7,8 +7,6 @@ const connection = new HubConnectionBuilder()
   .build();
 
 export const setupSocket = async () => {
-  const chatStore = useChatStore();
-
   if (connection.state === "Disconnected") {
     await connection.start();
   }

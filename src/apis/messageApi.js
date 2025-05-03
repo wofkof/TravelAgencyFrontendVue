@@ -8,3 +8,21 @@ export const getMessages = async (chatRoomId) => {
 export const markAsRead = async (chatRoomId) => {
   return await api.post(`/messages/mark-as-read/${chatRoomId}`);
 };
+
+export async function UploadImageMessage({
+  chatRoomId,
+  senderId,
+  senderType,
+  file,
+}) {
+  const formData = new FormData();
+  formData.append("chatRoomId", chatRoomId);
+  formData.append("senderId", senderId);
+  formData.append("senderType", senderType);
+  formData.append("messageType", "image");
+  formData.append("file", file);
+
+  return await api.post("/messageupload/image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}

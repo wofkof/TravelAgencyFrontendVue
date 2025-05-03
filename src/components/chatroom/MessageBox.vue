@@ -1,15 +1,13 @@
 <template>
   <div class="message-area">
-    <el-scrollbar ref="scrollRef" height="200px" class="message-list">
+    <el-scrollbar ref="scrollRef" class="message-list">
       <div
         v-for="msg in currentMessages"
         :key="msg.sentAt"
         class="message-line"
         :class="msg.senderType === 'Member' ? 'from-me' : 'from-them'"
       >
-        <div class="message-bubble">
-          {{ msg.content }}
-        </div>
+        <MessageRenderer :msg="msg" />
 
         <div style="display: flex">
           <div class="message-timestamp">
@@ -32,26 +30,31 @@
       autosize
     />
     <div style="display: flex">
-      <div class="text-right mt-2">
-        <el-button type="primary" size="small" @click="send">送出</el-button>
-      </div>
+      <el-button type="primary" size="small" @click="send">送出</el-button>
       <el-button size="small" @click="toggleEmojiPicker">😀</el-button>
+      <ImageUploader />
+    </div>
+    <div style="display: flex">
+      <TestFakeMessage />
+      <TestFakeIsRead />
     </div>
   </div>
 
   <div ref="pickerContainer" class="emoji-container"></div>
-  <el-button size="small" type="warning" @click="testFakeMessage">
-    測試紅點
-  </el-button>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount } from "vue";
-import { useChatStore } from "../../stores/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import { setupSocket, sendMessage } from "@/utils/socket";
-import { getMessages, markAsRead } from "@/apis/messageApi";
 import { formatRelativeTime } from "@/utils/formatDateTime";
+import { getMessages, markAsRead } from "@/apis/messageApi";
 import { nextTick } from "vue";
+import ImageUploader from "@/components/chatroom/ImageUploader.vue";
+import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
+import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
+import TestFakeIsRead from "@/components/chatroom/TestFakeIsRead.vue";
+
 
 declare global {
   interface Window {
@@ -156,16 +159,25 @@ const currentMessages = computed(() => {
   return chatStore.chatRooms[chatRoomId] || [];
 });
 
+function isPureEmoji(str: string) {
+  const emojiRegex =
+    // @ts-ignore
+    /^(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}|\p{Emoji})+$/u;
+  return emojiRegex.test(str.trim());
+}
+
 const send = async () => {
   const messageContent = newMessage.value.trim();
   if (!messageContent) return;
 
   const chatRoomId = chatStore.currentChatRoomId;
 
+  const type = isPureEmoji(messageContent) ? "emoji" : "text";
+
   const newMsg = {
     senderType: "Member",
     senderId: 11110,
-    messageType: "Text",
+    messageType: type,
     content: messageContent,
     sendAt: new Date(),
     isRead: true,
@@ -175,7 +187,7 @@ const send = async () => {
   scrollToBottom();
 
   try {
-    await sendMessage(chatRoomId, "Member", 11110, "Text", messageContent);
+    await sendMessage(chatRoomId, "Member", 11110, type, messageContent);
   } catch (err) {
     console.error("送出訊息失敗", err);
     alert("發送訊息失敗");
@@ -183,30 +195,6 @@ const send = async () => {
 
   newMessage.value = "";
   closePicker();
-};
-
-const testFakeMessage = () => {
-  const chatRoomId = chatStore.currentChatRoomId || 1;
-
-  const newMessage = {
-    senderType: "Employee",
-    senderId: 1,
-    messageType: "Text",
-    content: "模擬訊息" + new Date().toLocaleTimeString(),
-    sentAt: new Date(),
-    isRead: false,
-  };
-
-  chatStore.addMessage(chatRoomId, newMessage);
-
-  if (
-    chatRoomId !== chatStore.currentChatRoomId ||
-    // @ts-ignore
-    !window.isScrolledToBottom?.()
-  ) {
-    chatStore.unreadCountMap[chatRoomId] =
-      (chatStore.unreadCountMap[chatRoomId] || 0) + 1;
-  }
 };
 </script>
 
@@ -233,15 +221,6 @@ const testFakeMessage = () => {
 }
 .from-them {
   align-items: flex-start;
-}
-.message-bubble {
-  max-width: 70%;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background-color: #f0f0f0;
-  word-break: break-word;
-  text-align: left;
-  line-height: 1.5;
 }
 .from-me .message-bubble {
   background-color: #cce5ff;

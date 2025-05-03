@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar height="120px">
+  <el-scrollbar>
     <el-badge
       v-for="room in chatStore.allChatRooms"
       :key="room.chatRoomId"
@@ -14,7 +14,7 @@
       >
         <div>聊天室編號：{{ room.chatRoomId }}</div>
         <div>
-          建立時間：{{ formatDateTime(room.createdAt, { type: "datetime" }) }}
+          建立時間：{{ formatDateTime(room.createdAt, { type: "date" }) }}
         </div>
       </el-card>
     </el-badge>
@@ -24,21 +24,19 @@
 <script setup>
 import { onMounted } from "vue";
 import { useChatStore } from "@/stores/chatStore";
-import { getChatRooms } from "@/apis/chatRoomApi";
+import { fetchChatRooms } from "@/services/chatService";
 import { formatDateTime } from "@/utils/formatDateTime";
 
 const chatStore = useChatStore();
 
-onMounted(async () => {
+onMounted(() => {
   const memberId = 11110;
-  const rooms = await getChatRooms(memberId);
-  rooms.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
-  chatStore.setChatRooms(rooms);
+  fetchChatRooms(memberId);
 });
 
 const selectChatRoom = (chatRoomId) => {
   chatStore.setCurrentChatRoom(chatRoomId);
-  chatStore.unreadCountMap[chatRoomId] = 0; 
+  chatStore.unreadCountMap[chatRoomId] = 0;
 };
 </script>
 

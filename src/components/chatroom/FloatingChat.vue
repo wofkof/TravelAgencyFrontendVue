@@ -28,27 +28,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import ChatRoomList from "@/components/chatroom/ChatRoomList.vue";
 import MessageBox from "@/components/chatroom/MessageBox.vue";
 import { useChatStore } from "@/stores/chatStore";
 
-const showChat = ref(false);
 const chatStore = useChatStore();
 
 const totalUnreadCount = computed(() => {
   return Object.values(chatStore.unreadCountMap).reduce((sum, c) => sum + c, 0);
 });
 
-function toggleChat() {
-  showChat.value = !showChat.value;
-
-  if (showChat.value) {
-    Object.keys(chatStore.unreadCountMap).forEach((key) => {
-      chatStore.unreadCountMap[key] = 0;
-    });
-  }
-}
+const showChat = computed(() => chatStore.showChat);
+const toggleChat = chatStore.toggleChatPopup;
 </script>
 
 <style scoped>
@@ -84,8 +76,8 @@ function toggleChat() {
   position: fixed;
   bottom: 90px;
   right: 24px;
-  width: 480px;
-  height: 420px;
+  width: 600px;
+  height: 400px;
   background: white;
   border-radius: 12px 12px 0 0;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
@@ -115,20 +107,18 @@ function toggleChat() {
   background: #f8f9fa;
   overflow: hidden;
   padding: 0;
-  display: flex; /* ✅ 改為左右排列 */
+  display: flex; 
   flex-direction: row;
 }
 
-/* 左側聊天室清單 */
 .chat-room-list {
-  width: 120px;
+  width: 227px;
   border-right: 1px solid #ddd;
   padding: 8px;
   overflow-y: auto;
   background: #fff;
 }
 
-/* 右側訊息區 */
 .chat-message-box {
   flex: 1;
   padding: 8px;
