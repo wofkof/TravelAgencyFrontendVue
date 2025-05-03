@@ -35,6 +35,7 @@ declare module 'vue' {
     ElTimePicker: typeof import('element-plus/es')['ElTimePicker']
     FloatingChat: typeof import('./components/chatroom/FloatingChat.vue')['default']
     FooterSection: typeof import('./components/travellian/FooterSection.vue')['default']
+    ForgetPassword: typeof import('./components/SignUp/ForgetPassword.vue')['default']
     GallerySection: typeof import('./components/travellian/GallerySection.vue')['default']
     HeroSection: typeof import('./components/travellian/HeroSection.vue')['default']
     Login: typeof import('./components/SignUp/Login.vue')['default']

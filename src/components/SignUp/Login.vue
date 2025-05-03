@@ -69,16 +69,16 @@
       </div>
 
        <!-- ✅ 註冊導引 -->
-        <div class="text-center text-sm">
-          還不是會員嗎？
-          <a
-            href="#"
-            class="underline underline-offset-4 text-primary hover:text-indigo-500"
-            @click.prevent="$emit('switchToSignUp')"
-          >
-            前往註冊
-          </a>
-        </div>
+      <div class="text-center text-sm">
+        還不是會員嗎？
+        <button
+          type="button"
+          @click="$emit('switch-to-sign-up')"
+          class="underline underline-offset-4 text-primary hover:text-indigo-500"
+        >
+          前往註冊
+        </button>
+      </div>
           </div>
         </div>
       </form>
