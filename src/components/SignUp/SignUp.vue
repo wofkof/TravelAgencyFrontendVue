@@ -46,7 +46,7 @@
         <Input
           id="email"
           type="email"
-          placeholder="m@example.com"
+          placeholder="travellian@example.com"
           required
         />
       </div>
