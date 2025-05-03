@@ -15,7 +15,7 @@ const testFakeMessage = () => {
   const newMessage = {
     senderType: "Employee",
     senderId: 1,
-    messageType: "Text",
+    messageType: "text",
     content: "模擬訊息" + new Date().toLocaleTimeString(),
     sentAt: new Date(),
     isRead: false,

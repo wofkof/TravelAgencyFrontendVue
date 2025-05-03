@@ -50,7 +50,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SingUp: typeof import('./components/singup/SingUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
-    TestFakeIsRead: typeof import('./components/chatroom/TestFakeIsRead.vue')['default']
     TestFakeMessage: typeof import('./components/chatroom/TestFakeMessage.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']

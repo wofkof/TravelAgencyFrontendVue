@@ -36,7 +36,6 @@
     </div>
     <div style="display: flex">
       <TestFakeMessage />
-      <TestFakeIsRead />
     </div>
   </div>
 
@@ -53,8 +52,6 @@ import { nextTick } from "vue";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
-import TestFakeIsRead from "@/components/chatroom/TestFakeIsRead.vue";
-
 
 declare global {
   interface Window {
@@ -97,6 +94,8 @@ const toggleEmojiPicker = () => {
 const openPicker = () => {
   if (!window.EmojiMart || !pickerContainer.value) return;
 
+  if (pickerInstance.value) return;
+
   pickerInstance.value = new window.EmojiMart.Picker({
     emojiSize: 20,
     perLine: 6,
@@ -117,6 +116,7 @@ const closePicker = () => {
   if (pickerContainer.value) {
     pickerContainer.value.innerHTML = "";
   }
+  pickerInstance.value = null;
   pickerVisible.value = false;
 };
 
@@ -136,16 +136,27 @@ onMounted(() => {
   // @ts-ignore
   window.isScrolledToBottom = isScrolledToBottom;
 
+  const senderType = "Member";
+  const senderId = 11110;
+
   if (!chatStore.currentChatRoomId) {
     chatStore.setCurrentChatRoom(1);
   }
 
-  setupSocket().then(async () => {
-    const chatRoomId = chatStore.currentChatRoomId;
+  const chatRoomId = chatStore.currentChatRoomId;
+
+  setupSocket(chatRoomId).then(async () => {
     const messages = await getMessages(chatRoomId);
     chatStore.setMessages(chatRoomId, messages);
-    await markAsRead(chatRoomId);
-    messages.forEach((msg) => (msg.isRead = true));
+
+    await markAsRead(chatRoomId, senderId, senderType);
+
+    messages.forEach((msg) => {
+      if (msg.senderType !== senderType || msg.senderId !== senderId) {
+        msg.isRead = true;
+      }
+    });
+
     scrollToBottom();
   });
 });

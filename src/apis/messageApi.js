@@ -5,8 +5,12 @@ export const getMessages = async (chatRoomId) => {
   return response.data;
 };
 
-export const markAsRead = async (chatRoomId) => {
-  return await api.post(`/messages/mark-as-read/${chatRoomId}`);
+export const markAsRead = async (chatRoomId, senderId, senderType) => {
+  return await api.post("/messages/mark-as-read", {
+    chatRoomId,
+    senderId,
+    senderType,
+  });
 };
 
 export async function UploadImageMessage({
