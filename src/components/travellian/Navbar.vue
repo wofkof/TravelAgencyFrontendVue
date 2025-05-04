@@ -1,8 +1,7 @@
 <template>
   <header class="hero__header header">
     <!-- logo -->
-    <a href="/" class="header__logo logo">
-      <router-link to="/">
+      <router-link to="/" class="header__logo logo">
         <img
           src="@/assets/images/logo.png"
           alt="Travellian logo"
@@ -10,7 +9,6 @@
           style="width: 180px"
         />
       </router-link>
-    </a>
     <!-- 上導覽列 -->
     <nav class="header__menu main-menu">
       <router-link
@@ -76,6 +74,25 @@
         exact
         >聯絡我們
       </router-link>
+
+      <!-- <router-link
+        to="/Cart"
+        class="main-menu__item"
+        active-class="main-menu__item--active"
+        exact
+        title="購物車" >
+        <el-icon size="20"><ShoppingCart /></el-icon>
+      </router-link> -->
+      <CartPreviewIcon />
+      
+      <router-link
+        to="/order-form"
+        class="main-menu__item"
+        active-class="main-menu__item--active"
+        exact
+        >訂單表單
+      </router-link>
+
     </nav>
     <!-- 登入與註冊 -->
     <nav class="header__menu auth-menu">
@@ -103,6 +120,6 @@
 <script setup>
 import { ref } from "vue";
 import SingUp from "@/components/singup/SingUp.vue";
-
+import CartPreviewIcon from '@/components/tools/CartPreviewIcon.vue'; // 確認路徑
 const showSingUp = ref(false);
 </script>

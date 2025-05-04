@@ -14,6 +14,9 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 
 
+import ShoppingCart from '@/views/ShoppingCart.vue';
+import OrderForm from '@/views/OrderForm.vue';
+
 const routes = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/Domestic", name: "Domestic", component: DomesticView },
@@ -27,6 +30,16 @@ const routes = [
   { path: "/PricingView", name: "PricingView", component: PricingView },
   { path: "/VisaView", name: "VisaView", component: VisaView },
   { path: "/ContactView", name: "ContactView", component: ContactView },
+  {
+    path: '/cart', // 購物車頁面的路徑
+    name: 'ShoppingCart',
+    component: ShoppingCart // 對應到 ShoppingCart 組件
+  },
+  {
+    path: '/order-form', // 訂單表單頁面的路徑
+    name: 'OrderForm',
+    component: OrderForm // 對應到 OrderForm 組件
+  },
   { path: "/CustomtravelCreate", name: "CustomtravelCreate", component: CustomtravelCreate },
   { path: "/CustomtravelList", name: "CustomtravelList", component: CustomtravelList },
   { path: "/CustomtravelContent/:index", name: "CustomtravelContent", component: CustomtravelContent },
