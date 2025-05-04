@@ -7,6 +7,9 @@ import CruiseView from "@/views/CruiseView.vue";
 import PricingView from "@/views/PricingView.vue";
 import VisaView from "@/views/VisaView.vue";
 import ContactView from "@/views/ContactView.vue";
+import SearchResult from "@/views/SearchResult.vue";
+import Trip from "@/views/Trip.vue";
+
 
 const routes = [
   { path: "/", name: "Home", component: HomeView },
@@ -21,6 +24,8 @@ const routes = [
   { path: "/PricingView", name: "PricingView", component: PricingView },
   { path: "/VisaView", name: "VisaView", component: VisaView },
   { path: "/ContactView", name: "ContactView", component: ContactView },
+  { path: "/SearchResult", name: "SearchResult", component: SearchResult },
+  { path: "/Trip", name: "Trip", component: Trip },
 ];
 
 const router = createRouter({
