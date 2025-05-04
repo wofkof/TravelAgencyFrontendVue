@@ -7,6 +7,9 @@ import CruiseView from "@/views/CruiseView.vue";
 import PricingView from "@/views/PricingView.vue";
 import VisaView from "@/views/VisaView.vue";
 import ContactView from "@/views/ContactView.vue";
+import CustomtravelCreate from "@/components/customtravel/Create.vue";
+import CustomtravelList from "@/components/customtravel/List.vue";
+import CustomtravelContent from "@/components/customtravel/Content.vue";
 import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 
@@ -24,6 +27,9 @@ const routes = [
   { path: "/PricingView", name: "PricingView", component: PricingView },
   { path: "/VisaView", name: "VisaView", component: VisaView },
   { path: "/ContactView", name: "ContactView", component: ContactView },
+  { path: "/CustomtravelCreate", name: "CustomtravelCreate", component: CustomtravelCreate },
+  { path: "/CustomtravelList", name: "CustomtravelList", component: CustomtravelList },
+  { path: "/CustomtravelContent/:index", name: "CustomtravelContent", component: CustomtravelContent },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
   { path: "/Trip", name: "Trip", component: Trip },
 ];
