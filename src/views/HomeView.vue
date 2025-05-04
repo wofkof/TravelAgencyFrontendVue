@@ -18,8 +18,6 @@
     <div class="l-grid__item">
       <TestimonialSection />
     </div>
-    <NewsletterSection />
-    <FooterSection />
   </div>
 </template>
 
@@ -30,6 +28,4 @@ import BlogSection from "@/components/travellian/BlogSection.vue";
 import TripPlanners from "@/components/travellian/TripPlanners.vue";
 import GallerySection from "@/components/travellian/GallerySection.vue";
 import TestimonialSection from "@/components/travellian/TestimonialSection.vue";
-import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
-import FooterSection from "@/components/travellian/FooterSection.vue";
 </script>
