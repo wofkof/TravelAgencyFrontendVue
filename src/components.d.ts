@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddTraveler: typeof import('./components/MemberCenter/AddTraveler.vue')['default']
     BlogSection: typeof import('./components/travellian/BlogSection.vue')['default']
     Button: typeof import('./components/ui/button/Button.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
@@ -49,8 +50,10 @@ declare module 'vue' {
     SignUp: typeof import('./components/SignUp/SignUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
-    TravelerForm: typeof import('./components/MemberCenter/TravelerForm.vue')['default']
-    TravelerTable: typeof import('./components/MemberCenter/TravelerTable.vue')['default']
+    TravelerForm: typeof import('./components/MemberCenter/TravelerFormModal.vue')['default']
+    TravelerFormModal: typeof import('./components/MemberCenter/TravelerFormModal.vue')['default']
+    TravelerList: typeof import('./components/MemberCenter/TravelerList.vue')['default']
+    TravelerTable: typeof import('./components/MemberCenter/TravelerList.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
   }
 }
