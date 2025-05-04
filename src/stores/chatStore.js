@@ -5,8 +5,8 @@ export const useChatStore = defineStore("chat", () => {
   const chatRooms = reactive({});
   const allChatRooms = ref([]);
   const currentChatRoomId = ref(null);
-
   const unreadCountMap = reactive({});
+  const showChat = ref(false);
 
   const setCurrentChatRoom = (chatRoomId) => {
     currentChatRoomId.value = chatRoomId;
@@ -34,6 +34,19 @@ export const useChatStore = defineStore("chat", () => {
     chatRooms[chatRoomId] = messages;
   };
 
+  const totalUnreadCount = computed(() => {
+    return Object.values(unreadCountMap).reduce((sum, count) => sum + count, 0);
+  });
+
+  function toggleChatPopup() {
+    showChat.value = !showChat.value;
+    if (showChat.value) {
+      Object.keys(unreadCountMap).forEach((key) => {
+        unreadCountMap[key] = 0;
+      });
+    }
+  }
+
   return {
     chatRooms,
     allChatRooms,
@@ -43,5 +56,8 @@ export const useChatStore = defineStore("chat", () => {
     addMessage,
     setMessages,
     unreadCountMap,
+    totalUnreadCount,
+    toggleChatPopup,
+    showChat,
   };
 });
