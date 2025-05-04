@@ -7,7 +7,8 @@
 
     <!-- 左邊篩選器區塊 -->
     <div class="w-1/4 bg-gray-100 rounded-xl p-4 text-center text-gray-700">
-      搜尋結果篩選器
+      搜尋結果篩選器(暫)
+      <FilterBar />
     </div>
 
     <!-- 右邊結果區塊 -->
@@ -37,3 +38,8 @@
 
 
 </template>
+
+<script setup>
+import FilterBar from "@/components/official/FilterBar.vue";
+
+</script>
