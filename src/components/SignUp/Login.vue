@@ -5,7 +5,8 @@
       </div>
       <Card class="overflow-hidden">
         <CardContent class="grid p-0 md:grid-cols-2">
-            <form class="p-6 md:p-6">
+          <form class="p-6 md:p-6" @submit.prevent="handleLogin">
+
   <div class="flex flex-col gap-8">
     <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />
     <!-- ✅ 表單內容區塊 -->
@@ -25,24 +26,26 @@
       <div class="grid gap-2">
         <Label for="password">密碼</Label>
         <Input
-          id="password"
-          type="password"
-          placeholder="請設定6~12位數密碼"
-          required
-        />
+        id="password"
+        v-model="form.password"
+        type="password"
+        placeholder="請設定6~12位數密碼"
+        required
+      />
+      <span v-if="touched && (form.password.length < 6 || form.password.length > 12)" class="text-red-500 text-xs">
+        密碼長度需為 6~12 位
+      </span>
+
       </div>
       <!-- ✅ 記住我 + 忘記密碼 -->
       <div class="flex items-center justify-between text-sm text-muted-foreground">
         <label class="flex items-center gap-2 cursor-pointer">
           <input
-            type="checkbox"
-            class="accent-indigo-600 w-4 h-4 border border-gray-300 rounded focus:ring-indigo-500"
-          />
-          記住我
-        </label>
-        <a href="#" class="text-indigo-600 hover:underline hover:text-indigo-500">
-          忘記密碼？
-        </a>
+        type="checkbox"
+        v-model="rememberMe"
+        class="accent-indigo-600 w-4 h-4 border border-gray-300 rounded focus:ring-indigo-500"
+        />記住我</label>
+        <button type="button" @click="$emit('switch-to-forget')">忘記密碼？</button>
       </div>
       <!-- ✅ 登入按鈕 -->
       <Button type="submit" class="w-full">
@@ -67,7 +70,6 @@
           使用 Google 帳號登入
         </button>
       </div>
-
        <!-- ✅ 註冊導引 -->
       <div class="text-center text-sm">
         還不是會員嗎？
@@ -82,7 +84,6 @@
           </div>
         </div>
       </form>
-
           <div class="relative hidden bg-muted md:block rounded-[20px]">
             <img
               src="/images/LoginImage.jpg"
@@ -100,18 +101,43 @@
   </template>
   <script setup>
   import { reactive, computed, ref } from 'vue'
-
 const form = reactive({
   account: '',
   password: ''
 })
-
-  const isValidAccount = computed(() => {
+const isValidAccount = computed(() => {
+  const account = String(form.account).trim()
   return (
-    /^09\d{8}$/.test(form.account) ||                
-    /^\S+@\S+\.\S+$/.test(form.account)           
-  );
+    /^09\d{8}$/.test(account) ||
+    /^\S+@\S+\.\S+$/.test(account)
+  )
 });
+
+
+const rememberMe = ref(false)
+const touched = ref(false)
+
+function handleLogin() {
+  form.account = form.account.trim()
+form.password = form.password.trim()
+
+  touched.value = true
+
+  if (!isValidAccount.value) {
+    alert('請輸入有效的手機號碼或信箱格式')
+    return
+  }
+
+  if (!form.password || form.password.length < 6 || form.password.length > 12) {
+    alert('密碼長度需為 6~12 位')
+    return
+  }
+
+  // ✅ 假登入流程（可換成 axios 登入 API）
+  alert(`登入成功：帳號 ${form.account}`)
+
+  // TODO: emit('login-success') 或關閉 dialog 等
+}
 
   </script>
   

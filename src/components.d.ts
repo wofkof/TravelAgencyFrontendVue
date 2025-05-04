@@ -39,6 +39,7 @@ declare module 'vue' {
     GallerySection: typeof import('./components/travellian/GallerySection.vue')['default']
     HeroSection: typeof import('./components/travellian/HeroSection.vue')['default']
     Login: typeof import('./components/SignUp/Login.vue')['default']
+    MemberSidebar: typeof import('./components/MemberCenter/MemberSidebar.vue')['default']
     MessageBox: typeof import('./components/chatroom/MessageBox.vue')['default']
     Navbar: typeof import('./components/travellian/Navbar.vue')['default']
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
@@ -48,6 +49,8 @@ declare module 'vue' {
     SignUp: typeof import('./components/SignUp/SignUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
+    TravelerForm: typeof import('./components/MemberCenter/TravelerForm.vue')['default']
+    TravelerTable: typeof import('./components/MemberCenter/TravelerTable.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
   }
 }

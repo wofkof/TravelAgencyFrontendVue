@@ -25,7 +25,13 @@ const routes = [
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
   { path: "/signup", name: "SignUp", component: () => import("@/components/SignUp/SignUp.vue") },
-
+  // 會員中心測試
+  {
+    path: "/member-center",
+    name: "MemberCenter",
+    component: () => import("@/views/MemberCenterView.vue")
+  }
+  
 ];
 
 const router = createRouter({

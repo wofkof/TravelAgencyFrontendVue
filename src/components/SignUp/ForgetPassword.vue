@@ -24,7 +24,7 @@
               <div class="flex flex-col gap-6">
                 <!-- ✅ 帳號欄 -->
                 <div class="grid gap-2">
-                  <label for="account" class="text-sm font-medium">帳號</label>
+                  <label for="account" class="text-sm font-medium">信箱</label>
                   <input
                     id="account"
                     v-model="form.account"
@@ -90,7 +90,7 @@
       return
     }
   
-    alert("已寄送重置密碼連結至您的信箱")
+    alert("重設密碼連結已寄送到你的信箱，請於10分鐘內點擊，否則連結將失效")
   
     // ✅ 清空表單並關閉視窗（回到登入頁）
     form.account = ''
