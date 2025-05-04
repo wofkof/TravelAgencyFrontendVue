@@ -8,7 +8,8 @@
     <TripCard />
   </div>
   <p class="text-2xl/9 m-6">地區篩選器</p>
-  <filterCard class="mb-6"/>
+  <filterCard :tags="['全部', '北部', '中部', '南部', '東部','離島']"
+  v-model="currentRegion"class="mb-6"/>
 
 
 
@@ -42,4 +43,7 @@
 import BigBanner from "@/components/official/BigBanner.vue";
 import filterCard from "@/components/official/filterCard.vue";
 import TripCard from "@/components/official/TripCard.vue";
+import { ref } from "vue";
+
+const currentRegion = ref("全部"); // 用來過濾行程的依據
 </script>
