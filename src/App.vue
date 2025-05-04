@@ -34,5 +34,16 @@ const showCheckoutSteps = computed(() => {
   </main>
 
   <FloatingChat />
+
+  <!-- ✅ 會員中心測試按鈕 -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <router-link
+      to="/member-center"
+      class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 text-center"
+    >
+      測試會員中心
+    </router-link>
+  </div>
+
 </template>
 
