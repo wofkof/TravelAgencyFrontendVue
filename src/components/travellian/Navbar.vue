@@ -1,8 +1,7 @@
 <template>
   <header class="hero__header header">
     <!-- logo -->
-    <a href="/" class="header__logo logo">
-      <router-link to="/">
+      <router-link to="/" class="header__logo logo">
         <img
           src="@/assets/images/logo.png"
           alt="Travellian logo"
@@ -10,7 +9,6 @@
           style="width: 180px"
         />
       </router-link>
-    </a>
     <!-- 上導覽列 -->
     <nav class="header__menu main-menu">
       <router-link
@@ -76,33 +74,82 @@
         exact
         >聯絡我們
       </router-link>
+
+      <!-- <router-link
+        to="/Cart"
+        class="main-menu__item"
+        active-class="main-menu__item--active"
+        exact
+        title="購物車" >
+        <el-icon size="20"><ShoppingCart /></el-icon>
+      </router-link> -->
+      <CartPreviewIcon />
+      
+      <router-link
+        to="/order-form"
+        class="main-menu__item"
+        active-class="main-menu__item--active"
+        exact
+        >訂單表單
+      </router-link>
     </nav>
+
     <!-- 登入與註冊 -->
     <nav class="header__menu auth-menu">
-      <a href="#" class="auth-menu__item" data-text="Login">登入</a>
-      <a
-        href="#"
-        class="auth-menu__item auth-menu__item--btn"
-        data-text="Sign up"
-        @click.prevent="showSingUp = true"
-        >註冊
-      </a>
+      <a href="#" class="auth-menu__item" data-text="Login" @click.prevent="showLogin = true">登入</a>
+      <a href="#" class="auth-menu__item auth-menu__item--btn" data-text="Sign up" @click.prevent="showSignUp = true">註冊</a>
     </nav>
   </header>
 
-  <el-dialog
-    v-model="showSingUp"
-    title="註冊"
-    width="600px"
-    :close-on-click-modal="false"
-  >
-    <SingUp />
+  <!-- 🔒 登入 Dialog -->
+  <el-dialog v-model="showLogin" width="800px" :close-on-click-modal="false">
+    <Login
+      @switchToSignUp="handleSwitchToSignUp"
+      @switch-to-forget="handleSwitchToForgetPassword"
+    />
+  </el-dialog>
+
+  <!-- 📝 註冊 Dialog -->
+  <el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
+    <SignUp @switch-to-login="handleSwitchToLogin" />
+  </el-dialog>
+
+  <!-- ❓ 忘記密碼 Dialog -->
+  <el-dialog v-model="showForgetPassword" width="800px" :close-on-click-modal="false">
+    <ForgetPassword @switch-to-login="handleSwitchToLogin" />
   </el-dialog>
 </template>
 
 <script setup>
 import { ref } from "vue";
+
+import Login from "@/components/SignUp/Login.vue";
+import SignUp from "@/components/SignUp/SignUp.vue";
+import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import SingUp from "@/components/singup/SingUp.vue";
 
+import CartPreviewIcon from '@/components/tools/CartPreviewIcon.vue'; // 確認路徑
 const showSingUp = ref(false);
+
+// 控制各個 dialog 顯示
+const showLogin = ref(false);
+const showSignUp = ref(false);
+const showForgetPassword = ref(false);
+
+// 切換邏輯
+function handleSwitchToSignUp() {
+  showLogin.value = false;
+  showSignUp.value = true;
+}
+
+function handleSwitchToLogin() {
+  showSignUp.value = false;
+  showForgetPassword.value = false;
+  showLogin.value = true;
+}
+
+function handleSwitchToForgetPassword() {
+  showLogin.value = false;
+  showForgetPassword.value = true;
+}
 </script>
