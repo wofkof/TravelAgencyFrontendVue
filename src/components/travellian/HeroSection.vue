@@ -45,11 +45,11 @@
           class="search__input"
         />
       </div>
-      <button type="submit" class="search__btn">
+      <router-link to="/SearchResult" class="search__btn">
         <span class="l-search-btn-wrapper" data-text="Book">
-          立即<br />預訂
+        立即<br />預訂
         </span>
-      </button>
+      </router-link>
     </div>
   </form>
 </template>

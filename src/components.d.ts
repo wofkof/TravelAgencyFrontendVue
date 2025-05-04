@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BigBanner: typeof import('./components/official/BigBanner.vue')['default']
     BlogSection: typeof import('./components/travellian/BlogSection.vue')['default']
     Button: typeof import('./components/ui/button/Button.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
@@ -26,10 +27,14 @@ declare module 'vue' {
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
+    ElCarousel: typeof import('element-plus/es')['ElCarousel']
+    ElCarouselItem: typeof import('element-plus/es')['ElCarouselItem']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCheckboxGroup: typeof import('element-plus/es')['ElCheckboxGroup']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElDaPicker: typeof import('element-plus/es')['ElDaPicker']
+    ElCollapse: typeof import('element-plus/es')['ElCollapse']
+    ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElForm: typeof import('element-plus/es')['ElForm']
@@ -51,6 +56,8 @@ declare module 'vue' {
     ElTimelineItem: typeof import('element-plus/es')['ElTimelineItem']
     ElTimePicker: typeof import('element-plus/es')['ElTimePicker']
     ElTimeSelect: typeof import('element-plus/es')['ElTimeSelect']
+    FilterBar: typeof import('./components/official/FilterBar.vue')['default']
+    FilterCard: typeof import('./components/official/filterCard.vue')['default']
     FloatingChat: typeof import('./components/chatroom/FloatingChat.vue')['default']
     FooterSection: typeof import('./components/travellian/FooterSection.vue')['default']
     GallerySection: typeof import('./components/travellian/GallerySection.vue')['default']
@@ -60,6 +67,7 @@ declare module 'vue' {
     Navbar: typeof import('./components/travellian/Navbar.vue')['default']
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
+    ResultCard: typeof import('./components/official/ResultCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SingUp: typeof import('./components/singup/SingUp.vue')['default']
@@ -67,6 +75,7 @@ declare module 'vue' {
     StatusContent: typeof import('./components/customtravel/StatusContent.vue')['default']
     StatusList: typeof import('./components/customtravel/StatusList.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
+    TripCard: typeof import('./components/official/TripCard.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
   }
 }
