@@ -4,7 +4,7 @@
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">忘記密碼？</h2>
       </div>
   
-      <Card class="overflow-hidden">
+      <Card>
         <CardContent class="grid p-0 md:grid-cols-2">
           <!-- ✅ 圖片區塊 -->
           <div class="relative hidden bg-muted md:block rounded-[20px]">

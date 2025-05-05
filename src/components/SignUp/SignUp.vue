@@ -3,8 +3,8 @@
     <div class="text-center">
       <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">嶼你同行，一起探索旅行</h2>
     </div>
-    <Card class="overflow-hidden">
-      <CardContent class="grid p-0 md:grid-cols-2">
+    <Card>
+      <CardContent class="grid p-0 md:grid-cols-2 ">
         
         <div class="relative hidden bg-muted md:block rounded-[20px]">
           <img
@@ -14,7 +14,7 @@
           >
         </div>
         <form class="p-6 md:p-6">
-  <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-8">
     
     <!-- ✅ Logo 區塊 -->
     <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />

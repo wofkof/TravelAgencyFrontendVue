@@ -3,7 +3,7 @@
       <div class="text-center">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">歡迎回來</h2>
       </div>
-      <Card class="overflow-hidden">
+      <Card>
         <CardContent class="grid p-0 md:grid-cols-2">
           <form class="p-6 md:p-6" @submit.prevent="handleLogin">
 
