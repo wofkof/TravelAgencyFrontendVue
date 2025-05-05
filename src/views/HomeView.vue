@@ -33,3 +33,4 @@ import TestimonialSection from "@/components/travellian/TestimonialSection.vue";
 import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
 import FooterSection from "@/components/travellian/FooterSection.vue";
 </script>
+

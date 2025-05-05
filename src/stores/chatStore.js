@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
+import { reactive, ref, computed } from "vue";
 
 export const useChatStore = defineStore("chat", () => {
   const chatRooms = reactive({});
@@ -7,6 +7,9 @@ export const useChatStore = defineStore("chat", () => {
   const currentChatRoomId = ref(null);
   const unreadCountMap = reactive({});
   const showChat = ref(false);
+
+  const memberId = 11110;
+  const memberType = "Member";
 
   const setCurrentChatRoom = (chatRoomId) => {
     currentChatRoomId.value = chatRoomId;
@@ -34,9 +37,9 @@ export const useChatStore = defineStore("chat", () => {
     chatRooms[chatRoomId] = messages;
   };
 
-  const totalUnreadCount = computed(() => {
-    return Object.values(unreadCountMap).reduce((sum, count) => sum + count, 0);
-  });
+  const totalUnreadCount = computed(() =>
+    Object.values(unreadCountMap).reduce((sum, count) => sum + count, 0)
+  );
 
   function toggleChatPopup() {
     showChat.value = !showChat.value;
@@ -59,5 +62,7 @@ export const useChatStore = defineStore("chat", () => {
     totalUnreadCount,
     toggleChatPopup,
     showChat,
+    memberId,
+    memberType,
   };
 });

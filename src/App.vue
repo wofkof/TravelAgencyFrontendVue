@@ -33,7 +33,7 @@ const showCheckoutSteps = computed(() => {
     <router-view />
   </main>
 
-  <FloatingChat />
+  <FloatingChat />F
 
   <!-- ✅ 會員中心測試按鈕 -->
   <div class="fixed bottom-4 right-4 z-50">
@@ -44,6 +44,7 @@ const showCheckoutSteps = computed(() => {
       測試會員中心
     </router-link>
   </div>
+
 
 </template>
 

@@ -1,14 +1,14 @@
 <template>
   <header class="hero__header header">
     <!-- logo -->
-      <router-link to="/" class="header__logo logo">
-        <img
-          src="@/assets/images/logo.png"
-          alt="Travellian logo"
-          class="logo__img"
-          style="width: 180px"
-        />
-      </router-link>
+    <router-link to="/" class="header__logo logo">
+      <img
+        src="@/assets/images/logo.png"
+        alt="Travellian logo"
+        class="logo__img"
+        style="width: 180px"
+      />
+    </router-link>
     <!-- 上導覽列 -->
     <nav class="header__menu main-menu">
       <router-link
@@ -84,7 +84,7 @@
         <el-icon size="20"><ShoppingCart /></el-icon>
       </router-link> -->
       <CartPreviewIcon />
-      
+
       <router-link
         to="/order-form"
         class="main-menu__item"
@@ -96,8 +96,20 @@
 
     <!-- 登入與註冊 -->
     <nav class="header__menu auth-menu">
-      <a href="#" class="auth-menu__item" data-text="Login" @click.prevent="showLogin = true">登入</a>
-      <a href="#" class="auth-menu__item auth-menu__item--btn" data-text="Sign up" @click.prevent="showSignUp = true">註冊</a>
+      <a
+        href="#"
+        class="auth-menu__item"
+        data-text="Login"
+        @click.prevent="showLogin = true"
+        >登入</a
+      >
+      <a
+        href="#"
+        class="auth-menu__item auth-menu__item--btn"
+        data-text="Sign up"
+        @click.prevent="showSignUp = true"
+        >註冊</a
+      >
     </nav>
   </header>
 
@@ -115,7 +127,11 @@
   </el-dialog>
 
   <!-- ❓ 忘記密碼 Dialog -->
-  <el-dialog v-model="showForgetPassword" width="800px" :close-on-click-modal="false">
+  <el-dialog
+    v-model="showForgetPassword"
+    width="800px"
+    :close-on-click-modal="false"
+  >
     <ForgetPassword @switch-to-login="handleSwitchToLogin" />
   </el-dialog>
 </template>
@@ -126,10 +142,8 @@ import { ref } from "vue";
 import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
-import SingUp from "@/components/singup/SingUp.vue";
 
-import CartPreviewIcon from '@/components/tools/CartPreviewIcon.vue'; // 確認路徑
-const showSingUp = ref(false);
+import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 
 // 控制各個 dialog 顯示
 const showLogin = ref(false);

@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import { useChatStore } from "@/stores/chatStore";
-import { setupSocket, sendMessage } from "@/utils/socket";
+import connection, { setupSocket, sendMessage } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
 import { getMessages, markAsRead } from "@/apis/messageApi";
 import { nextTick } from "vue";
@@ -131,13 +131,19 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 };
 
-onMounted(() => {
+// 封裝已讀
+const senderType = "Member";
+const senderId = 11110;
+
+const updateReadStatus = async (chatRoomId: number) => {
+  await markAsRead(chatRoomId, senderId, senderType);
+  await connection.invoke("NotifyRead", chatRoomId, senderId, senderType);
+};
+
+onMounted(async () => {
   window.addEventListener("click", handleClickOutside);
   // @ts-ignore
   window.isScrolledToBottom = isScrolledToBottom;
-
-  const senderType = "Member";
-  const senderId = 11110;
 
   if (!chatStore.currentChatRoomId) {
     chatStore.setCurrentChatRoom(1);
@@ -145,20 +151,14 @@ onMounted(() => {
 
   const chatRoomId = chatStore.currentChatRoomId;
 
-  setupSocket(chatRoomId).then(async () => {
-    const messages = await getMessages(chatRoomId);
-    chatStore.setMessages(chatRoomId, messages);
+  await setupSocket(chatRoomId);
 
-    await markAsRead(chatRoomId, senderId, senderType);
+  const messages = await getMessages(chatRoomId);
+  chatStore.setMessages(chatRoomId, messages);
 
-    messages.forEach((msg) => {
-      if (msg.senderType !== senderType || msg.senderId !== senderId) {
-        msg.isRead = true;
-      }
-    });
+  await updateReadStatus(chatRoomId);
 
-    scrollToBottom();
-  });
+  scrollToBottom();
 });
 
 onBeforeUnmount(() => {
@@ -182,23 +182,11 @@ const send = async () => {
   if (!messageContent) return;
 
   const chatRoomId = chatStore.currentChatRoomId;
-
   const type = isPureEmoji(messageContent) ? "emoji" : "text";
 
-  const newMsg = {
-    senderType: "Member",
-    senderId: 11110,
-    messageType: type,
-    content: messageContent,
-    sendAt: new Date(),
-    isRead: true,
-  };
-
-  chatStore.addMessage(chatRoomId, newMsg);
-  scrollToBottom();
-
   try {
-    await sendMessage(chatRoomId, "Member", 11110, type, messageContent);
+    await sendMessage(chatRoomId, senderType, senderId, type, messageContent);
+    scrollToBottom();
   } catch (err) {
     console.error("送出訊息失敗", err);
     alert("發送訊息失敗");

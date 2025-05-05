@@ -6,57 +6,61 @@ const connection = new HubConnectionBuilder()
   .withAutomaticReconnect()
   .build();
 
-let currentJoinedRoomId = null;
 let isListening = false;
 
 export const setupSocket = async (chatRoomId) => {
   if (connection.state === "Disconnected") {
     await connection.start();
-    await connection.invoke("JoinGroup", chatRoomId.toString());
-
-    if (currentJoinedRoomId && currentJoinedRoomId !== chatRoomId) {
-      await connection.invoke("LeaveGroup", currentJoinedRoomId.toString());
-    }
   }
 
-  if (!isListening) {
-    connection.on("ReceiveMessage", (msg) => {
-      const chatStore = useChatStore();
-      const isSelf = msg.senderId === 11110 && msg.senderType === "Member";
-      if (isSelf) return;
-      const isCurrentRoom = msg.chatRoomId === chatStore.currentChatRoomId;
+  // 每次都加入目標聊天室（支援切換聊天室）
+  await connection.invoke("JoinGroup", chatRoomId.toString());
 
-      const newMessage = {
-        senderType: msg.senderType,
-        senderId: msg.senderId,
-        messageType: msg.messageType,
-        content: msg.content,
-        sentAt: msg.sentAt,
-        isRead: isCurrentRoom,
-      };
+  if (isListening) return;
 
-      chatStore.addMessage(msg.chatRoomId, newMessage);
+  connection.on("ReceiveMessage", async (msg) => {
+    const chatStore = useChatStore();
+    const isSelf = msg.senderId === 11110 && msg.senderType === "Member";
+    const isCurrentRoom = msg.chatRoomId === chatStore.currentChatRoomId;
 
-      if (!isSelf && (!isCurrentRoom || !isScrolledToBottom())) {
-        chatStore.unreadCountMap[msg.chatRoomId] =
-          (chatStore.unreadCountMap[msg.chatRoomId] || 0) + 1;
+    chatStore.addMessage(msg.chatRoomId, {
+      senderType: msg.senderType,
+      senderId: msg.senderId,
+      messageType: msg.messageType,
+      content: msg.content,
+      sentAt: msg.sentAt,
+      isRead: msg.isRead,
+    });
+
+    if (!isSelf && isCurrentRoom) {
+      // 當前聊天室收到對方訊息：立即標記為已讀 + 通知後端
+      await markAsRead(msg.chatRoomId, 11110, "Member");
+      await connection.invoke("NotifyRead", msg.chatRoomId, 11110, "Member");
+    }
+
+    // 顯示紅點提示：聊天室未開啟、不是當前聊天室、沒滾到最底
+    if (
+      !isSelf &&
+      (!chatStore.showChat || !isCurrentRoom || !isScrolledToBottom())
+    ) {
+      chatStore.unreadCountMap[msg.chatRoomId] =
+        (chatStore.unreadCountMap[msg.chatRoomId] || 0) + 1;
+    }
+  });
+
+  connection.on("MessageRead", (chatRoomId, readerId, readerType) => {
+    const chatStore = useChatStore();
+    const messages = chatStore.chatRooms[chatRoomId];
+    if (!messages) return;
+
+    messages.forEach((msg) => {
+      if (msg.senderType !== readerType || msg.senderId !== readerId) {
+        msg.isRead = true;
       }
     });
+  });
 
-    connection.on("MessageRead", (chatRoomId, readerId, readerType) => {
-      const chatStore = useChatStore();
-      const messages = chatStore.chatRooms[chatRoomId];
-      if (!messages) return;
-
-      messages.forEach((msg) => {
-        if (msg.senderType !== readerType || msg.senderId !== readerId) {
-          msg.isRead = true;
-        }
-      });
-    });
-
-    isListening = true;
-  }
+  isListening = true;
 };
 
 export const sendMessage = async (
@@ -74,17 +78,5 @@ export const sendMessage = async (
     content,
   });
 };
-
-connection.on("MessageRead", (chatRoomId, readerId, readerType) => {
-  const chatStore = useChatStore();
-  const messages = chatStore.chatRooms[chatRoomId];
-  if (!messages) return;
-
-  messages.forEach((msg) => {
-    if (msg.senderType !== readerType || msg.senderId !== readerId) {
-      msg.isRead = true;
-    }
-  });
-});
 
 export default connection;
