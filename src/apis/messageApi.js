@@ -13,7 +13,7 @@ export const markAsRead = async (chatRoomId, senderId, senderType) => {
   });
 };
 
-export async function UploadImageMessage({
+export async function uploadImageMessage({
   chatRoomId,
   senderId,
   senderType,
@@ -26,7 +26,5 @@ export async function UploadImageMessage({
   formData.append("messageType", "image");
   formData.append("file", file);
 
-  return await api.post("/messageupload/image", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return await api.postForm("/messages/upload-image", formData);
 }
