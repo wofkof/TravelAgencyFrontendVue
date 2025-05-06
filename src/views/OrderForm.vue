@@ -39,7 +39,8 @@
             <AccordionSection title="付款方式" section-name="payment"
                               :opened-sections="openedSections" @toggle="handleToggle"
                               class="section-payment"
-                              ref="paymentAccordionRef"> <PaymentOptions v-model="formData.paymentMethod" />
+                              ref="paymentAccordionRef">
+                              <PaymentOptions v-model="formData.paymentMethod" />
             </AccordionSection>
 
             <AccordionSection title="電子發票 / 收據 (請先選擇付款方式)" section-name="einvoice"

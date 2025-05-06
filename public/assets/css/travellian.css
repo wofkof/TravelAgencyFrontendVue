@@ -379,6 +379,16 @@ body {
   margin: auto;
 }
 
+.main-menu {
+  display: flex;         
+  align-items: center;   
+  flex-wrap: wrap;       
+  gap: 8px;             
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 .main-menu__item {
   display: inline-flex;
   flex-direction: column;
@@ -387,6 +397,7 @@ body {
   overflow: hidden;
   position: relative;
   transition: all 100ms;
+
 }
 .main-menu__item::before {
   content: attr(data-text);

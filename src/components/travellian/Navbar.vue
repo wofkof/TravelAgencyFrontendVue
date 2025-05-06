@@ -142,7 +142,7 @@ import { ref } from "vue";
 import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
-import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
+import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue";
 const showSingUp = ref(false);
 
 // 控制各個 dialog 顯示
