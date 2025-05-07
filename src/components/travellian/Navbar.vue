@@ -1,119 +1,118 @@
 <template>
-  <header class="hero__header header">
+  <div class="navbar">
     <!-- logo -->
     <router-link to="/" class="header__logo logo">
       <img
-        src="@/assets/images/logo.png"
+        src="@/assets/images/newlogo.png"
         alt="Travellian logo"
         class="logo__img"
-        style="width: 180px"
+        style="width: 180px; margin-left: 100px"
       />
     </router-link>
+
     <!-- 上導覽列 -->
-    <nav class="header__menu main-menu">
-      <router-link
-        to="/"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >首頁
-      </router-link>
+    <header
+      class="hero__header header"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+      "
+    >
+      <nav class="header__menu main-menu">
+        <router-link to="/" class="main-menu__item" exact style="color: black"
+          >首頁</router-link
+        >
+        <router-link
+          to="/Domestic"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >國內旅遊</router-link
+        >
+        <router-link
+          to="/ForeignView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >國外旅遊</router-link
+        >
+        <router-link
+          to="/FreeTravelView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >自由行</router-link
+        >
+        <router-link
+          to="/CruiseView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >遊輪旅遊</router-link
+        >
+        <router-link
+          to="/PricingView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >優惠活動</router-link
+        >
+        <router-link
+          to="/VisaView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >代辦簽證</router-link
+        >
+        <router-link
+          to="/ContactView"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >聯絡我們</router-link
+        >
+        <CartPreviewIcon />
+        <router-link
+          to="/order-form"
+          class="main-menu__item"
+          exact
+          style="color: black"
+          >訂單表單</router-link
+        >
+      </nav>
+    </header>
 
-      <router-link
-        to="/Domestic"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >國內旅遊
-      </router-link>
-
-      <router-link
-        to="/ForeignView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >國外旅遊
-      </router-link>
-
-      <router-link
-        to="/FreeTravelView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >自由行
-      </router-link>
-
-      <router-link
-        to="/CruiseView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >遊輪旅遊
-      </router-link>
-
-      <router-link
-        to="/PricingView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >優惠活動
-      </router-link>
-
-      <router-link
-        to="/VisaView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >代辦簽證
-      </router-link>
-
-      <router-link
-        to="/ContactView"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >聯絡我們
-      </router-link>
-
-      <!-- <router-link
-        to="/Cart"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        title="購物車" >
-        <el-icon size="20"><ShoppingCart /></el-icon>
-      </router-link> -->
-      <CartPreviewIcon />
-
-      <router-link
-        to="/order-form"
-        class="main-menu__item"
-        active-class="main-menu__item--active"
-        exact
-        >訂單表單
-      </router-link>
-    </nav>
-
-    <!-- 登入與註冊 -->
-    <nav class="header__menu auth-menu">
+    <!-- ✅ 登入與註冊直接放在 navbar 右側 -->
+    <nav
+      class="auth-menu"
+      style="
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        align-items: center;
+        padding-right: 40px;
+      "
+    >
       <a
         href="#"
         class="auth-menu__item"
-        data-text="Login"
         @click.prevent="showLogin = true"
+        style="white-space: nowrap"
         >登入</a
       >
       <a
         href="#"
         class="auth-menu__item auth-menu__item--btn"
-        data-text="Sign up"
         @click.prevent="showSignUp = true"
+        style="white-space: nowrap; display: inline-block; text-align: center"
         >註冊</a
       >
     </nav>
-  </header>
+  </div>
 
-  <!-- 🔒 登入 Dialog -->
+  <!-- Dialog 區域 -->
   <el-dialog v-model="showLogin" width="800px" :close-on-click-modal="false">
     <Login
       @switchToSignUp="handleSwitchToSignUp"
@@ -121,12 +120,10 @@
     />
   </el-dialog>
 
-  <!-- 📝 註冊 Dialog -->
   <el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
     <SignUp @switch-to-login="handleSwitchToLogin" />
   </el-dialog>
 
-  <!-- ❓ 忘記密碼 Dialog -->
   <el-dialog
     v-model="showForgetPassword"
     width="800px"
@@ -143,7 +140,6 @@ import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
-const showSingUp = ref(false);
 
 // 控制各個 dialog 顯示
 const showLogin = ref(false);
@@ -167,3 +163,21 @@ function handleSwitchToForgetPassword() {
   showForgetPassword.value = true;
 }
 </script>
+
+<style>
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background-color: rgba(255, 255, 255, 0.1); /* 半透明白 */
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  -webkit-backdrop-filter: blur(10px); /* Safari 支援 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* 淡淡邊框 */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+</style>

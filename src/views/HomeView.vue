@@ -1,4 +1,7 @@
 <template>
+  <section class="hero">
+    <HeroSection />
+  </section>
   <div class="l-grid">
     <div class="l-grid__item">
       <PopularDestinations />
@@ -28,4 +31,5 @@ import BlogSection from "@/components/travellian/BlogSection.vue";
 import TripPlanners from "@/components/travellian/TripPlanners.vue";
 import GallerySection from "@/components/travellian/GallerySection.vue";
 import TestimonialSection from "@/components/travellian/TestimonialSection.vue";
+import HeroSection from "@/components/travellian/HeroSection.vue";
 </script>
