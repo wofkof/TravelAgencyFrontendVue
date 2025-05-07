@@ -1,8 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -34,6 +33,37 @@ const submit = async () => {
     errors.value = resErrors
   }
 }
+
+
+const showTos = ref(false)
+const showPrivacy = ref(false)
+const wrapperRef = ref(null)
+
+function toggleTos() {
+  showTos.value = !showTos.value
+  showPrivacy.value = false
+}
+
+function togglePrivacy() {
+  showPrivacy.value = !showPrivacy.value
+  showTos.value = false
+}
+
+function handleClickOutside(event) {
+  if (!wrapperRef.value.contains(event.target)) {
+    showTos.value = false
+    showPrivacy.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 </script>
 
 <template>
@@ -151,11 +181,32 @@ const submit = async () => {
           </div>
         </CardContent>
       </Card>
-
-      <div class="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary m-2">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>
-        and <a href="#">Privacy Policy</a>.
-      </div>
     </div>
+    <div ref="wrapperRef" class="text-center text-xs text-muted-foreground m-3 leading-relaxed">
+    點擊「註冊」即表示您已閱讀並同意本旅行社之
+
+    <span @click.stop="toggleTos" class="underline underline-offset-4 cursor-pointer relative">
+      服務條款
+      <div
+        v-show="showTos"
+        class="absolute top-[-110%] left-1/2 -translate-x-1/2 w-64 p-2 text-xs text-white bg-gray-800 rounded shadow-lg z-10"
+      >
+        本旅行社依據交通部觀光署相關規範，提供行程預約、客服聯繫、資料保護等服務。
+        使用者應遵守預約流程規定，並保證提供真實有效資訊。如有違反條款者，旅行社有權終止服務。
+      </div>
+    </span>
+
+    與
+
+    <span @click.stop="togglePrivacy" class="underline underline-offset-4 cursor-pointer relative">
+      隱私權政策
+      <div
+        v-show="showPrivacy"
+        class="absolute top-[-110%] left-1/2 -translate-x-1/2 w-64 p-2 text-xs text-white bg-gray-800 rounded shadow-lg z-10"
+      >
+        我們會妥善保存您提供的個人資料，僅用於辦理旅遊業務與提供客服，未經本人同意不會提供第三方。
+      </div>
+    </span>
+  </div>
   </form>
 </template>

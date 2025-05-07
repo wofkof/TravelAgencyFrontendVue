@@ -40,7 +40,8 @@
   
                 <!-- ✅ 說明 -->
                 <p class="text-sm text-muted-foreground">
-                  說明：<br />點擊 [確定重置] 後，密碼重置連結將寄送至您的信箱。
+                  說明：<br />請確認您輸入的為本人信箱，密碼重設連結將寄送至該信箱，請於有效時間內完成密碼重設定。<br />  <br /> 
+                  ※ 若您未曾申請密碼重設，請忽略此信件。
                 </p>
   
                 <!-- ✅ 提交按鈕 -->
@@ -55,12 +56,6 @@
           </form>
         </CardContent>
       </Card>
-  
-      <div class="text-center text-xs text-muted-foreground m-2">
-        By clicking continue, you agree to our
-        <a href="#" class="underline underline-offset-4">Terms of Service</a> and
-        <a href="#" class="underline underline-offset-4">Privacy Policy</a>.
-      </div>
     </div>
   </template>
   
