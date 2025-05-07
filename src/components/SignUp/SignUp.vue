@@ -1,4 +1,5 @@
 <script setup>
+const emit = defineEmits(['switch-to-login'])
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
@@ -16,27 +17,42 @@ const errors = ref({})
 // 提交註冊表單的函式
 const submit = async () => {
   errors.value = {} // reset
+
+  // 先檢查所有欄位是否填寫
+  if (!name.value || !phone.value || !email.value || !password.value || !confirmPassword.value) {
+    alert('請完整填寫所有欄位')
+    return
+  }
+
+  // 密碼確認一致性
   if (password.value !== confirmPassword.value) {
-  errors.value.ConfirmPassword = ['密碼輸入不一致，請再次確認']
-  return
-}
+    errors.value.ConfirmPassword = ['密碼輸入不一致，請再次確認']
+    return
+  }
 
   try {
-     // 呼叫後端 API 提交註冊資料
     await axios.post('https://localhost:7265/api/account/signup', {
       name: name.value,
       phone: phone.value,
       email: email.value,
       password: password.value
     })
+
     alert('註冊成功')
+
+    // ✅ 清空欄位再切換畫面，避免 race condition
+    name.value = ''
+    phone.value = ''
+    email.value = ''
+    password.value = ''
+    confirmPassword.value = ''
+
+    emit('switch-to-login') // 切換頁面
   } catch (error) {
-    // 從 API 錯誤回應中提取錯誤訊息
     const resErrors = error.response?.data?.errors || {}
     errors.value = resErrors
   }
 }
-
 
 const showTos = ref(false)
 const showPrivacy = ref(false)
@@ -80,7 +96,6 @@ function togglePassword() {
 function toggleConfirmPassword() {
   showConfirmPassword.value = !showConfirmPassword.value
 }
-
 </script>
 
 <template>
