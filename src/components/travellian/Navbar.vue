@@ -6,7 +6,7 @@
         src="@/assets/images/newlogo.png"
         alt="Travellian logo"
         class="logo__img"
-        style="width: 180px; margin-left: 100px"
+        style="width: 180px; margin-left: 100px; margin-top: 21px"
       />
     </router-link>
 
@@ -21,13 +21,19 @@
       "
     >
       <nav class="header__menu main-menu">
-        <router-link to="/" class="main-menu__item" exact style="color: black"
+        <router-link
+          to="/"
+          class="main-menu__item"
+          active-class="main-menu__item--active"
+          exact
+          style="color: black"
           >首頁</router-link
         >
         <router-link
           to="/Domestic"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >國內旅遊</router-link
         >
@@ -35,6 +41,7 @@
           to="/ForeignView"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >國外旅遊</router-link
         >
@@ -42,6 +49,7 @@
           to="/FreeTravelView"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >自由行</router-link
         >
@@ -49,20 +57,15 @@
           to="/CruiseView"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >遊輪旅遊</router-link
-        >
-        <router-link
-          to="/PricingView"
-          class="main-menu__item"
-          exact
-          style="color: black"
-          >優惠活動</router-link
         >
         <router-link
           to="/VisaView"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >代辦簽證</router-link
         >
@@ -70,6 +73,7 @@
           to="/ContactView"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >聯絡我們</router-link
         >
@@ -78,6 +82,7 @@
           to="/order-form"
           class="main-menu__item"
           exact
+          active-class="main-menu__item--active"
           style="color: black"
           >訂單表單</router-link
         >
@@ -97,7 +102,7 @@
     >
       <a
         href="#"
-        class="auth-menu__item"
+        class="auth-menu__item auth-menu__item--btn1"
         @click.prevent="showLogin = true"
         style="white-space: nowrap"
         >登入</a

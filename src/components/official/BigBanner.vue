@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top: 155px;">
-    <el-carousel height="780px">
+    <el-carousel height="950px">
       <el-carousel-item v-for="(image, index) in BigBannerimages" :key="index">
         <img
           :src="image.src"

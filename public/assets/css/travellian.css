@@ -459,6 +459,13 @@ body {
   padding: 1.25rem 2rem;
   transition: all 200ms;
 }
+
+.auth-menu__item--btn1 {
+  border-radius: 0.75rem;
+  background-color: #ff57c7;
+  padding: 1.25rem 2rem;
+  transition: all 200ms;
+}
 .auth-menu__item--btn:hover {
   font-weight: 400;
   transform: scale(1.2);

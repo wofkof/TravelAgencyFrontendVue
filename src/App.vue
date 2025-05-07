@@ -24,9 +24,9 @@ const showCheckoutSteps = computed(() => {
 
 <template>
   <Navbar />
-  <CheckoutSteps v-if="showCheckoutSteps" />
+  <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
-  <main class="main-content-area">
+  <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>
 

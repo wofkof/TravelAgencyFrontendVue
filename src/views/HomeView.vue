@@ -1,5 +1,5 @@
 <template>
-  <section class="hero">
+  <section class="hero" style="margin-top: -155px">
     <HeroSection />
   </section>
   <div class="l-grid">
