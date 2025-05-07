@@ -13,6 +13,7 @@ const confirmPassword = ref('')
 
 const errors = ref({})
 
+// 提交註冊表單的函式
 const submit = async () => {
   errors.value = {} // reset
   if (password.value !== confirmPassword.value) {
@@ -21,6 +22,7 @@ const submit = async () => {
 }
 
   try {
+     // 呼叫後端 API 提交註冊資料
     await axios.post('https://localhost:7265/api/account/signup', {
       name: name.value,
       phone: phone.value,
@@ -29,6 +31,7 @@ const submit = async () => {
     })
     alert('註冊成功')
   } catch (error) {
+    // 從 API 錯誤回應中提取錯誤訊息
     const resErrors = error.response?.data?.errors || {}
     errors.value = resErrors
   }
@@ -56,6 +59,7 @@ function handleClickOutside(event) {
   }
 }
 
+// 掛載與卸載事件監聽器（控制點擊彈窗外部關閉條款)
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -65,6 +69,7 @@ onBeforeUnmount(() => {
 })
 import { EyeIcon, EyeOffIcon } from 'lucide-vue-next'
 
+// 控制密碼欄位的顯示或隱藏
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
