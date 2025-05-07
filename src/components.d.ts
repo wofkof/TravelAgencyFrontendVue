@@ -73,6 +73,7 @@ declare module 'vue' {
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']
+    PasswordInput: typeof import('./components/SignUp/PasswordInput.vue')['default']
     PaymentOptions: typeof import('./components/OrderForm/PaymentOptions.vue')['default']
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
     ResultCard: typeof import('./components/official/ResultCard.vue')['default']

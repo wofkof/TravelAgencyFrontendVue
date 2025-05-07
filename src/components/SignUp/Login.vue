@@ -23,18 +23,30 @@
           請輸入有效的手機號碼或 Email
         </span>
       </div>
-      <div class="grid gap-2">
-        <Label for="password">密碼</Label>
-        <Input
-        id="password"
-        v-model="form.password"
-        type="password"
-        placeholder="請設定6~12位數密碼"
-        required
-      />
-      <span v-if="touched && (form.password.length < 6 || form.password.length > 12)" class="text-red-500 text-xs">
-        密碼長度需為 6~12 位
-      </span>
+      <div class="grid gap-2 relative">
+  <Label for="password">密碼</Label>
+  <div class="relative">
+    <Input
+      :type="showPassword ? 'text' : 'password'"
+      id="password"
+      v-model="form.password"
+      placeholder="請輸入6~12位數密碼"
+      required
+      class="pr-10"
+    />
+    <button
+      type="button"
+      @click="togglePassword"
+      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+      tabindex="-1"
+      aria-label="切換密碼顯示"
+    >
+      <component :is="showPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
+    </button>
+  </div>
+  <span v-if="touched && (form.password.length < 6 || form.password.length > 12)" class="text-red-500 text-xs">
+    密碼長度需為 6~12 位
+  </span>
 
       </div>
       <!-- ✅ 記住我 + 忘記密碼 -->
@@ -133,6 +145,11 @@ form.password = form.password.trim()
   alert(`登入成功：帳號 ${form.account}`)
 
   // TODO: emit('login-success') 或關閉 dialog 等
+}
+import { EyeIcon, EyeOffIcon } from 'lucide-vue-next' // 加入圖示
+const showPassword = ref(false)                        // 密碼是否顯示
+function togglePassword() {
+  showPassword.value = !showPassword.value
 }
 
   </script>

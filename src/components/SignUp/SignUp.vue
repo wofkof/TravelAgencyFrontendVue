@@ -63,6 +63,18 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+import { EyeIcon, EyeOffIcon } from 'lucide-vue-next'
+
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+function togglePassword() {
+  showPassword.value = !showPassword.value
+}
+
+function toggleConfirmPassword() {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
 
 </script>
 
@@ -113,27 +125,66 @@ onBeforeUnmount(() => {
 </span>
               </div>
 
-              <div class="grid gap-2">
+              <!-- <div class="grid gap-2">
                 <Label for="password">密碼</Label>
                 <Input id="password" type="password" v-model="password" placeholder="請設定6~12位數密碼" required />
                 <span v-if="errors.Password" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
 </span>
+              </div> -->
+              <div class="grid gap-2 relative">
+  <Label for="password">密碼</Label>
+  <div class="relative">
+    <Input
+      :type="showPassword ? 'text' : 'password'"
+      id="password"
+      v-model="password"
+      placeholder="請設定6~12位數密碼"
+      required
+      class="pr-10"
+    />
+    <button
+      type="button"
+      @click="togglePassword"
+      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+      tabindex="-1"
+      aria-label="切換密碼顯示"
+    >
+      <component :is="showPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
+    </button>
+  </div>
+  <span v-if="errors.Password" class="text-red-500 text-sm">
+    <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
+  </span>
+</div>
 
-              </div>
-
-              <div class="grid gap-2">
+<div class="grid gap-2 relative">
   <Label for="confirm-password">確認密碼</Label>
-  <Input
-    id="confirm-password"
-    type="password"
-    v-model="confirmPassword"
-    placeholder="請再次輸入密碼"
-    required
-  />
+  <div class="relative">
+    <Input
+      :type="showConfirmPassword ? 'text' : 'password'"
+      id="confirm-password"
+      v-model="confirmPassword"
+      placeholder="請再次輸入密碼"
+      required
+      class="pr-10"
+    />
+    <button
+      type="button"
+      @click="toggleConfirmPassword"
+      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+      tabindex="-1"
+      aria-label="切換確認密碼顯示"
+    >
+      <component :is="showConfirmPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
+    </button>
+  </div>
   <span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
   </span>
+</div>
+
+
 </div>
 
               <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50">
@@ -178,7 +229,7 @@ onBeforeUnmount(() => {
                 </button>
               </div>
             </div>
-          </div>
+
         </CardContent>
       </Card>
     </div>
