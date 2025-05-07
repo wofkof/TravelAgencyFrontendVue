@@ -80,5 +80,6 @@ declare module 'vue' {
     TravelerList: typeof import('./components/MemberCenter/TravelerList.vue')['default']
     TripCard: typeof import('./components/official/TripCard.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
+    VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
   }
 }

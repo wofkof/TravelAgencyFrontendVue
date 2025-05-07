@@ -30,9 +30,10 @@
       autosize
     />
     <div style="display: flex">
-      <el-button type="primary" size="small" @click="send">送出</el-button>
-      <el-button size="small" @click="toggleEmojiPicker">😀</el-button>
+      <el-button @click="send" type="primary">送出</el-button>
+      <el-button @click="toggleEmojiPicker">😀</el-button>
       <ImageUploader />
+      <VoiceUploader />
     </div>
     <div style="display: flex">
       <TestFakeMessage />
@@ -52,6 +53,7 @@ import { nextTick } from "vue";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
+import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
 
 declare global {
   interface Window {

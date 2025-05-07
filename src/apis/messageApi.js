@@ -26,5 +26,23 @@ export async function uploadImageMessage({
   formData.append("messageType", "image");
   formData.append("file", file);
 
-  return await api.postForm("/messages/upload-image", formData);
+  return await api.postForm("/messageupload/upload-image", formData);
+}
+
+export async function uploadAudioMessage({
+  chatRoomId,
+  senderId,
+  senderType,
+  durationInSeconds,
+  file,
+}) {
+  const formData = new FormData();
+  formData.append("chatRoomId", chatRoomId);
+  formData.append("senderId", senderId);
+  formData.append("senderType", senderType);
+  formData.append("messageType", "audio");
+  formData.append("durationInSeconds", durationInSeconds);
+  formData.append("file", file);
+
+  return await api.postForm("/messageupload/upload-audio", formData);
 }

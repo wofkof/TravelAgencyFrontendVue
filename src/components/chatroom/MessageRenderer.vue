@@ -10,6 +10,11 @@
       <img :src="fullImageUrl(msg.content)" alt="圖片訊息" class="chat-image" />
     </template>
 
+    <!-- 錄音 -->
+    <template v-else-if="msg.messageType === 'audio'">
+      <audio controls :src="fullImageUrl(msg.content)"></audio>
+    </template>
+
     <!-- 其他：保底 fallback -->
     <template v-else>
       <em>不支援的訊息類型：{{ msg.messageType }}</em>
