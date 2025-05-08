@@ -13,21 +13,19 @@
         >
           <div class="info-area">
             <div class="row">
-              <el-input v-model="item.title" placeholder="Title" disabled />
-              <el-input v-model="item.people" placeholder="People" disabled style="width: 100px" />
+              <el-input v-model="item.title" placeholder="Title" readonly />
+              <el-input v-model="item.people" placeholder="People" readonly style="width: 100px" />
               <span>人</span>
             </div>
-            <div class="row">
-              <el-date-picker v-model="item.start" type="date" disabled placeholder="Starts" />
-              <span>-</span>
-              <el-date-picker v-model="item.end" type="date" disabled placeholder="End" />
-              <el-input v-model="item.days" placeholder="Days" disabled style="width: 100px" />
+            <div class="row">              
+              <el-date-picker v-model="item.daterange" type="daterange" start-placeholder="Start Date" end-placeholder="End Date" readonly />
+              <el-input v-model="item.days" placeholder="Days" readonly style="width: 100px" />
               <span>天</span>
-              <el-icon @click="editTravel(item)"><Edit /></el-icon>
+              <el-icon ><Edit /></el-icon>
             </div>
           </div>
           <div class="action-area">
-            <el-icon @click="editTravel(item,index)"><Edit /></el-icon>
+            <el-icon @click="editTravel(item)"><Edit /></el-icon>
             <el-icon @click="deleteTravel(index)"><Delete /></el-icon>
           </div>
         </div>
@@ -54,11 +52,14 @@
     router.push('/CustomtravelCreate')
   }
   
-  const editTravel = (item,index) => {
-    router.push(`/CustomtravelContent/${index}`)
+  const editTravel = (item) => {
+    router.push({ name: 'CustomtravelContent', params: { id: item.id } })
   }
   
   const deleteTravel = (index) => {
+    const id = list.value[index].id
+    localStorage.removeItem(`activities_${id}`)
+
     list.value.splice(index, 1)
     localStorage.setItem('list', JSON.stringify(list.value))
   }

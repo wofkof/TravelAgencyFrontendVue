@@ -6,32 +6,20 @@
       <el-form-item label="行程名稱">
         <el-input v-model="form.name" />
       </el-form-item>    
-      <el-form-item label="日期">
-        <el-row :gutter="10" style="width: 100%">
-        <el-col :span="11">
-          <el-date-picker
-            v-model="form.StartDate"
-            type="date"
-            placeholder="StartDate"
-            style="width: 100%"
-          />
-        </el-col>
-        <el-col :span="2" class="text-center">
-          <span class="text-gray-500">-</span>
-        </el-col>
-        <el-col :span="11">
-          <el-date-picker
-            v-model="form.EndDate"
-            placeholder="EndDate"
-            style="width: 100%"
-          />
-        </el-col>
-      </el-row>
+      <el-form-item label="日期">        
+      <el-date-picker
+        v-model="form.daterange"
+        type="daterange"
+        start-placeholder="Start Date"
+        end-placeholder="End Date"
+        @change="DateChange"
+      />
       </el-form-item>
       <el-form-item label="天數">
-        <el-input v-model="form.day" />
+        <el-input v-model="form.days" readonly/>
       </el-form-item>
       <el-form-item label="人數">
+        <!-- 未綁定只能輸入數字 -->
         <el-input v-model="form.people" />
       </el-form-item>        
       <el-form-item>
@@ -47,21 +35,30 @@
   import { useRouter } from 'vue-router'
 
   const router = useRouter()
-    
+  
   const form = reactive({
     name: '',  
-    StartDate: '',
-    EndDate: '',
-    day:'',
+    daterange:[],
+    days:'',
     people:'',  
   })
   
+  function DateChange([start, end]) {
+  if (!start || !end) {
+    form.days = 0
+  } else {
+    const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
+    form.days = diff
+  }
+}
+
   const onSubmit = () => {
+    const id = Date.now()
     const newTravel = {
+    id,
     title: form.name,
-    start: form.StartDate,
-    end: form.EndDate,
-    days: form.day,
+    daterange:form.daterange,
+    days: form.days,
     people: form.people
   }
 
