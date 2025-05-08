@@ -1,26 +1,31 @@
 import { useChatStore } from "@/stores/chatStore";
-import { UploadImageMessage } from "@/apis/messageApi";
+import { uploadImageMessage, uploadAudioMessage } from "@/apis/messageApi";
 import { getChatRooms } from "@/apis/chatRoomApi";
 
 export async function sendImageMessage(file, senderId, senderType = "Member") {
   const chatStore = useChatStore();
-  const response = await UploadImageMessage({
+  await uploadImageMessage({
     chatRoomId: chatStore.currentChatRoomId,
     senderId,
     senderType,
     file,
   });
+}
 
-  const message = {
+export async function sendAudioMessage(
+  file,
+  senderId,
+  senderType = "Member",
+  duration
+) {
+  const chatStore = useChatStore();
+  await uploadAudioMessage({
     chatRoomId: chatStore.currentChatRoomId,
     senderId,
     senderType,
-    messageType: "image",
-    content: response.data.relativePath,
-    sentAt: new Date(),
-  };
-
-  chatStore.addMessage(chatStore.currentChatRoomId, message);
+    durationInSeconds: duration,
+    file,
+  });
 }
 
 export async function fetchChatRooms(memberId) {

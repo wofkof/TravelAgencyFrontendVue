@@ -23,14 +23,10 @@ const showCheckoutSteps = computed(() => {
 </script>
 
 <template>
-  <section class="hero">
-    <Navbar />
-    <HeroContent />
-  </section>
+  <Navbar />
+  <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
-  <CheckoutSteps v-if="showCheckoutSteps" />
-
-  <main class="main-content-area">
+  <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>
 

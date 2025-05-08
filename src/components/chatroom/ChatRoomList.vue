@@ -11,10 +11,11 @@
         class="cursor-pointer"
         @click="selectChatRoom(room.chatRoomId)"
         shadow="hover"
+        style="margin: 5px"
       >
-        <div>聊天室編號：{{ room.chatRoomId }}</div>
-        <div>
-          建立時間：{{ formatDateTime(room.createdAt, { type: "date" }) }}
+        <div style="text-align: center;">聊天室({{ room.chatRoomId }})</div>
+        <div style="font-size: xx-small; color: gray;">
+          創建時間 : {{ formatDateTime(room.createdAt, { type: "date" }) }}
         </div>
       </el-card>
     </el-badge>
@@ -43,5 +44,13 @@ const selectChatRoom = (chatRoomId) => {
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+.el-badge {
+  position: relative;
+  display: block;
+}
+:deep(.el-badge__content) {
+  top: 5px !important;
+  right: 20px !important;
 }
 </style>

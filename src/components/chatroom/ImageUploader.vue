@@ -1,12 +1,11 @@
 <template>
   <el-upload
-    class="chat-image-upload"
     :auto-upload="false"
     :show-file-list="false"
     accept="image/*"
     :on-change="handleImageSelect"
   >
-    <el-button type="primary" plain
+    <el-button size="small" type="info" plain circle
       ><el-icon><PictureFilled /></el-icon
     ></el-button>
   </el-upload>
@@ -34,10 +33,3 @@ const handleImageSelect = async (uploadFile) => {
   }
 };
 </script>
-
-<style scoped>
-.chat-image-upload {
-  display: inline-block;
-  margin-left: 0.5rem;
-}
-</style>
