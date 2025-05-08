@@ -11,29 +11,9 @@
   <filterCard :tags="['全部', '北部', '中部', '南部', '東部','離島']"
   v-model="currentRegion"class="mb-6"/>
 
+  <SearchResultBlock />
 
-
-    <div class="bg-white rounded-xl p-4 text-center text-gray-700 shadow">
-      搜尋結果(未元件化)
-      <router-link to="/Trip">
-      <div class="bg-blue-100 rounded-lg p-4 mb-4">
-      內容 01
-      </div>
-    </router-link>
-        
-
-        <div class="bg-blue-100 rounded-lg p-4 mb-4">
-        內容 02
-        </div>
-
-        <div class="bg-blue-100 rounded-lg p-4 mb-4">
-        內容 03
-        </div>
-
-        <div class="bg-blue-100 rounded-lg p-4">
-        內容 04
-        </div>
-    </div>
+    
   </div>
   
 
@@ -43,6 +23,7 @@
 import BigBanner from "@/components/official/BigBanner.vue";
 import filterCard from "@/components/official/filterCard.vue";
 import TripCard from "@/components/official/TripCard.vue";
+import SearchResultBlock from "@/components/official/SearchResultBlock.vue";
 import { ref } from "vue";
 
 const currentRegion = ref("全部"); // 用來過濾行程的依據

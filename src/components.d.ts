@@ -74,6 +74,7 @@ declare module 'vue' {
     ResultCard: typeof import('./components/official/ResultCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchResultBlock: typeof import('./components/official/SearchResultBlock.vue')['default']
     SignUp: typeof import('./components/SignUp/SignUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
     StatusContent: typeof import('./components/customtravel/StatusContent.vue')['default']
