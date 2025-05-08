@@ -1,15 +1,17 @@
 <template>
-  <div style="margin-top: 155px;">
-    <el-carousel height="950px">
-      <el-carousel-item v-for="(image, index) in BigBannerimages" :key="index">
-        <img
-          :src="image.src"
-          :alt="image.alt"
-          style="width: 100%; height: 100%; object-fit: cover"
-        />
-      </el-carousel-item>
-    </el-carousel>
-  </div>
+  <el-carousel
+    height="950px"
+    style="margin-top: 155px"
+    class="mb-6 bg-slate-600"
+  >
+    <el-carousel-item v-for="image in BigBannerimages" :key="image">
+      <img
+        :src="image.src"
+        :alt="image.alt"
+        style="width: 100%; height: 100%; object-fit: cover"
+      />
+    </el-carousel-item>
+  </el-carousel>
 </template>
 
 <script setup>

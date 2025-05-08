@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top: -155px">
-  <BigBanner class="mb-6 bg-slate-600"/>
+  <BigBanner />
   <p class="text-2xl/9 m-6">熱門行程</p>
   <div class="columns-4">
     <TripCard />

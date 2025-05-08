@@ -4,6 +4,9 @@
 
 <!-- 測試用 -->
 <template>
+  <div style="margin-top: -155px">
+    <BigBanner class="mb-6 bg-slate-600"/>
+  </div>
   <div style="margin-top: 155px">
     <el-button @click="show('tab1')">Create</el-button>
     <el-button @click="show('tab2')">List</el-button>
