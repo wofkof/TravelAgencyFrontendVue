@@ -77,6 +77,7 @@ declare module 'vue' {
     SearchResultBlock: typeof import('./components/official/SearchResultBlock.vue')['default']
     SignUp: typeof import('./components/SignUp/SignUp.vue')['default']
     SpecialOffer: typeof import('./components/travellian/SpecialOffer.vue')['default']
+    SRlist: typeof import('./components/official/SRlist.vue')['default']
     StatusContent: typeof import('./components/customtravel/StatusContent.vue')['default']
     StatusList: typeof import('./components/customtravel/StatusList.vue')['default']
     TestFakeMessage: typeof import('./components/chatroom/TestFakeMessage.vue')['default']

@@ -9,7 +9,7 @@
     </div>
     <div
   ref="carousel"
-  class="col-start-2 col-span-10 gap-2 justify-center md:justify-start content-center bg-slate-300 py-1  overflow-x-auto whitespace-nowrap scroll-smooth scrollbar-hidden"
+  class="col-start-2 col-span-10 gap-2 justify-center md:justify-start content-center py-1 overflow-x-auto whitespace-nowrap scroll-smooth scrollbar-hidden"
 >
   <button
     v-for="tag in tags"
