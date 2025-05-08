@@ -63,7 +63,7 @@ const routes = [
     component: CustomtravelList,
   },
   {
-    path: "/CustomtravelContent/:index",
+    path: "/CustomtravelContent/:id",
     name: "CustomtravelContent",
     component: CustomtravelContent,
   },
