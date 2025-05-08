@@ -8,7 +8,7 @@
     <TripCard />
   </div>
   <p class="text-2xl/9 m-6">地區篩選器</p>
-  <filterCard :tags="['全部', '東北亞', '東南亞', '歐洲', '美洲']"
+  <filterCard :tags="['全部', '東北亞', '東南亞', '歐洲', '櫻花季', '動畫朝聖', '萬靈節', '音樂劇', '紅磨坊', '美洲', '美洲', '美洲', '美洲', '美洲']"
   v-model="currentRegion"class="mb-6"/>
 
 
