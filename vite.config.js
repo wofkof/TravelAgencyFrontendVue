@@ -26,6 +26,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      'vue3-google-map': path.resolve(__dirname, './node_modules/vue3-google-map/dist/index.mjs'),
     },
   },
   server: {

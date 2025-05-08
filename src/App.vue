@@ -1,12 +1,12 @@
 <script setup>
-//import { RouterView } from "vue-router";
+import { RouterView } from "vue-router";
 import Navbar from "@/components/travellian/Navbar.vue";
 import HeroContent from "@/components/travellian/HeroSection.vue";
 import FooterSection from "@/components/travellian/FooterSection.vue";
 import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
 import FloatingChat from "@/components/chatroom/FloatingChat.vue";
 import { computed } from "vue"; // <-- 匯入 computed
-import { useRoute, RouterView } from "vue-router"; // <-- 匯入 useRoute
+import { useRoute } from "vue-router"; // <--  僅保留 useRoute 的引入
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue"; // --- 匯入新的步驟條元件 ---
 
 // 取得目前的路由物件

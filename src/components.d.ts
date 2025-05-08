@@ -64,7 +64,10 @@ declare module 'vue' {
     Navbar: typeof import('./components/travellian/Navbar.vue')['default']
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
+    PageHeader: typeof import('./components/Visa/PageHeader.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']
+    PassportOptions: typeof import('./components/Visa/PassportOptions.vue')['default']
+    PassportVisaNav: typeof import('./components/Visa/PassportVisaNav.vue')['default']
     PaymentOptions: typeof import('./components/OrderForm/PaymentOptions.vue')['default']
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
     ResultCard: typeof import('./components/official/ResultCard.vue')['default']
@@ -80,5 +83,6 @@ declare module 'vue' {
     TravelerList: typeof import('./components/MemberCenter/TravelerList.vue')['default']
     TripCard: typeof import('./components/official/TripCard.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
+    WorldMap: typeof import('./components/Visa/WorldMap.vue')['default']
   }
 }

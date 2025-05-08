@@ -20,4 +20,4 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(ElementPlus);
 app.use(pinia);
 app.use(router);
-app.mount("#app");
+app.mount("#app");// 確保這裡的 '#app' 與你的 index.html 中的根容器 ID 匹配

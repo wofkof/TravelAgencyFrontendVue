@@ -16,6 +16,7 @@ import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
 
+
 const routes = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/Domestic", name: "Domestic", component: DomesticView },
