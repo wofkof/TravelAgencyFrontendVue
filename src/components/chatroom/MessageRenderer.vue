@@ -10,9 +10,13 @@
       <img :src="fullImageUrl(msg.content)" alt="圖片訊息" class="chat-image" />
     </template>
 
-    <!-- 錄音 -->
+    <!-- 語音訊息 -->
     <template v-else-if="msg.messageType === 'audio'">
-      <audio controls :src="fullImageUrl(msg.content)"></audio>
+      <audio
+        :src="fullMediaUrl(msg.content)"
+        controls
+        class="chat-audio"
+      ></audio>
     </template>
 
     <!-- 其他：保底 fallback -->
@@ -32,6 +36,7 @@ defineProps({
 });
 
 const fullImageUrl = (path) => getApiBaseUrl() + path;
+const fullMediaUrl = (path) => getApiBaseUrl() + path;
 </script>
 
 <style scoped>
@@ -48,5 +53,11 @@ img.chat-image {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+audio.chat-audio {
+  width: 200px;
+  height: 32px;
+  margin-top: 4px;
 }
 </style>

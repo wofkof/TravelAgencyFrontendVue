@@ -21,20 +21,53 @@
       </div>
     </el-scrollbar>
 
-    <el-input
-      v-model="newMessage"
-      clearable
-      type="textarea"
-      placeholder="輸入訊息..."
-      @keydown.enter.prevent="send"
-      autosize
-    />
-    <div style="display: flex">
-      <el-button @click="send" type="primary">送出</el-button>
-      <el-button @click="toggleEmojiPicker">😀</el-button>
-      <ImageUploader />
-      <VoiceUploader />
+    <div class="message-input-bar">
+      <el-input
+        v-model="newMessage"
+        clearable
+        type="textarea"
+        placeholder="輸入訊息..."
+        @keydown.enter.prevent="send"
+        autosize
+        class="message-input"
+      />
+
+      <div class="button-group">
+        <!-- 送出按鈕 -->
+        <el-button @click="send" type="primary" size="small" plain circle
+          ><el-icon><Promotion /></el-icon
+        ></el-button>
+
+        <!-- 表情按鈕 -->
+        <el-button
+          size="small"
+          type="success"
+          @click="toggleEmojiPicker"
+          plain
+          circle
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            fill="currentColor"
+            class="bi bi-emoji-laughing-fill"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M7 6.5c0 .501-.164.396-.415.235C6.42 6.629 6.218 6.5 6 6.5s-.42.13-.585.235C5.164 6.896 5 7 5 6.5 5 5.672 5.448 5 6 5s1 .672 1 1.5m5.331 3a1 1 0 0 1 0 1A5 5 0 0 1 8 13a5 5 0 0 1-4.33-2.5A1 1 0 0 1 4.535 9h6.93a1 1 0 0 1 .866.5m-1.746-2.765C10.42 6.629 10.218 6.5 10 6.5s-.42.13-.585.235C9.164 6.896 9 7 9 6.5c0-.828.448-1.5 1-1.5s1 .672 1 1.5c0 .501-.164.396-.415.235"
+            /></svg
+        ></el-button>
+
+        <!-- 圖片按鈕 -->
+        <ImageUploader />
+        <!-- 錄音按鈕 -->
+        <VoiceUploader />
+        <!-- 通話按鈕 -->
+        <AudioCall />
+      </div>
     </div>
+
+    <!-- 測試用的假訊息 -->
     <div style="display: flex">
       <TestFakeMessage />
     </div>
@@ -44,16 +77,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onBeforeUnmount } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount, nextTick } from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import connection, { setupSocket, sendMessage } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
 import { getMessages, markAsRead } from "@/apis/messageApi";
-import { nextTick } from "vue";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
+import AudioCall from "@/components/chatroom/AudioCall.vue";
 
 declare global {
   interface Window {
@@ -101,6 +134,7 @@ const openPicker = () => {
   pickerInstance.value = new window.EmojiMart.Picker({
     emojiSize: 20,
     perLine: 6,
+    
     previewPosition: "none",
     searchPosition: "none",
     onEmojiSelect: (emoji: any) => {
@@ -108,8 +142,8 @@ const openPicker = () => {
     },
   });
 
-  pickerInstance.value.style.width = "260px";
-  pickerInstance.value.style.maxHeight = "300px";
+  pickerInstance.value.style.width = "200px";
+  pickerInstance.value.style.maxHeight = "100px";
 
   pickerContainer.value.appendChild(pickerInstance.value);
 };
@@ -239,9 +273,22 @@ const send = async () => {
   margin-top: 2px;
   padding: 0 4px;
 }
+.message-input-bar {
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px;
+  border-top: 1px solid #ddd;
+}
+.button-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
 .emoji-container {
   position: absolute;
-  left: 0;
+  bottom: 60px;
+  left: 26px;
+  top: 165px;
   z-index: 10;
 }
 </style>

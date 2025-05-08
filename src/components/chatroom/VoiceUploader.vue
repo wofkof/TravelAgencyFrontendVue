@@ -4,6 +4,9 @@
     @mousedown="startRecording"
     @mouseup="stopRecording"
     @mouseleave="cancelIfRecording"
+    size="small"
+    plain
+    circle
   >
     <el-icon><Microphone /></el-icon>
   </el-button>

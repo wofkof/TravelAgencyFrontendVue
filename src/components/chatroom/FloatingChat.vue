@@ -112,7 +112,6 @@ const toggleChat = chatStore.toggleChatPopup;
 }
 
 .chat-room-list {
-  width: 227px;
   border-right: 1px solid #ddd;
   padding: 8px;
   overflow-y: auto;
