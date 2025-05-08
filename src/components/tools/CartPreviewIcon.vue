@@ -128,7 +128,7 @@ const getItemQuantity = (item) => {
 .main-menu__item {
   padding: 10px; /* 增加點擊區域 */
   text-decoration: none;
-  color: #333; /* 圖標預設顏色 */
+  color: #fbfafa; /* 圖標預設顏色 */
   transition: color 0.3s ease;
   position: relative; /* 相對定位，為了徽章的絕對定位 */
   display: inline-flex; /* 使用 inline-flex 佈局 */
@@ -146,6 +146,7 @@ const getItemQuantity = (item) => {
   transform: scale(1.2); /* 放大 20% (您可以調整 1.2 這個值) */
 }
 .main-menu__item:hover {
+  transform: scale(1.2);
   color: #409EFF; /* 滑鼠懸停時變藍 */
 }
 /* 確保圖標垂直對齊 */

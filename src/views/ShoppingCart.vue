@@ -1,5 +1,6 @@
 <template>
   <div class="cart-page-container">
+    
     <ActiveCartItems v-if="activeItems.length > 0" :items="activeItems" />
 
     <ReconfirmItems
@@ -15,6 +16,7 @@
     >
       <el-button type="primary" @click="goToExplore">前往探索商品</el-button>
     </el-empty>
+    <RecommendedTrips v-if="activeItems.length > 0 || expiredItems.length > 0" />
     </div>
 </template>
 
@@ -27,6 +29,8 @@ import { useRouter } from 'vue-router'; // 導入 Vue Router，用於導航
 // --- 組件導入 ---
 import ActiveCartItems from '@/components/ShoppingCart/ActiveCartItems.vue'; // 導入顯示活動項目的子組件
 import ReconfirmItems from '@/components/ShoppingCart/ReconfirmItems.vue'; // 導入顯示待確認項目的子組件
+import RecommendedTrips from '@/components/tools/RecommendedTrips.vue'; // 導入顯示推薦行程的子組件
+
 
 // --- Store 實例與狀態獲取 ---
 // 獲取購物車 store 的實例
@@ -46,7 +50,7 @@ const goToExplore = () => {
 <style scoped>
 /* scoped 樣式只會應用於當前組件的元素 */
 .cart-page-container {
-  max-width: 960px; /* 限制最大寬度 */
+  max-width: 1080px; /* 限制最大寬度 */
   margin: 20px auto; /* 上下邊距 20px，左右自動邊距實現水平居中 */
   padding: 0 15px; /* 容器左右內邊距 15px，避免內容緊貼邊緣 */
 }

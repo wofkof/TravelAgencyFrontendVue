@@ -29,19 +29,28 @@
               <span>商品已過期，請選擇其他商品</span> </div>
           </div>
           <div class="item-actions-icons">
-            <el-tooltip content="收藏" placement="top">
-              <el-button
-                :type="item.isFavorite ? 'warning' : ''"
-                :icon="item.isFavorite ? StarFilled : Star" text circle plain
-                @click="cartStore.toggleFavorite(item.id)"
-              />
+            <el-tooltip :content="item.isFavorite ? '取消收藏' : '加入收藏'" placement="top">
+              <span
+                class="action-icon favorite-icon-action"
+                role="button"
+                tabindex="0"
+                :aria-pressed="item.isFavorite"
+                :aria-label="item.isFavorite ? '取消收藏' : '加入收藏'"
+                @click="cartStore.toggleFavorite(item.id)" >
+                <FavoriteIcon
+                  :is-favorite="item.isFavorite"
+                  :size="18" :class="{ 'favorited': item.isFavorite }"
+                />
+              </span>
             </el-tooltip>
+
             <el-tooltip content="刪除" placement="top">
               <el-button
                 type="danger"
-                :icon="Delete" text circle plain
-                @click="handleRemoveItem(item)"
-              />
+                :icon="Delete"
+                text circle plain
+                size="small" @click="handleRemoveItem(item)"
+                class="action-button delete-button" />
             </el-tooltip>
           </div>
         </li>
@@ -59,8 +68,9 @@ import { computed } from 'vue'; // 導入 computed (雖然目前未使用，可�
 // --- 狀態管理 (Pinia) ---
 import { useCartStore } from '@/stores/cart';
 
-import { Star, StarFilled, Delete } from '@element-plus/icons-vue'; // 需要的圖標 (用於 :icon 綁定)
+import { Delete } from '@element-plus/icons-vue'; // 需要的圖標 (用於 :icon 綁定)
 // --- 本地工具 ---
+import FavoriteIcon from "@/components/tools/FavoriteIcon.vue"; // 引入收藏圖標組件
 import { useConfirmation } from '@/components/tools/useConfirmation'; // 引入確認對話框的 composable
 
 // --- Props 定義 ---
@@ -130,9 +140,10 @@ const handleRemoveAll = async () => {
 .reconfirm-section {
   margin-top: 30px; /* 與上方內容 (例如 ActiveCartItems) 的間距 */
   background-color: #fdf6ec; /* Element Plus warning-light-9，用於視覺區分 */
-  border: 1px solid #f3d19e; /* Element Plus warning-light-5 邊框 */
+  border: 5px solid #f3d19e; /* Element Plus warning-light-5 邊框 */
   border-radius: 8px;
   padding: 20px 25px; /* 內邊距 */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
 /* --- 組件內標題樣式 --- */
@@ -146,9 +157,6 @@ const handleRemoveAll = async () => {
 
 /* --- 內部容器樣式 --- */
 .reconfirm-container {
-  /* 移除原有的背景色和邊框，讓 reconfirm-section 的背景透出來 */
-  /* background-color: #f9f9f9; */
-  /* border: 1px solid #eee; */
   border-radius: 4px; /* 可以保留一個小的圓角 */
   padding: 0; /* 移除內邊距，由子元素控制 */
 }
@@ -239,14 +247,56 @@ const handleRemoveAll = async () => {
 .item-actions-icons {
   grid-column: 5 / 6;
   display: flex;
-  flex-direction: column; /* 按鈕垂直排列 */
-  gap: 8px; /* 按鈕間距 */
+  gap: 12px; /* 按鈕間距 */
   align-items: center; /* 按鈕在列中居中 */
   padding-top: 2px; /* 微調垂直對齊 */
 }
 /* 移除 Element Plus 按鈕可能自帶的外邊距，確保 gap 生效 */
 .item-actions-icons .el-button {
   margin: 0 !important;
+}
+.action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; /* 與 small circle button 類似 */
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.action-icon:hover {
+  background-color: rgba(0, 0, 0, 0.06); /* 在淺色背景上用稍暗的懸停效果 */
+}
+
+/* === 新增：收藏圖示的顏色設定 === */
+.favorite-icon-action {
+  color: #ca0d1d;
+ }
+
+/* 未收藏時 (空心) 的顏色 */
+.favorite-icon-action :deep(.favorite-icon-wrapper) {
+   color: #909399; /* 灰色 */
+   transition: color 0.2s ease;
+}
+.favorite-icon-action:hover :deep(.favorite-icon-wrapper) {
+   color: #ca0d1d; /* 懸停時加深 */
+}
+
+/* 已收藏時 (實心) 的顏色 */
+.favorite-icon-action :deep(.favorite-icon-wrapper.is-favorite) {
+   color: #ca0d1d; /* Warning 橙黃色 */
+}
+
+/* 確保刪除按鈕視覺上協調 */
+.action-button.delete-button {
+  margin: 0 !important; /* 移除 el-button 可能的預設 margin */
+}
+/* 調整刪除圖示大小 */
+.action-button.delete-button .el-icon,
+.action-button.delete-button :deep(svg) {
+    font-size: 18px; /* 使其與收藏圖標視覺大小接近 */
 }
 
 /* --- 列表底部操作區 --- */

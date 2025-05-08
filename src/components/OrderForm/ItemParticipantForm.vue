@@ -1,89 +1,161 @@
 <template>
   <div class="item-participant-form">
     <div v-if="numberOfParticipants === 0">
-      <p>此項目無需填寫旅客資料。</p>
+      <el-empty description="此項目無需填寫旅客資料。" />
     </div>
-    <div v-for="index in numberOfParticipants" :key="index" class="participant-entry">
-      <h4>
-        旅客 {{ index }}
-        <span v-if="getParticipantType(index - 1)" class="participant-type">
-          ({{ getParticipantType(index - 1) }})
-        </span>
-      </h4>
+    <el-form label-position="top" class="participants-element-form" :model="formModelForValidation" ref="itemFormRef">
+      <div v-for="(participant, pIndex) in participantsData" :key="participant.id || pIndex" class="participant-entry">
+        <h4>
+          旅客 {{ pIndex + 1 }}
+          <span v-if="getParticipantType(pIndex)" class="participant-type">
+            ({{ getParticipantType(pIndex) }})
+          </span>
+        </h4>
 
-      <div class="form-row">
-         <div class="form-col">
-            <label :for="'travelerCountry' + uniqueIdPrefix + index">國家/地區 <span class="required">*</span></label>
-            <select :id="'travelerCountry' + uniqueIdPrefix + index"
-                    :value="participantsData[index - 1]?.country || defaultCountry"
-                    @change="updateParticipantField(index - 1, 'country', $event.target.value)" required>
-              <option v-for="country in sortedCountries" :key="country.code" :value="country.code">
-                {{ country.name }}
-              </option>
-            </select>
-         </div>
-         <div class="form-col">
-             <label :for="'travelerBirthDate' + uniqueIdPrefix + index">出生日期 <span class="required">*</span></label>
-             <input type="date" :id="'travelerBirthDate' + uniqueIdPrefix + index"
-                    :value="participantsData[index - 1]?.birthDate || ''"
-                    @input="updateParticipantField(index - 1, 'birthDate', $event.target.value)" required>
-         </div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item
+              label="國家/地區"
+              :prop="`passengers[${pIndex}].country`"
+              :rules="[{ required: true, message: '請選擇國家/地區', trigger: 'change' }]"
+            >
+              <el-select
+                :model-value="participant.country || defaultCountry"
+                @update:modelValue="updateParticipantField(pIndex, 'country', $event)"
+                placeholder="請選擇國家/地區"
+                filterable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="country in sortedCountries"
+                  :key="country.code"
+                  :label="country.name"
+                  :value="country.code"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              label="出生日期"
+              :prop="`passengers[${pIndex}].birthDate`"
+              :rules="[{ required: true, message: '請選擇出生日期', trigger: 'change' }]"
+            >
+              <el-date-picker
+                type="date"
+                :model-value="participant.birthDate || ''"
+                @update:modelValue="updateParticipantField(pIndex, 'birthDate', $event)"
+                placeholder="請選擇出生日期"
+                style="width: 100%;"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item
+              label="中文名"
+              :prop="`passengers[${pIndex}].firstNameZh`"
+              :rules="[{ required: true, message: '請輸入中文名', trigger: 'blur' }]"
+            >
+              <el-input
+                :model-value="participant.firstNameZh || ''"
+                @update:modelValue="updateParticipantField(pIndex, 'firstNameZh', $event)"
+                placeholder="例: 小明"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              label="中文姓"
+              :prop="`passengers[${pIndex}].lastNameZh`"
+              :rules="[{ required: true, message: '請輸入中文姓', trigger: 'blur' }]"
+            >
+              <el-input
+                :model-value="participant.lastNameZh || ''"
+                @update:modelValue="updateParticipantField(pIndex, 'lastNameZh', $event)"
+                placeholder="例: 陳"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item
+          label="證件號碼 (身分證/護照)"
+          :prop="`passengers[${pIndex}].documentNumber`"
+          :rules="[{ required: true, message: '請輸入證件號碼', trigger: 'blur' }]"
+        >
+          <el-input
+            :model-value="participant.documentNumber || ''"
+            @update:modelValue="updateParticipantField(pIndex, 'documentNumber', $event)"
+            placeholder="請輸入證件號碼"
+            clearable
+          />
+        </el-form-item>
+
+        <el-divider v-if="pIndex < numberOfParticipants - 1" class="participant-divider" />
       </div>
-
-      <div class="form-row">
-        <div class="form-col">
-          <label :for="'travelerFirstNameZh' + uniqueIdPrefix + index">中文名 <span class="required">*</span></label>
-          <input type="text" :id="'travelerFirstNameZh' + uniqueIdPrefix + index" placeholder="例: 小明"
-                 :value="participantsData[index - 1]?.firstNameZh || ''"
-                 @input="updateParticipantField(index - 1, 'firstNameZh', $event.target.value)" required>
-        </div>
-        <div class="form-col">
-          <label :for="'travelerLastNameZh' + uniqueIdPrefix + index">中文姓 <span class="required">*</span></label>
-          <input type="text" :id="'travelerLastNameZh' + uniqueIdPrefix + index" placeholder="例: 陳"
-                 :value="participantsData[index - 1]?.lastNameZh || ''"
-                 @input="updateParticipantField(index - 1, 'lastNameZh', $event.target.value)" required>
-        </div>
-      </div>
-
-       <div>
-          <label :for="'travelerDocumentNumber' + uniqueIdPrefix + index">證件號碼 (身分證/護照) <span class="required">*</span></label>
-          <input type="text" :id="'travelerDocumentNumber' + uniqueIdPrefix + index"
-                 :value="participantsData[index - 1]?.documentNumber || ''"
-                 @input="updateParticipantField(index - 1, 'documentNumber', $event.target.value)" required>
-       </div>
-
-       <hr v-if="index < numberOfParticipants" class="participant-divider">
-    </div>
+    </el-form>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, toRefs } from 'vue';
+import { defineProps, defineEmits, computed, ref, watch, reactive } from 'vue';
 import countries from 'i18n-iso-countries';
-// 假設中文語言包已在 OrderForm 或全局註冊過，如果沒有，需要在此元件或父元件註冊
-// import zhLocale from 'i18n-iso-countries/langs/zh.json';
-// countries.registerLocale(zhLocale);
 
 const props = defineProps({
-  orderItem: { // 接收單個訂單項目
+  orderItem: {
     type: Object,
     required: true
   },
-  participants: { // ** 接收屬於此商品的旅客陣列 v-model:participants **
+  participants: { // v-model:participants
     type: Array,
     required: true,
     default: () => []
   }
 });
 
-// 使用 toRefs 保持對 participants prop 的響應性引用
-const { participants } = toRefs(props);
-// 或者直接使用 props.participants
-
 const emit = defineEmits(['update:participants']);
 
-// 為 ID 生成唯一前綴，避免多個 ItemParticipantForm 實例的 ID 衝突
-const uniqueIdPrefix = computed(() => `item-${props.orderItem.id}-`);
+const participantsData = ref([]);// 本地響應式副本，用於表單操作
+const itemFormRef = ref(null); // el-form 的 ref
+
+
+// 為了讓 el-form 的 :model 和 :prop 配合工作，我們需要一個包裹 participantsData 的物件
+// 這樣 prop 的路徑就是 'passengers[index].fieldName'
+const formModelForValidation = reactive({
+  passengers: [] // 這個陣列將與 participantsData 同步
+});
+
+// 監聽 participantsData 的變化，並更新 formModelForValidation.passengers
+watch(participantsData, (newData) => {
+  formModelForValidation.passengers = newData;
+}, { deep: true });
+
+// 初始化和同步 props.participants 到本地 participantsData
+const syncParticipantsData = (count) => {
+  const newParticipantsArray = [];
+  for (let i = 0; i < count; i++) {
+    const existingParticipant = props.participants[i] || {};
+    newParticipantsArray.push({
+      id: existingParticipant.id || `temp-${i}-${Date.now()}`, // 確保有 key，或使用 pIndex
+      country: existingParticipant.country || defaultCountry.value,
+      firstNameZh: existingParticipant.firstNameZh || '',
+      lastNameZh: existingParticipant.lastNameZh || '',
+      documentNumber: existingParticipant.documentNumber || '',
+      birthDate: existingParticipant.birthDate || null,
+      // 保留其他可能的既有欄位
+      ...existingParticipant
+    });
+  }
+  participantsData.value = newParticipantsArray;
+};
+
 
 // 計算此項目需要的旅客數量
 const numberOfParticipants = computed(() => {
@@ -96,98 +168,149 @@ const numberOfParticipants = computed(() => {
   return quantity;
 });
 
-// 計算每個旅客欄位的類型 (如果 item 有 options 的話)
-const participantTypes = computed(() => {
-    const types = [];
-    if (props.orderItem.options && props.orderItem.options.length > 0) {
-        props.orderItem.options.forEach(option => {
-            for (let i = 0; i < option.quantity; i++) {
-                types.push(option.type);
-            }
-        });
-    } else if (props.orderItem.quantity) {
-        for (let i = 0; i < props.orderItem.quantity; i++) {
-            types.push(null); // 沒有特定類型
-        }
+// 監聽 props.participants (來自父層的 v-model) 和 numberOfParticipants 的變化
+watch([() => props.participants, numberOfParticipants], ([newParticipantsProp, newCount]) => {
+  // 優先以 newCount 來決定陣列長度，並用 newParticipantsProp 的數據填充
+    const newArray = [];
+    for (let i = 0; i < newCount; i++) {
+      const propData = newParticipantsProp[i] || {}; // 從父層來的資料
+      const existingLocalData = participantsData.value[i] || {}; // 當前本地資料 (若長度改變前已存在)
+      newArray.push({
+        id: propData.id || existingLocalData.id || `participant-${i}-${Date.now()}`, // 確保每個 participant 有唯一 key
+        country: propData.country || defaultCountry.value,
+        firstNameZh: propData.firstNameZh || '',
+        lastNameZh: propData.lastNameZh || '',
+        documentNumber: propData.documentNumber || '',
+        birthDate: propData.birthDate || null,
+        ...propData, // 優先使用 prop 傳入的數據 (若有衝突)
+      });
     }
-    return types;
+    participantsData.value = newArray;
+}, { immediate: true, deep: true });
+
+
+// 計算每個旅客欄位的類型
+const participantTypes = computed(() => {
+  const types = [];
+  if (props.orderItem.options && props.orderItem.options.length > 0) {
+    props.orderItem.options.forEach(option => {
+      for (let i = 0; i < option.quantity; i++) {
+        types.push(option.type);
+      }
+    });
+  } else if (props.orderItem.quantity) {
+    for (let i = 0; i < props.orderItem.quantity; i++) {
+      types.push(null); // 沒有特定類型
+    }
+  }
+  return types;
 });
 
-// 獲取指定索引的旅客類型
 const getParticipantType = (index) => {
-    return participantTypes.value[index] || '';
+  return participantTypes.value[index] || '';
 };
-
-
-// 監聽所需旅客數量變化，初始化或調整本地 participantsData
-// (重要：子元件內部最好不要直接修改 prop，而是修改本地副本再 emit)
-const participantsData = ref([...props.participants]); // 創建本地副本
-
-watch(() => props.participants, (newVal) => {
-    // 當父元件傳來的 prop 變化時，更新本地副本
-    participantsData.value = [...newVal];
-}, { deep: true }); // 深度監聽
-
-watch(numberOfParticipants, (newCount) => {
-    // 根據新的數量調整本地副本的長度
-    const currentLength = participantsData.value.length;
-    if (newCount > currentLength) {
-        for (let i = currentLength; i < newCount; i++) {
-            participantsData.value.push({
-                country: 'TW', // 預設值
-                firstNameZh: '',
-                lastNameZh: '',
-                documentNumber: '',
-                birthDate: null,
-                // Add other fields with defaults if needed
-            });
-        }
-    } else if (newCount < currentLength) {
-        participantsData.value.splice(newCount);
-    }
-     // 不需要立即 emit，等欄位更新時再 emit
-}, { immediate: true });
-
 
 // 更新本地旅客資料並 emit 更新事件
 const updateParticipantField = (index, field, value) => {
   if (!participantsData.value[index]) {
-    // 理論上 watch 應該已經初始化了，但做個防禦性處理
-    participantsData.value[index] = {};
+    // 應該不會發生，因為 watch 會初始化
+    participantsData.value[index] = { id: `participant-${index}-${Date.now()}` };
   }
-  // 直接修改本地 ref 陣列的元素
-  participantsData.value[index] = {
-      ...participantsData.value[index],
-      [field]: value
+
+  let processedValue = value;
+  const fieldsToRemoveSpaces = ['firstNameZh', 'lastNameZh', 'documentNumber'];
+
+  if (fieldsToRemoveSpaces.includes(field) && typeof value === 'string') {
+    processedValue = value.replace(/\s/g, '');
+  }
+
+  // 更新本地 ref 陣列的特定元素，確保響應性
+  const updatedParticipant = {
+    ...participantsData.value[index],
+    [field]: processedValue
   };
+  participantsData.value.splice(index, 1, updatedParticipant);
+
   // 發送包含完整更新後陣列的事件
-  emit('update:participants', [...participantsData.value]);
+  emit('update:participants', participantsData.value.map(p => ({ ...p })));
+    // 更新單個欄位後，觸發該欄位的驗證
+  if (itemFormRef.value) {
+    itemFormRef.value.validateField(`passengers[${index}].${field}`, () => {});
+  }
 };
 
+const defaultCountry = ref('TW'); // 預設國家，設為 ref 以便將來可能動態更改
 
-// 國家列表 (與 ParticipantForm 類似)
-const defaultCountry = 'TW'; // 預設國家
+// 國家列表
 const sortedCountries = computed(() => {
-    const countryNames = countries.getNames('zh', { select: 'official' });
-    return Object.entries(countryNames)
+  // 建議使用 'zh-TW' 或你註冊時使用的確切繁體中文代碼
+  try {
+    const countryNames = countries.getNames('zh-TW', { select: 'official' });
+    if (!countryNames || Object.keys(countryNames).length === 0) {
+      console.warn("i18n-iso-countries: 無法獲取 'zh-TW' 的國家名稱，請確認語言包已正確註冊。將使用 'zh' 作為備選。");
+      const fallbackNames = countries.getNames('zh', { select: 'official' });
+      return Object.entries(fallbackNames)
         .map(([code, name]) => ({ code, name }))
         .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+    }
+    return Object.entries(countryNames)
+      .map(([code, name]) => ({ code, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+  } catch (e) {
+    console.error("獲取國家列表時發生錯誤:", e);
+    return [{ code: 'TW', name: '台灣 (預設)'}]; // 提供備選，避免渲染錯誤
+  }
 });
+
+// 如果需要從父元件觸發整個 ItemParticipantForm 的驗證
+const validateAll = () => {
+  return new Promise((resolve, reject) => {
+    if (itemFormRef.value) {
+      itemFormRef.value.validate((valid, fields) => {
+        if (valid) {
+          resolve(true);
+        } else {
+          console.log('ItemParticipantForm validation failed:', fields);
+          reject(fields);
+        }
+      });
+    } else {
+      resolve(true); // 或者 reject，如果表單不存在則認為無需驗證或驗證失敗
+    }
+  });
+};
+
+// 暴露驗證方法給父組件
+defineExpose({ validateAll });
 
 </script>
 
 <style scoped>
-/* 與 MultiParticipantForm 類似的樣式 */
-.item-participant-form { padding-top: 10px; }
-.participant-entry { margin-bottom: 30px; padding-bottom: 20px; /* border-bottom: 1px solid #eee; */ }
-.participant-entry:last-child { margin-bottom: 0; padding-bottom: 0; /* border-bottom: none; */ }
-.participant-entry h4 { font-size: 1.05em; margin-bottom: 20px; color: #333; border-left: 3px solid #007bff; padding-left: 8px; }
-.participant-type { font-weight: normal; color: #555; font-size: 0.9em; }
-label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #555; }
-input[type="text"], input[type="tel"], input[type="email"], input[type="date"], select { width: 100%; padding: 10px 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
-input:focus, select:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); }
-.required { color: #dc3545; margin-left: 2px; }
-.form-row { display: flex; gap: 20px; margin-bottom: 15px; }
-.form-col { flex: 1; }
-.participant-divider { border: none; border-top: 1px dashed #ccc; margin-top: 30px; }
+/* 保留必要的自訂樣式，大部分由 Element Plus 處理 */
+.item-participant-form {
+  padding-top: 10px;
+}
+.participant-entry {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+}
+.participant-entry:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.participant-entry h4 {
+  font-size: 1.1em; /* Element Plus 標題通常較大，此處可自訂 */
+  margin-bottom: 18px; /* el-form-item 會處理部分間距 */
+  color: var(--el-text-color-primary); /* 使用 Element Plus 變數 */
+  border-left: 3px solid var(--el-color-primary);
+  padding-left: 10px;
+}
+.participant-type {
+  font-weight: normal;
+  color: var(--el-text-color-secondary);
+  font-size: 0.9em;
+}
+.participant-divider {
+  margin-top: 25px; /* 調整分隔線與上方元素的間距 */
+}
 </style>
