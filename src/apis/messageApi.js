@@ -13,7 +13,7 @@ export const markAsRead = async (chatRoomId, senderId, senderType) => {
   });
 };
 
-export async function UploadImageMessage({
+export async function uploadImageMessage({
   chatRoomId,
   senderId,
   senderType,
@@ -26,7 +26,23 @@ export async function UploadImageMessage({
   formData.append("messageType", "image");
   formData.append("file", file);
 
-  return await api.post("/messageupload/image", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return await api.postForm("/messageupload/upload-image", formData);
+}
+
+export async function uploadAudioMessage({
+  chatRoomId,
+  senderId,
+  senderType,
+  durationInSeconds,
+  file,
+}) {
+  const formData = new FormData();
+  formData.append("chatRoomId", chatRoomId);
+  formData.append("senderId", senderId);
+  formData.append("senderType", senderType);
+  formData.append("messageType", "audio");
+  formData.append("durationInSeconds", durationInSeconds);
+  formData.append("file", file);
+
+  return await api.postForm("/messageupload/upload-audio", formData);
 }

@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccordionSection: typeof import('./components/OrderForm/AccordionSection.vue')['default']
+    AudioCall: typeof import('./components/chatroom/AudioCall.vue')['default']
     BigBanner: typeof import('./components/official/BigBanner.vue')['default']
     BlogSection: typeof import('./components/travellian/BlogSection.vue')['default']
     Button: typeof import('./components/ui/button/Button.vue')['default']
@@ -37,6 +38,9 @@ declare module 'vue' {
     ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDialog: typeof import('element-plus/es')['ElDialog']
+    ElDropdown: typeof import('element-plus/es')['ElDropdown']
+    ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
+    ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
@@ -53,6 +57,8 @@ declare module 'vue' {
     ElTimelineItem: typeof import('element-plus/es')['ElTimelineItem']
     ElTimeSelect: typeof import('element-plus/es')['ElTimeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    EmojiPicker: typeof import('./components/chatroom/EmojiPicker.vue')['default']
+    EmojiUploader: typeof import('./components/chatroom/EmojiUploader.vue')['default']
     FilterBar: typeof import('./components/official/FilterBar.vue')['default']
     FilterCard: typeof import('./components/official/filterCard.vue')['default']
     FloatingChat: typeof import('./components/chatroom/FloatingChat.vue')['default']
@@ -89,5 +95,6 @@ declare module 'vue' {
     TravelerList: typeof import('./components/MemberCenter/TravelerList.vue')['default']
     TripCard: typeof import('./components/official/TripCard.vue')['default']
     TripPlanners: typeof import('./components/travellian/TripPlanners.vue')['default']
+    VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
   }
 }
