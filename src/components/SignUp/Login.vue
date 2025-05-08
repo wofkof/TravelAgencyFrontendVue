@@ -5,7 +5,7 @@
         歡迎回來
       </h2>
     </div>
-    <Card class="overflow-hidden">
+    <Card>
       <CardContent class="grid p-0 md:grid-cols-2">
         <form class="p-6 md:p-6" @submit.prevent="handleLogin">
           <div class="flex flex-col gap-8">
@@ -14,7 +14,7 @@
               width="160"
               class="mx-auto"
             />
-            <!-- ✅ 表單內容區塊 -->
+            <!-- 表單內容區塊 -->
             <div class="flex flex-col gap-8">
               <div class="grid gap-2">
                 <Label for="account">帳號</Label>
@@ -31,15 +31,30 @@
                   請輸入有效的手機號碼或 Email
                 </span>
               </div>
-              <div class="grid gap-2">
+              <div class="grid gap-2 relative">
                 <Label for="password">密碼</Label>
-                <Input
-                  id="password"
-                  v-model="form.password"
-                  type="password"
-                  placeholder="請設定6~12位數密碼"
-                  required
-                />
+                <div class="relative">
+                  <Input
+                    :type="showPassword ? 'text' : 'password'"
+                    id="password"
+                    v-model="form.password"
+                    placeholder="請輸入6~12位數密碼"
+                    required
+                    class="pr-10"
+                  />
+                  <button
+                    type="button"
+                    @click="togglePassword"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                    tabindex="-1"
+                    aria-label="切換密碼顯示"
+                  >
+                    <component
+                      :is="showPassword ? EyeIcon : EyeOffIcon"
+                      class="w-5 h-5"
+                    />
+                  </button>
+                </div>
                 <span
                   v-if="
                     touched &&
@@ -50,7 +65,7 @@
                   密碼長度需為 6~12 位
                 </span>
               </div>
-              <!-- ✅ 記住我 + 忘記密碼 -->
+              <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
               >
@@ -65,9 +80,9 @@
                   忘記密碼？
                 </button>
               </div>
-              <!-- ✅ 登入按鈕 -->
+              <!-- 登入按鈕 -->
               <Button type="submit" class="w-full"> 登入 </Button>
-              <!-- ✅ 分隔線文字 -->
+              <!-- 分隔線文字 -->
               <div
                 class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"
               >
@@ -77,7 +92,7 @@
                   或以社群帳號登入
                 </span>
               </div>
-              <!-- ✅ Google 登入按鈕 -->
+              <!-- Google 登入按鈕 -->
               <div class="grid grid-cols-1 gap-4">
                 <button
                   class="w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
@@ -90,7 +105,7 @@
                   使用 Google 帳號登入
                 </button>
               </div>
-              <!-- ✅ 註冊導引 -->
+              <!-- 註冊導引 -->
               <div class="text-center text-sm">
                 還不是會員嗎？
                 <button
@@ -113,20 +128,16 @@
         </div>
       </CardContent>
     </Card>
-    <div
-      class="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary m-2"
-    >
-      By clicking continue, you agree to our
-      <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-    </div>
   </div>
 </template>
+
 <script setup>
 import { reactive, computed, ref } from "vue";
 const form = reactive({
   account: "",
   password: "",
 });
+// 驗證帳號格式
 const isValidAccount = computed(() => {
   const account = String(form.account).trim();
   return /^09\d{8}$/.test(account) || /^\S+@\S+\.\S+$/.test(account);
@@ -135,17 +146,12 @@ const isValidAccount = computed(() => {
 const rememberMe = ref(false);
 const touched = ref(false);
 
-function handleLogin() {
-  form.account = form.account.trim();
-  form.password = form.password.trim();
-
-  touched.value = true;
-import axios from 'axios'
+import axios from "axios";
 
 async function handleLogin() {
-  form.account = form.account.trim()
-  form.password = form.password.trim()
-  touched.value = true
+  form.account = form.account.trim();
+  form.password = form.password.trim();
+  touched.value = true;
 
   if (!isValidAccount.value) {
     alert("請輸入有效的手機號碼或信箱格式");
@@ -157,31 +163,30 @@ async function handleLogin() {
     return;
   }
 
-  // ✅ 假登入流程（可換成 axios 登入 API）
-  alert(`登入成功：帳號 ${form.account}`);
-
-  // TODO: emit('login-success') 或關閉 dialog 等
   try {
     // 呼叫後端登入 API
-    const response = await axios.post('https://localhost:7265/api/account/login', {
-      account: form.account,
-      password: form.password
-    })
+    const response = await axios.post(
+      "https://localhost:7265/api/account/login",
+      {
+        account: form.account,
+        password: form.password,
+      }
+    );
 
-    alert('登入成功')
+    alert("登入成功");
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      alert('帳號或密碼錯誤')
+      alert("帳號或密碼錯誤");
     } else {
-      alert('登入失敗，請稍後再試')
-      console.error(error)
+      alert("登入失敗，請稍後再試");
+      console.error(error);
     }
   }
 }
 
-import { EyeIcon, EyeOffIcon } from 'lucide-vue-next' // 加入圖示
-const showPassword = ref(false)                        // 密碼是否顯示
+import { EyeIcon, EyeOffIcon } from "lucide-vue-next"; // 加入圖示
+const showPassword = ref(false); // 密碼是否顯示
 function togglePassword() {
-  showPassword.value = !showPassword.value
+  showPassword.value = !showPassword.value;
 }
 </script>
