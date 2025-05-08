@@ -1,11 +1,8 @@
 <template>
   <!-- 主標題與副標題 -->
-  <div class="lead">
-    <h1 class="lead__hdl">
-      探索世界的美麗<br />
-      <span style="font-size: 80px"> 留下永恆的回憶 </span>
-    </h1>
-    <p class="lead__text">嶼你同行，開啟您的夢想之旅</p>
+  <div class="lead" style="margin-top: 200px">
+    <h1 class="lead__hdl fade-slide-up">探索世界的美麗</h1>
+    <p class="lead__text fade-slide-up delay">嶼你同行，開啟您的夢想之旅</p>
   </div>
 
   <!-- 搜尋表單 -->
@@ -47,7 +44,7 @@
       </div>
       <router-link to="/SearchResult" class="search__btn">
         <span class="l-search-btn-wrapper" data-text="Book">
-        立即<br />預訂
+          立即<br />預訂
         </span>
       </router-link>
     </div>
@@ -73,3 +70,22 @@ const handleSearch = () => {
   );
 };
 </script>
+
+<style>
+.fade-slide-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeSlideUp 1s ease-out forwards;
+}
+
+.fade-slide-up.delay {
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeSlideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
