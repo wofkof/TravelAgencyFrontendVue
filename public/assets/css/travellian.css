@@ -379,6 +379,16 @@ body {
   margin: auto;
 }
 
+.main-menu {
+  display: flex;         
+  align-items: center;   
+  flex-wrap: wrap;       
+  gap: 8px;             
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 .main-menu__item {
   display: inline-flex;
   flex-direction: column;
@@ -387,6 +397,7 @@ body {
   overflow: hidden;
   position: relative;
   transition: all 100ms;
+
 }
 .main-menu__item::before {
   content: attr(data-text);
@@ -411,7 +422,7 @@ body {
 }
 .main-menu__item--active,
 .main-menu__item:hover {
-  transform: scale(1.1) translateY(-0.1rem);
+  transform: scale(1.2) translateY(-0.1rem);
   position: relative;
   cursor: default;
 }

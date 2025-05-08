@@ -1,4 +1,23 @@
 <template>
+  <div class="cart-page-container">
+    
+    <ActiveCartItems v-if="activeItems.length > 0" :items="activeItems" />
+
+    <ReconfirmItems
+      v-if="expiredItems.length > 0"
+      :items="expiredItems"
+      class="reconfirm-component-section"
+    />
+    <el-empty
+      v-if="activeItems.length === 0 && expiredItems.length === 0"
+      description="您的購物車是空的"
+      :image-size="180"
+      class="empty-cart-state"
+    >
+      <el-button type="primary" @click="goToExplore">前往探索商品</el-button>
+    </el-empty>
+    <RecommendedTrips v-if="activeItems.length > 0 || expiredItems.length > 0" />
+    </div>
   <div class="shopping-cart">
     <h2>購物車</h2>
     <div v-if="items.length === 0">
@@ -217,3 +236,22 @@ const goToCheckout = () => {
   router.push("/order-form");
 };
 </script>
+
+
+<style scoped>
+/* scoped 樣式只會應用於當前組件的元素 */
+.cart-page-container {
+  max-width: 1080px; /* 限制最大寬度 */
+  margin: 20px auto; /* 上下邊距 20px，左右自動邊距實現水平居中 */
+  padding: 0 15px; /* 容器左右內邊距 15px，避免內容緊貼邊緣 */
+}
+.empty-cart-state { 
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  padding: 40px 0;
+}
+</style>
