@@ -140,6 +140,12 @@ function handleLogin() {
   form.password = form.password.trim();
 
   touched.value = true;
+import axios from 'axios'
+
+async function handleLogin() {
+  form.account = form.account.trim()
+  form.password = form.password.trim()
+  touched.value = true
 
   if (!isValidAccount.value) {
     alert("請輸入有效的手機號碼或信箱格式");
@@ -155,5 +161,27 @@ function handleLogin() {
   alert(`登入成功：帳號 ${form.account}`);
 
   // TODO: emit('login-success') 或關閉 dialog 等
+  try {
+    // 呼叫後端登入 API
+    const response = await axios.post('https://localhost:7265/api/account/login', {
+      account: form.account,
+      password: form.password
+    })
+
+    alert('登入成功')
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      alert('帳號或密碼錯誤')
+    } else {
+      alert('登入失敗，請稍後再試')
+      console.error(error)
+    }
+  }
+}
+
+import { EyeIcon, EyeOffIcon } from 'lucide-vue-next' // 加入圖示
+const showPassword = ref(false)                        // 密碼是否顯示
+function togglePassword() {
+  showPassword.value = !showPassword.value
 }
 </script>
