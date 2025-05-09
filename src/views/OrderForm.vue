@@ -41,7 +41,7 @@
                 title="訂單商品"
                 section-name="items"
                 class="section-card section-items"
-                data-section-name="items"  
+                data-section-name="items"
               >
                  <OrderItemsDisplay :items="selectedOrderItems" />
               </AccordionSection>
@@ -75,7 +75,7 @@
                 title="付款方式"
                 section-name="payment"
                 class="section-card section-payment"
-                data-section-name="payment" 
+                data-section-name="payment"
               >
                  <PaymentOptions v-model="formData.paymentMethod" />
               </AccordionSection>
@@ -91,7 +91,7 @@
                  <EInvoiceForm v-model="formData.eInvoiceInfo" />
               </AccordionSection>
 
-            </el-collapse> 
+            </el-collapse>
 
             <div class="section-card note-section">
                 <h3>備註</h3>
@@ -102,7 +102,7 @@
                   placeholder="有任何特殊需求嗎？（例如：過敏、飲食禁忌、希望與其他訂單同行等）"
                   show-word-limit
                   maxlength="200"
-                  resize="none" 
+                  resize="none"
                 />
             </div>
           </div>
@@ -115,7 +115,7 @@
                 :scroll-to-payment="scrollToPaymentOptions"
                 :is-submitting="isSubmitting"
                 :is-checkout-disabled="isCheckoutButtonDisabled"
-                @submit-order="submitOrder" 
+                @submit-order="submitOrder"
                 class="cost-summary-component" />
           </div>
 
@@ -129,7 +129,7 @@
          type="error"
          show-icon
          style="margin-top: 20px; max-width: 1200px; margin-left: auto; margin-right: auto;"
-         @close="submitError = null" 
+         @close="submitError = null"
        />
     </div>
   </div>
