@@ -119,7 +119,7 @@
       </template>
 
       <!-- 登入時 -->
-        <template v-else>
+        <!-- <template v-else>
           <span style="color: black; white-space: nowrap">歡迎，{{ memberName }}</span>
           <button
             class="auth-menu__item auth-menu__item--btn"
@@ -128,7 +128,91 @@
           >
             登出
           </button>
-        </template>
+        </template> -->
+        <!-- 登入時 -->
+<template v-else>
+  <!-- 使用 flex 容器包覆兩個區塊 -->
+  <div class="flex items-center space-x-4">
+    <!-- 歡迎訊息與下拉選單 -->
+    <div class="relative" ref="menuRef">
+     <button
+  @click="toggleMenu"
+  class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+>
+        歡迎，{{ memberName }}
+      </button>
+
+      <!-- 使用 transition 標籤做過場動畫 -->
+      <transition name="fade">
+        <div
+          v-if="isMenuOpen"
+          class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
+        >
+          <ul class="divide-y divide-gray-100 text-sm text-gray-700">
+            <li>
+              <router-link
+                to="/member/orders"
+                class="block px-4 py-3 hover:bg-gray-50"
+              >
+                📦 會員訂單查詢
+              </router-link>
+            </li>
+            <li>
+              <router-link
+                to="/member/favorite-travelers"
+                class="block px-4 py-3 hover:bg-gray-50"
+              >
+                👥 常用旅客清單
+              </router-link>
+            </li>
+            <li>
+              <router-link
+                to="/member/favorites"
+                class="block px-4 py-3 hover:bg-gray-50"
+              >
+                ❤️ 我的收藏
+              </router-link>
+            </li>
+            <li>
+              <router-link
+                to="/member/comments"
+                class="block px-4 py-3 hover:bg-gray-50"
+              >
+                📝 我的評論
+              </router-link>
+            </li>
+            <li>
+              <router-link
+                to="/member/profile"
+                class="block px-4 py-3 hover:bg-gray-50"
+              >
+                🔐 會員帳號管理
+              </router-link>
+            </li>
+            <li>
+              <button
+                @click="handleLogout"
+                class="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600"
+              >
+                🚪 登出
+              </button>
+            </li>
+          </ul>
+        </div>
+      </transition>
+    </div>
+
+    <!-- 另一個登出按鈕，看要放在列表中還是放外面-->
+    <!-- <button
+      class="auth-menu__item auth-menu__item--btn"
+      @click="handleLogout"
+      style="white-space: nowrap"
+    >
+      登出
+    </button> -->
+  </div>
+</template>
+
       </nav>
       </div>
 
@@ -154,13 +238,14 @@
       </template>
 
 <script setup>
-import { ref } from "vue";
-
+//import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
 
 
@@ -206,6 +291,27 @@ function handleSwitchToForgetPassword() {
   showLogin.value = false;
   showForgetPassword.value = true;
 }
+//會員中心下拉式選單
+const isMenuOpen = ref(false);
+const menuRef = ref(null);
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+const handleClickOutside = (event) => {
+  if (menuRef.value && !menuRef.value.contains(event.target)) {
+    isMenuOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <style>
