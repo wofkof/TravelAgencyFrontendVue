@@ -1,6 +1,5 @@
 <template>
   <div class="cart-page-container">
-    
     <ActiveCartItems v-if="activeItems.length > 0" :items="activeItems" />
 
     <ReconfirmItems
@@ -16,8 +15,10 @@
     >
       <el-button type="primary" @click="goToExplore">前往探索商品</el-button>
     </el-empty>
-    <RecommendedTrips v-if="activeItems.length > 0 || expiredItems.length > 0" />
-    </div>
+    <RecommendedTrips
+      v-if="activeItems.length > 0 || expiredItems.length > 0"
+    />
+  </div>
   <div class="shopping-cart">
     <h2>購物車</h2>
     <div v-if="items.length === 0">
@@ -190,7 +191,6 @@
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia"; // 匯入 storeToRefs
 import { useCartStore } from "@/stores/cart"; // 匯入你的 Store
-import "@/assets/ShoppingCart.css";
 
 const router = useRouter();
 const cartStore = useCartStore(); // 實例化 Store
@@ -237,7 +237,6 @@ const goToCheckout = () => {
 };
 </script>
 
-
 <style scoped>
 /* scoped 樣式只會應用於當前組件的元素 */
 .cart-page-container {
@@ -245,7 +244,7 @@ const goToCheckout = () => {
   margin: 20px auto; /* 上下邊距 20px，左右自動邊距實現水平居中 */
   padding: 0 15px; /* 容器左右內邊距 15px，避免內容緊貼邊緣 */
 }
-.empty-cart-state { 
+.empty-cart-state {
   flex-grow: 1;
   display: flex;
   flex-direction: column;

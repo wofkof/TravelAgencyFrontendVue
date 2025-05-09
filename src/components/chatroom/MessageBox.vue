@@ -87,6 +87,7 @@ import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
 import AudioCall from "@/components/chatroom/AudioCall.vue";
+import { watch } from "vue";
 
 declare global {
   interface Window {
@@ -134,7 +135,7 @@ const openPicker = () => {
   pickerInstance.value = new window.EmojiMart.Picker({
     emojiSize: 20,
     perLine: 6,
-    
+
     previewPosition: "none",
     searchPosition: "none",
     onEmojiSelect: (emoji: any) => {
@@ -176,26 +177,29 @@ const updateReadStatus = async (chatRoomId: number) => {
   await connection.invoke("NotifyRead", chatRoomId, senderId, senderType);
 };
 
-onMounted(async () => {
+onMounted(() => {
   window.addEventListener("click", handleClickOutside);
   // @ts-ignore
   window.isScrolledToBottom = isScrolledToBottom;
 
   if (!chatStore.currentChatRoomId) {
-    chatStore.setCurrentChatRoom(1);
+    chatStore.setCurrentChatRoom(1); 
   }
-
-  const chatRoomId = chatStore.currentChatRoomId;
-
-  await setupSocket(chatRoomId);
-
-  const messages = await getMessages(chatRoomId);
-  chatStore.setMessages(chatRoomId, messages);
-
-  await updateReadStatus(chatRoomId);
-
-  scrollToBottom();
 });
+
+watch(
+  () => chatStore.currentChatRoomId,
+  async (chatRoomId) => {
+    if (!chatRoomId) return;
+
+    await setupSocket(chatRoomId);
+    const messages = await getMessages(chatRoomId);
+    chatStore.setMessages(chatRoomId, messages);
+    await updateReadStatus(chatRoomId);
+    scrollToBottom();
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);
