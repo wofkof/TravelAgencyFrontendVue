@@ -164,7 +164,7 @@ async function handleLogin() {
   }
 
   try {
-    // 呼叫後端登入 API
+    // ✅ 呼叫後端登入 API
     const response = await axios.post(
       "https://localhost:7265/api/account/login",
       {
@@ -172,8 +172,15 @@ async function handleLogin() {
         password: form.password,
       }
     );
+    //將會員名稱存入 localStorage
+    const memberName = response.data.name;
+    localStorage.setItem("memberName", memberName);
 
     alert("登入成功");
+
+    // 導回首頁
+    window.location.href = "/";
+
   } catch (error) {
     if (error.response && error.response.status === 401) {
       alert("帳號或密碼錯誤");

@@ -89,7 +89,7 @@
       </nav>
     </header>
 
-    <!-- ✅ 登入與註冊直接放在 navbar 右側 -->
+    <!--  登入與註冊直接放在 navbar 右側 -->
     <nav
       class="auth-menu"
       style="
@@ -100,43 +100,58 @@
         padding-right: 40px;
       "
     >
-      <a
-        href="#"
-        class="auth-menu__item auth-menu__item--btn1"
-        @click.prevent="showLogin = true"
-        style="white-space: nowrap"
-        >登入</a
-      >
-      <a
-        href="#"
-        class="auth-menu__item auth-menu__item--btn"
-        @click.prevent="showSignUp = true"
-        style="white-space: nowrap; display: inline-block; text-align: center"
-        >註冊</a
-      >
-    </nav>
-  </div>
+     <!-- 未登入 -->
+      <template v-if="!isLoggedIn">
+        <a
+          href="#"
+          class="auth-menu__item auth-menu__item--btn1"
+          @click.prevent="showLogin = true"
+          style="white-space: nowrap"
+          >登入</a
+        >
+        <a
+          href="#"
+          class="auth-menu__item auth-menu__item--btn"
+          @click.prevent="showSignUp = true"
+          style="white-space: nowrap; display: inline-block; text-align: center"
+          >註冊</a
+        >
+      </template>
 
-  <!-- Dialog 區域 -->
-  <el-dialog v-model="showLogin" width="800px" :close-on-click-modal="false">
-    <Login
-      @switchToSignUp="handleSwitchToSignUp"
-      @switch-to-forget="handleSwitchToForgetPassword"
-    />
-  </el-dialog>
+      <!-- 登入時 -->
+        <template v-else>
+          <span style="color: black; white-space: nowrap">歡迎，{{ memberName }}</span>
+          <button
+            class="auth-menu__item auth-menu__item--btn"
+            @click="handleLogout"
+            style="white-space: nowrap"
+          >
+            登出
+          </button>
+        </template>
+      </nav>
+      </div>
 
-  <el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
-    <SignUp @switch-to-login="handleSwitchToLogin" />
-  </el-dialog>
+        <!-- Dialog 區域 -->
+        <el-dialog v-model="showLogin" width="800px" :close-on-click-modal="false">
+          <Login
+            @switchToSignUp="handleSwitchToSignUp"
+            @switch-to-forget="handleSwitchToForgetPassword"
+          />
+        </el-dialog>
 
-  <el-dialog
-    v-model="showForgetPassword"
-    width="800px"
-    :close-on-click-modal="false"
-  >
-    <ForgetPassword @switch-to-login="handleSwitchToLogin" />
-  </el-dialog>
-</template>
+        <el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
+          <SignUp @switch-to-login="handleSwitchToLogin" />
+        </el-dialog>
+
+        <el-dialog
+          v-model="showForgetPassword"
+          width="800px"
+          :close-on-click-modal="false"
+        >
+          <ForgetPassword @switch-to-login="handleSwitchToLogin" />
+        </el-dialog>
+      </template>
 
 <script setup>
 import { ref } from "vue";
@@ -145,11 +160,35 @@ import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 
 // 控制各個 dialog 顯示
 const showLogin = ref(false);
 const showSignUp = ref(false);
 const showForgetPassword = ref(false);
+
+// 登入狀態控制變數
+const isLoggedIn = ref(false);
+const memberName = ref("");
+
+// 頁面載入時檢查登入狀態
+onMounted(() => {
+  const name = localStorage.getItem("memberName");
+  if (name) {
+    isLoggedIn.value = true;
+    memberName.value = name;
+  }
+});
+
+// 登出
+function handleLogout() {
+  localStorage.removeItem("memberName");
+  isLoggedIn.value = false;
+  memberName.value = "";
+  router.push("/");
+}
 
 // 切換邏輯
 function handleSwitchToSignUp() {

@@ -190,7 +190,7 @@
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia"; // 匯入 storeToRefs
 import { useCartStore } from "@/stores/cart"; // 匯入你的 Store
-import "@/assets/ShoppingCart.css";
+//import "@/assets/ShoppingCart.css";
 
 const router = useRouter();
 const cartStore = useCartStore(); // 實例化 Store
