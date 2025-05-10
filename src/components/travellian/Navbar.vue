@@ -133,6 +133,9 @@
           class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
           @click="toggleMenu"
         >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-600" viewBox="0 0 640 512" fill="currentColor">
+    <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm51.2 32H172.8C77.3 288 0 365.3 0 460.8C0 487.5 24.5 512 51.2 512H345.6c26.7 0 51.2-24.5 51.2-51.2C396.8 365.3 319.5 288 224 288z"/>
+  </svg>
           歡迎，{{ memberName }}
           <span :class="isMenuOpen ? 'rotate-180 transition-transform' : 'transition-transform'">▼</span>
         </button>
@@ -143,19 +146,19 @@
         >
           <ul class="divide-y divide-gray-100 text-sm text-gray-700">
             <li>
-              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-gray-50 rounded-t-xl">📦 歷史訂單查詢</router-link>
+              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl">📦 歷史訂單查詢</router-link>
             </li>
             <li>
-              <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-gray-50">👥 常用旅客清單</router-link>
+              <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-red-50">👥 常用旅客清單</router-link>
             </li>
             <li>
-              <router-link to="/member/favorites" class="block px-4 py-3 hover:bg-gray-50">❤️ 我的收藏</router-link>
+              <router-link to="/member/favorites" class="block px-4 py-3 hover:bg-red-50">❤️ 我的收藏</router-link>
             </li>
             <li>
-              <router-link to="/member/comments" class="block px-4 py-3 hover:bg-gray-50">🗝 我的評論</router-link>
+              <router-link to="/member/comments" class="block px-4 py-3 hover:bg-red-50">🗝 我的評論</router-link>
             </li>
             <li>
-              <router-link to="/member/profile" class="block px-4 py-3 hover:bg-gray-50">🔐 會員帳號管理</router-link>
+              <router-link to="/member/profile" class="block px-4 py-3 hover:bg-red-50">🔐 會員帳號管理</router-link>
             </li>
             <li>
               <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-b-xl text-red-600">🚪 登出</button>
@@ -170,21 +173,21 @@
       </div>
 
         <!-- Dialog 區域 -->
-        <el-dialog v-model="showLogin" width="800px" :close-on-click-modal="false">
+        <el-dialog v-model="showLogin" width="800px" top="0" :close-on-click-modal="true">
           <Login
             @switchToSignUp="handleSwitchToSignUp"
             @switch-to-forget="handleSwitchToForgetPassword"
           />
         </el-dialog>
 
-        <el-dialog v-model="showSignUp" width="800px" :close-on-click-modal="false">
+        <el-dialog v-model="showSignUp" width="800px" top="0" :close-on-click-modal="true">
           <SignUp @switch-to-login="handleSwitchToLogin" />
         </el-dialog>
 
         <el-dialog
           v-model="showForgetPassword"
-          width="800px"
-          :close-on-click-modal="false"
+          width="800px" top="0"
+          :close-on-click-modal="true"
         >
           <ForgetPassword @switch-to-login="handleSwitchToLogin" />
         </el-dialog>
