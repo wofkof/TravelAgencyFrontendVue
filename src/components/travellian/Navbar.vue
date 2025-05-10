@@ -143,7 +143,7 @@
         >
           <ul class="divide-y divide-gray-100 text-sm text-gray-700">
             <li>
-              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-gray-50">📦 歷史訂單查詢</router-link>
+              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-gray-50 rounded-t-xl">📦 歷史訂單查詢</router-link>
             </li>
             <li>
               <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-gray-50">👥 常用旅客清單</router-link>
@@ -158,7 +158,7 @@
               <router-link to="/member/profile" class="block px-4 py-3 hover:bg-gray-50">🔐 會員帳號管理</router-link>
             </li>
             <li>
-              <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600">🚪 登出</button>
+              <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-b-xl text-red-600">🚪 登出</button>
             </li>
           </ul>
         </div>

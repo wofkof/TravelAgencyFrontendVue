@@ -68,12 +68,13 @@ function togglePrivacy() {
   showTos.value = false
 }
 
-function  leClickOutside(event) {
+function handleClickOutside(event) {
   if (!wrapperRef.value.contains(event.target)) {
     showTos.value = false
     showPrivacy.value = false
   }
 }
+
 
 // 掛載與卸載事件監聽器（控制點擊彈窗外部關閉條款)
 onMounted(() => {
