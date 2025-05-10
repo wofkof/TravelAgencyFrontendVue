@@ -124,77 +124,45 @@
       <div class="flex items-center space-x-4">
       <!-- 歡迎訊息與下拉選單 -->
       <div
-          class="relative"
-          ref="menuRef"
-          @mouseenter="isMenuOpen = true"
-          @mouseleave="isMenuOpen = false"
+        class="relative"
+        ref="menuRef"
+        @mouseenter="openMenu"
+        @mouseleave="closeMenu"
+      >
+        <button
+          class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+          @click="toggleMenu"
         >
-          <button
-            class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
-          >
-            歡迎，{{ memberName }}
-            <span :class="isMenuOpen ? 'rotate-180 transition-transform' : 'transition-transform'">
-              ▼
-            </span>
-          </button>
+          歡迎，{{ memberName }}
+          <span :class="isMenuOpen ? 'rotate-180 transition-transform' : 'transition-transform'">▼</span>
+        </button>
 
-          <div
-            v-if="isMenuOpen"
-            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
-          >
-            <ul class="divide-y divide-gray-100 text-sm text-gray-700">
-              <li>
-                <router-link
-                  to="/member/orders"
-                  class="block px-4 py-3 hover:bg-gray-50"
-                >
-                  📦 歷史訂單查詢
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  to="/member/favorite-travelers"
-                  class="block px-4 py-3 hover:bg-gray-50"
-                >
-                  👥 常用旅客清單
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  to="/member/favorites"
-                  class="block px-4 py-3 hover:bg-gray-50"
-                >
-                  ❤️ 我的收藏
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  to="/member/comments"
-                  class="block px-4 py-3 hover:bg-gray-50"
-                >
-                  🗝 我的評論
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  to="/member/profile"
-                  class="block px-4 py-3 hover:bg-gray-50"
-                >
-                  🔐 會員帳號管理
-                </router-link>
-              </li>
-              <li>
-                <button
-                  @click="handleLogout"
-                  class="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600"
-                >
-                  🚪 登出
-                </button>
-              </li>
-            </ul>
-          </div>
+        <div
+          v-if="isMenuOpen"
+          class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
+        >
+          <ul class="divide-y divide-gray-100 text-sm text-gray-700">
+            <li>
+              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-gray-50">📦 歷史訂單查詢</router-link>
+            </li>
+            <li>
+              <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-gray-50">👥 常用旅客清單</router-link>
+            </li>
+            <li>
+              <router-link to="/member/favorites" class="block px-4 py-3 hover:bg-gray-50">❤️ 我的收藏</router-link>
+            </li>
+            <li>
+              <router-link to="/member/comments" class="block px-4 py-3 hover:bg-gray-50">🗝 我的評論</router-link>
+            </li>
+            <li>
+              <router-link to="/member/profile" class="block px-4 py-3 hover:bg-gray-50">🔐 會員帳號管理</router-link>
+            </li>
+            <li>
+              <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600">🚪 登出</button>
+            </li>
+          </ul>
         </div>
-
+      </div>
         </div>
       </template>
 
@@ -232,7 +200,6 @@ import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認�
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
 
 // 控制各個 dialog 顯示
 const showLogin = ref(false);
@@ -276,27 +243,28 @@ function handleSwitchToForgetPassword() {
   showLogin.value = false;
   showForgetPassword.value = true;
 }
-//會員中心下拉式選單
+// 會員中心下拉選單開關（設定hover + click 並存）
 const isMenuOpen = ref(false);
 const menuRef = ref(null);
+let hoverTimeout = null; // 用於延遲關閉選單
 
-const toggleMenu = () => {
+function toggleMenu() {
+  clearTimeout(hoverTimeout);
   isMenuOpen.value = !isMenuOpen.value;
-};
+}
 
-const handleClickOutside = (event) => {
-  if (menuRef.value && !menuRef.value.contains(event.target)) {
+// 滑鼠移入選單時打開
+function openMenu() {
+  clearTimeout(hoverTimeout);
+  isMenuOpen.value = true;
+}
+
+// 滑鼠移出選單時延遲關閉
+function closeMenu() {
+  hoverTimeout = setTimeout(() => {
     isMenuOpen.value = false;
-  }
-};
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
+  }, 200); 
+}
 </script>
 
 <style>
