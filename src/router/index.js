@@ -35,11 +35,11 @@ const routes = [
     name: "SignUp",
     component: () => import("@/components/SignUp/SignUp.vue"),
   },
-  // 會員中心測試
+  // 會員中心
   {
-    path: "/member-center",
-    name: "MemberCenter",
-    component: () => import("@/views/MemberCenterView.vue"),
+  path: "/member/:section?",
+  name: "MemberCenter",
+  component: () => import("@/views/MemberCenterView.vue"),
   },
   {
     path: "/cart", // 購物車頁面的路徑

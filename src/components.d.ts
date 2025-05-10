@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccordionSection: typeof import('./components/OrderForm/AccordionSection.vue')['default']
+    AccountSetting: typeof import('./components/MemberCenter/AccountSetting.vue')['default']
     ActiveCartItems: typeof import('./components/ShoppingCart/ActiveCartItems.vue')['default']
     AudioCall: typeof import('./components/chatroom/AudioCall.vue')['default']
     BigBanner: typeof import('./components/official/BigBanner.vue')['default']
@@ -23,6 +24,8 @@ declare module 'vue' {
     CartPreviewIcon: typeof import('./components/tools/CartPreviewIcon.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
     CheckoutSteps: typeof import('./components/tools/CheckoutSteps.vue')['default']
+    Collection: typeof import('./components/MemberCenter/Collection.vue')['default']
+    Comment: typeof import('./components/MemberCenter/Comment.vue')['default']
     Content: typeof import('./components/customtravel/Content.vue')['default']
     ContentDialog: typeof import('./components/customtravel/ContentDialog.vue')['default']
     CostSummary: typeof import('./components/OrderForm/CostSummary.vue')['default']
@@ -66,6 +69,7 @@ declare module 'vue' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FavoriteIcon: typeof import('./components/tools/FavoriteIcon.vue')['default']
+    FavoriteTraveler: typeof import('./components/MemberCenter/FavoriteTraveler.vue')['default']
     FilterBar: typeof import('./components/official/FilterBar.vue')['default']
     FilterCard: typeof import('./components/official/filterCard.vue')['default']
     FloatingChat: typeof import('./components/chatroom/FloatingChat.vue')['default']
@@ -86,6 +90,7 @@ declare module 'vue' {
     Navbar: typeof import('./components/travellian/Navbar.vue')['default']
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
     NormalButton: typeof import('./components/official/normalButton.vue')['default']
+    Order: typeof import('./components/MemberCenter/Order.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
     PageHeader: typeof import('./components/Visa/PageHeader.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']

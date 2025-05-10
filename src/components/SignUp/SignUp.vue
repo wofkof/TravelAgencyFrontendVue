@@ -40,7 +40,7 @@ const submit = async () => {
 
     alert('註冊成功')
 
-    // ✅ 清空欄位再切換畫面，避免 race condition
+    // 清空欄位再切換畫面，避免 race condition
     name.value = ''
     phone.value = ''
     email.value = ''
@@ -68,7 +68,7 @@ function togglePrivacy() {
   showTos.value = false
 }
 
-function handleClickOutside(event) {
+function  leClickOutside(event) {
   if (!wrapperRef.value.contains(event.target)) {
     showTos.value = false
     showPrivacy.value = false
@@ -159,7 +159,8 @@ function toggleConfirmPassword() {
       :type="showPassword ? 'text' : 'password'"
       id="password"
       v-model="password"
-      placeholder="請設定6~12位數密碼"
+      placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
+"
       required
       class="pr-10"
     />
