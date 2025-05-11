@@ -1,26 +1,39 @@
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useChatStore } from "@/stores/chatStore";
+import { getApiBaseUrl } from "./getApiBaseUrl";
 
-const connection = new HubConnectionBuilder()
-  .withUrl(import.meta.env.VITE_API_URL.replace("/api", "/chathub"))
-  .withAutomaticReconnect()
-  .build();
-
+let connection;
 let isListening = false;
 
 export const setupSocket = async (chatRoomId) => {
+  if (!connection) {
+    const chatStore = useChatStore();
+    const url =
+      getApiBaseUrl() +
+      `/chathub?userType=${chatStore.memberType}&userId=${chatStore.memberId}`;
+
+    connection = new HubConnectionBuilder()
+      .withUrl(url)
+      .withAutomaticReconnect()
+      .build();
+  }
+
   if (connection.state === "Disconnected") {
     await connection.start();
   }
 
   // 每次都加入目標聊天室（支援切換聊天室）
-  await connection.invoke("JoinGroup", chatRoomId.toString());
+  if (chatRoomId != null) {
+    await connection.invoke("JoinGroup", chatRoomId.toString());
+  }
 
   if (isListening) return;
 
   connection.on("ReceiveMessage", async (msg) => {
     const chatStore = useChatStore();
-    const isSelf = msg.senderId === 11110 && msg.senderType === "Member";
+    const isSelf =
+      msg.senderId === chatStore.memberId &&
+      msg.senderType === chatStore.memberType;
     const isCurrentRoom = msg.chatRoomId === chatStore.currentChatRoomId;
 
     chatStore.addMessage(msg.chatRoomId, {
@@ -34,8 +47,17 @@ export const setupSocket = async (chatRoomId) => {
 
     if (!isSelf && isCurrentRoom) {
       // 當前聊天室收到對方訊息：立即標記為已讀 + 通知後端
-      await markAsRead(msg.chatRoomId, 11110, "Member");
-      await connection.invoke("NotifyRead", msg.chatRoomId, 11110, "Member");
+      await markAsRead(
+        msg.chatRoomId,
+        chatStore.memberId,
+        chatStore.memberType
+      );
+      await connection.invoke(
+        "NotifyRead",
+        msg.chatRoomId,
+        chatStore.memberId,
+        chatStore.memberType
+      );
     }
 
     // 顯示紅點提示：聊天室未開啟、不是當前聊天室、沒滾到最底
@@ -78,5 +100,7 @@ export const sendMessage = async (
     content,
   });
 };
+
+export const getConnection = () => connection;
 
 export default connection;

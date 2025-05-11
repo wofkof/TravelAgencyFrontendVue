@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from "vue";
 import { useChatStore } from "@/stores/chatStore";
-import connection, { setupSocket, sendMessage } from "@/utils/socket";
+import { setupSocket, sendMessage, getConnection } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
 import { getMessages, markAsRead } from "@/apis/messageApi";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
@@ -157,8 +157,9 @@ const senderType = "Member";
 const senderId = 11110;
 
 const updateReadStatus = async (chatRoomId: number) => {
+  const conn = getConnection();
   await markAsRead(chatRoomId, senderId, senderType);
-  await connection.invoke("NotifyRead", chatRoomId, senderId, senderType);
+  await conn.invoke("NotifyRead", chatRoomId, senderId, senderType);
 };
 
 onMounted(() => {

@@ -1,4 +1,4 @@
-import connection from "@/utils/socket";
+import { getConnection } from "@/utils/socket";
 import api from "@/utils/api";
 
 let peer;
@@ -43,15 +43,26 @@ export async function callUser(targetUserId) {
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
 
-  await connection.invoke("SendCallOffer", connectionId, offer);
-  console.log("[WebRTC] 已送出 offer 給", connectionId);
+  const conn = getConnection();
+  if (conn?.state === "Connected") {
+    await conn.invoke("SendCallOffer", connectionId, offer);
+    console.log("[WebRTC] 已送出 offer 給", connectionId);
+  } else {
+    console.warn("[WebRTC] 無法送出 offer，SignalR 尚未連線");
+  }
 }
 
 export function listenForCallEvents() {
-  if (hasStartedListening || !connection) return;
+  if (hasStartedListening) return;
+  const conn = getConnection();
+  if (!conn) {
+    console.warn("[WebRTC] 尚未初始化 SignalR connection");
+    return;
+  }
+
   hasStartedListening = true;
 
-  connection.on("ReceiveCallOffer", async (fromId, offer) => {
+  conn.on("ReceiveCallOffer", async (fromId, offer) => {
     console.log("[WebRTC] 收到 offer，來自", fromId);
     remoteConnectionId = fromId;
     await createPeerConnection();
@@ -60,16 +71,21 @@ export function listenForCallEvents() {
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
 
-    await connection.invoke("SendCallAnswer", fromId, answer);
-    console.log("[WebRTC] 已送出 answer 給", fromId);
+    const conn = getConnection();
+    if (conn?.state === "Connected") {
+      await conn.invoke("SendCallAnswer", fromId, answer);
+      console.log("[WebRTC] 已送出 answer 給", fromId);
+    } else {
+      console.warn("[WebRTC] 無法送出 answer，SignalR 尚未連線");
+    }
   });
 
-  connection.on("ReceiveCallAnswer", async (fromId, answer) => {
+  conn.on("ReceiveCallAnswer", async (fromId, answer) => {
     console.log("[WebRTC] 收到 answer，來自", fromId);
     await peer.setRemoteDescription(new RTCSessionDescription(answer));
   });
 
-  connection.on("ReceiveIceCandidate", async (fromId, candidate) => {
+  conn.on("ReceiveIceCandidate", async (fromId, candidate) => {
     console.log("[WebRTC] 收到 ICE candidate，來自", fromId);
     await peer.addIceCandidate(new RTCIceCandidate(candidate));
   });
@@ -83,11 +99,12 @@ async function createPeerConnection() {
   peer.onicecandidate = (event) => {
     if (event.candidate) {
       console.log("[WebRTC] 發送 ICE candidate");
-      connection.invoke(
-        "SendIceCandidate",
-        remoteConnectionId,
-        event.candidate
-      );
+      const conn = getConnection();
+      if (conn?.state === "Connected") {
+        conn.invoke("SendIceCandidate", remoteConnectionId, event.candidate);
+      } else {
+        console.warn("[WebRTC] 無法送出 ICE candidate，SignalR 尚未連線");
+      }
     }
   };
 

@@ -1,28 +1,25 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import IncomingCallPopup from "@/components/chatroom/IncomingCallPopup.vue";
-import {
-  listenForCallEvents,
-  getPeer,
-  startLocalStream,
-} from "@/services/webrtcService";
-import connection from "@/utils/socket";
+import { listenForCallEvents, getPeer } from "@/services/webrtcService";
+import { getConnection, setupSocket } from "@/utils/socket"; // 確保有 export 這些方法
 
 const showPopup = ref(false);
 const incomingFromId = ref(null);
 const incomingOffer = ref(null);
 
-onMounted(() => {
-  if (connection.state === "Connected") {
-    bindOfferHandler();
-  } else {
-    connection.start().then(bindOfferHandler);
+onMounted(async () => {
+  await setupSocket(null); 
+  const connection = getConnection();
+  if (connection.state === "Disconnected") {
+    await connection.start();
   }
 
-  listenForCallEvents(); // 其他事件仍集中處理（Answer, ICE）
+  bindOfferHandler(connection);
+  listenForCallEvents();
 });
 
-function bindOfferHandler() {
+function bindOfferHandler(connection) {
   connection.on("ReceiveCallOffer", async (fromId, offer) => {
     incomingFromId.value = fromId;
     incomingOffer.value = offer;
@@ -44,7 +41,9 @@ const acceptCall = async () => {
   );
   const answer = await peer.createAnswer();
   await peer.setLocalDescription(answer);
-  await connection.invoke("SendCallAnswer", incomingFromId.value, answer);
+
+  const connection = getConnection();
+  await connection?.invoke("SendCallAnswer", incomingFromId.value, answer);
 };
 
 const rejectCall = () => {
