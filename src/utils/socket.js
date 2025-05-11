@@ -61,20 +61,6 @@ export const setupSocket = async (chatRoomId) => {
   });
 
   isListening = true;
-
-  connection.on("ReceiveCallOffer", async (fromId, offer) => {
-    // create peer connection
-    // setRemoteDescription(offer)
-    // create answer and send back via connection.invoke("SendCallAnswer", ...)
-  });
-
-  connection.on("ReceiveCallAnswer", async (fromId, answer) => {
-    // peer.setRemoteDescription(answer)
-  });
-
-  connection.on("ReceiveIceCandidate", async (fromId, candidate) => {
-    // peer.addIceCandidate(candidate)
-  });
 };
 
 export const sendMessage = async (

@@ -5,6 +5,7 @@ import HeroContent from "@/components/travellian/HeroSection.vue";
 import FooterSection from "@/components/travellian/FooterSection.vue";
 import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
 import FloatingChat from "@/components/chatroom/FloatingChat.vue";
+import GlobalCallHandler from "@/components/chatroom/GlobalCallHandler.vue";
 import { computed } from "vue"; // <-- 匯入 computed
 import { useRoute } from "vue-router"; // <--  僅保留 useRoute 的引入
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue"; // --- 匯入新的步驟條元件 ---
@@ -26,6 +27,7 @@ const showCheckoutSteps = computed(() => {
   <Navbar />
   <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
+  <GlobalCallHandler />
   <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>
