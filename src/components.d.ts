@@ -65,6 +65,7 @@ declare module 'vue' {
     ElTimeSelect: typeof import('element-plus/es')['ElTimeSelect']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    EmojiButton: typeof import('./components/chatroom/EmojiButton.vue')['default']
     FavoriteIcon: typeof import('./components/tools/FavoriteIcon.vue')['default']
     FilterBar: typeof import('./components/official/FilterBar.vue')['default']
     FilterCard: typeof import('./components/official/filterCard.vue')['default']
