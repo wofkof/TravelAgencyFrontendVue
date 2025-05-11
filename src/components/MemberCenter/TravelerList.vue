@@ -11,29 +11,29 @@
       </button>
     </div>
 
-    <table class="w-full table-auto border">
-      <thead>
-        <tr class="bg-gray-100 text-left">
-          <th class="px-4 py-2">中文姓名</th>
-          <th class="px-4 py-2">出生年月日</th>
-          <th class="px-4 py-2 text-center">操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="t in travelers" :key="t.id">
-          <td class="px-4 py-2">{{ t.chineseName }}</td>
-          <td class="px-4 py-2">{{ t.birthDate }}</td>
-          <td class="px-4 py-2 text-center">
-            <button @click="viewTraveler(t)" class="text-gray-700 hover:underline mr-2">查看</button>
-            <button @click="editTraveler(t)" class="text-blue-600 hover:underline mr-2">編輯</button>
-            <button @click="deleteTraveler(t.id)" class="text-red-600 hover:underline">刪除</button>
-          </td>
-        </tr>
-        <tr v-if="travelers.length === 0">
-          <td colspan="3" class="text-center py-4 text-gray-500">尚無旅客資料</td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-if="travelers.length === 0" class="text-center text-gray-500 py-4">
+      尚無旅客資料
+    </div>
+
+    <div v-for="(t, index) in travelers" :key="t.id" class="border border-gray-200 rounded-md mb-3">
+      <div
+        class="bg-gray-100 px-4 py-3 cursor-pointer flex justify-between items-center"
+        @click="toggleAccordion(t.id)"
+      >
+        <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
+        <span>{{ expandedTravelerId === t.id ? '▲' : '▼' }}</span>
+      </div>
+
+      <div v-show="expandedTravelerId === t.id" class="px-4 py-3">
+        <p><strong>出生年月日：</strong>{{ t.birthDate }}</p>
+        <!-- 可以依需求加上更多欄位 -->
+        <div class="mt-3 flex gap-4">
+          <button @click="viewTraveler(t)" class="text-gray-700 hover:underline">查看</button>
+          <button @click="editTraveler(t)" class="text-blue-600 hover:underline">編輯</button>
+          <button @click="deleteTraveler(t.id)" class="text-red-600 hover:underline">刪除</button>
+        </div>
+      </div>
+    </div>
 
     <!-- 彈出 Modal 表單 -->
     <TravelerFormModal
@@ -45,6 +45,7 @@
       @close="closeModal"
     />
   </div>
+
 </template>
 
 <script>
@@ -58,10 +59,15 @@ export default {
       showForm: false,
       selectedTraveler: {},
       isEditing: false,
-      isReadonly: false
+      isReadonly: false,
+      expandedTravelerId: null // 控制展開的旅客
     }
   },
   methods: {
+    // ✅ 關鍵補回的 toggleAccordion 方法
+    toggleAccordion(id) {
+      this.expandedTravelerId = this.expandedTravelerId === id ? null : id
+    },
     handleAdd() {
       this.selectedTraveler = {}
       this.isEditing = false
