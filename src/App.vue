@@ -9,6 +9,7 @@ import GlobalCallHandler from "@/components/chatroom/GlobalCallHandler.vue";
 import { computed } from "vue"; // <-- 匯入 computed
 import { useRoute } from "vue-router"; // <--  僅保留 useRoute 的引入
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue"; // --- 匯入新的步驟條元件 ---
+import AudioCall from "./components/chatroom/AudioCall.vue";
 
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route
@@ -44,6 +45,7 @@ const showCheckoutSteps = computed(() => {
   </div>
 
   <FloatingChat />
+  <AudioCall ref="audioCallRef" />
 
   <NewsletterSection />
   <FooterSection />

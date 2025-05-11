@@ -46,7 +46,9 @@
         <!-- 錄音按鈕 -->
         <VoiceUploader />
         <!-- 通話按鈕 -->
-        <AudioCall />
+        <el-button type="success" @click="startCall()" size="small" plain circle
+          ><el-icon><Phone /></el-icon
+        ></el-button>
       </div>
     </div>
 
@@ -70,7 +72,6 @@ import EmojiButton from "@/components/chatroom/EmojiButton.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
-import AudioCall from "@/components/chatroom/AudioCall.vue";
 import { watch } from "vue";
 
 declare global {
@@ -85,6 +86,13 @@ const pickerVisible = ref(false);
 const pickerContainer = ref<HTMLElement | null>(null);
 const pickerInstance = ref<any>(null);
 const scrollRef = ref();
+const audioCallRef = ref();
+
+const startCall = () => {
+  // @ts-ignore
+  window.audioCallRef?.startCall();
+  audioCallRef.value?.startCall();
+};
 
 function isScrolledToBottom() {
   const wrap = scrollRef.value?.wrapRef;
@@ -168,7 +176,7 @@ onMounted(() => {
   window.isScrolledToBottom = isScrolledToBottom;
 
   if (!chatStore.currentChatRoomId) {
-    chatStore.setCurrentChatRoom(1); 
+    chatStore.setCurrentChatRoom(1);
   }
 });
 

@@ -143,6 +143,28 @@ export async function createPeerConnection(remoteId) {
   });
 }
 
+export function endCall() {
+  if (peer) {
+    peer.close();
+    peer = null;
+  }
+
+  if (localStream) {
+    localStream.getTracks().forEach((track) => track.stop());
+    localStream = null;
+  }
+
+  remoteStream = null;
+  remoteConnectionId = null;
+
+  const remoteAudio = document.getElementById("remote-audio");
+  if (remoteAudio) {
+    remoteAudio.srcObject = null;
+  }
+
+  console.log("[WebRTC] 通話已結束，所有資源清除");
+}
+
 export function getPeer() {
   return peer;
 }
