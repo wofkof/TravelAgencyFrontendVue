@@ -28,6 +28,7 @@ const showCheckoutSteps = computed(() => {
   <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
   <GlobalCallHandler />
+  <audio id="remote-audio" autoplay playsinline style="display: none"></audio>
   <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>

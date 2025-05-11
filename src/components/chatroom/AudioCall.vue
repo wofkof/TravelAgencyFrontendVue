@@ -9,8 +9,6 @@
     >
       <el-icon><Phone /></el-icon>
     </el-button>
-
-    <audio id="remote-audio" autoplay></audio>
   </div>
 </template>
 
