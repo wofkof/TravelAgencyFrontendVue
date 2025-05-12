@@ -32,6 +32,7 @@ import {
   endCall,
   listenForCallEvents,
   acceptCall,
+  onRemoteAnswer,
 } from "@/services/webrtcService";
 import { getConnection } from "@/utils/socket";
 import { useChatStore } from "@/stores/chatStore";
@@ -62,8 +63,6 @@ const acceptIncomingCall = async () => {
   callStatus.value = "接通中...";
   await acceptCall(incomingFromId.value, incomingOffer.value);
   isIncomingCall.value = false;
-  callStatus.value = "通話中...";
-  startTimer();
 };
 
 const rejectIncomingCall = async () => {
@@ -133,6 +132,12 @@ onMounted(() => {
     visible.value = true;
     isIncomingCall.value = true;
     callStatus.value = "📞 來電中...";
+  });
+
+  onRemoteAnswer(() => {
+    console.log("[AudioCall] 對方已接聽！");
+    callStatus.value = "通話中...";
+    startTimer();
   });
 
   const conn = getConnection();

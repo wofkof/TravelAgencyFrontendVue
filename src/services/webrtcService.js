@@ -7,6 +7,11 @@ let remoteStream;
 let remoteConnectionId = null;
 let hasStartedListening = false;
 let incomingCallHandler = null;
+let onAnswerReceived = null;
+
+export function onRemoteAnswer(callback) {
+  onAnswerReceived = callback;
+}
 
 export async function startLocalStream() {
   localStream = await navigator.mediaDevices.getUserMedia({
@@ -74,6 +79,9 @@ export function listenForCallEvents(onOffer) {
   conn.on("ReceiveCallAnswer", async (fromId, answer) => {
     console.log("[WebRTC] 收到 answer，來自", fromId);
     await peer.setRemoteDescription(new RTCSessionDescription(answer));
+    if (typeof onAnswerReceived === "function") {
+      onAnswerReceived();
+    }
   });
 
   conn.on("ReceiveIceCandidate", async (fromId, candidate) => {
@@ -131,6 +139,16 @@ export async function createPeerConnection(remoteId) {
       console.log("[WebRTC] 設定 remote-audio 成功");
     } else {
       console.warn("[WebRTC] 無法找到 #remote-audio 元素");
+    }
+  };
+
+  peer.onconnectionstatechange = () => {
+    console.log("[WebRTC] 連線狀態：", peer.connectionState);
+    if (
+      peer.connectionState === "failed" ||
+      peer.connectionState === "disconnected"
+    ) {
+      endCall();
     }
   };
 
