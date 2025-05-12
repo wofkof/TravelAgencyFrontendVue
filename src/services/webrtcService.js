@@ -1,3 +1,4 @@
+// webrtcService.js
 import { getConnection } from "@/utils/socket";
 import api from "@/utils/api";
 
@@ -9,14 +10,19 @@ let hasStartedListening = false;
 let incomingCallHandler = null;
 let onAnswerReceived = null;
 
+export function getLocalStream() {
+  return localStream;
+}
+
 export function onRemoteAnswer(callback) {
   onAnswerReceived = callback;
 }
 
-export async function startLocalStream() {
+export async function startLocalStream(useVideo = false) {
+  console.log("[WebRTC] 啟用 local stream, video:", useVideo);
   localStream = await navigator.mediaDevices.getUserMedia({
     audio: true,
-    video: false,
+    video: useVideo,
   });
   return localStream;
 }
@@ -36,7 +42,7 @@ export async function getConnectionId(userType, userId) {
   }
 }
 
-export async function callUser(targetUserId) {
+export async function callUser(targetUserId, useVideo = false) {
   const connectionId = await getConnectionId("Employee", targetUserId);
   if (!connectionId) {
     alert("對方未上線或無法通話");
@@ -44,7 +50,7 @@ export async function callUser(targetUserId) {
   }
 
   remoteConnectionId = connectionId;
-  await createPeerConnection(connectionId); // 💡 傳入對方 ID
+  await createPeerConnection(connectionId, useVideo); // 傳入對方 ID
 
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
@@ -90,9 +96,9 @@ export function listenForCallEvents(onOffer) {
   });
 }
 
-export async function acceptCall(fromId, offer) {
+export async function acceptCall(fromId, offer, useVideo = false) {
   remoteConnectionId = fromId;
-  await createPeerConnection(fromId);
+  await createPeerConnection(fromId, useVideo);
   await peer.setRemoteDescription(new RTCSessionDescription(offer));
 
   const answer = await peer.createAnswer();
@@ -105,7 +111,7 @@ export async function acceptCall(fromId, offer) {
   }
 }
 
-export async function createPeerConnection(remoteId) {
+export async function createPeerConnection(remoteId, useVideo = false) {
   remoteConnectionId = remoteId;
 
   peer = new RTCPeerConnection({
@@ -133,13 +139,26 @@ export async function createPeerConnection(remoteId) {
   peer.ontrack = (event) => {
     console.log("[WebRTC] 收到遠端 track", event.streams);
     remoteStream = event.streams[0];
-    const remoteAudio = document.getElementById("remote-audio");
-    if (remoteAudio) {
-      remoteAudio.srcObject = remoteStream;
-      console.log("[WebRTC] 設定 remote-audio 成功");
-    } else {
-      console.warn("[WebRTC] 無法找到 #remote-audio 元素");
-    }
+    // 通話邏輯
+    setTimeout(() => {
+      const remoteAudio = document.getElementById("remote-audio");
+      if (remoteAudio) {
+        remoteAudio.srcObject = remoteStream;
+        console.log("[WebRTC] 設定 remote-audio 成功");
+      } else {
+        console.warn("[WebRTC] 無法找到 #remote-audio 元素");
+      }
+
+      if (remoteStream.getVideoTracks().length > 0) {
+        const remoteVideo = document.getElementById("remote-video");
+        if (remoteVideo) {
+          remoteVideo.srcObject = remoteStream;
+          console.log("[WebRTC] 設定 remote-video 成功");
+        } else {
+          console.warn("[WebRTC] 無法找到 #remote-video 元素");
+        }
+      }
+    }, 500); // 等 0.5 秒
   };
 
   peer.onconnectionstatechange = () => {
@@ -153,23 +172,42 @@ export async function createPeerConnection(remoteId) {
   };
 
   if (!localStream) {
-    localStream = await startLocalStream();
+    localStream = await startLocalStream(useVideo);
   }
 
   localStream.getTracks().forEach((track) => {
     peer.addTrack(track, localStream);
   });
+
+  const localVideo = document.getElementById("local-video");
+  if (localVideo && localStream) {
+    localVideo.srcObject = localStream;
+  }
 }
 
-export function endCall() {
+export function endCall({ delayRelease = true } = {}) {
   if (peer) {
     peer.close();
     peer = null;
   }
 
+  const localVideo = document.getElementById("local-video");
+  if (localVideo) localVideo.srcObject = null;
+
   if (localStream) {
-    localStream.getTracks().forEach((track) => track.stop());
-    localStream = null;
+    if (delayRelease) {
+      setTimeout(() => {
+        if (localStream) {
+          localStream.getTracks().forEach((track) => track.stop());
+          localStream = null;
+          console.log("[WebRTC] 已延遲釋放 localStream");
+        }
+      }, 3000);
+    } else {
+      localStream.getTracks().forEach((track) => track.stop());
+      localStream = null;
+      console.log("[WebRTC] 已立即釋放 localStream");
+    }
   }
 
   remoteStream = null;
@@ -178,6 +216,11 @@ export function endCall() {
   const remoteAudio = document.getElementById("remote-audio");
   if (remoteAudio) {
     remoteAudio.srcObject = null;
+  }
+
+  const remoteVideo = document.getElementById("remote-video");
+  if (remoteVideo) {
+    remoteVideo.srcObject = null;
   }
 
   console.log("[WebRTC] 通話已結束，所有資源清除");

@@ -1,3 +1,4 @@
+<!-- MessageBox.vue -->
 <template>
   <div class="message-area">
     <el-scrollbar ref="scrollRef" class="message-list">
@@ -46,8 +47,22 @@
         <!-- 錄音按鈕 -->
         <VoiceUploader />
         <!-- 通話按鈕 -->
-        <el-button type="success" @click="startCall()" size="small" plain circle
+        <el-button
+          type="success"
+          @click="startAudioCall()"
+          size="small"
+          plain
+          circle
           ><el-icon><Phone /></el-icon
+        ></el-button>
+        <!-- 視訊通話按鈕 -->
+        <el-button
+          type="primary"
+          @click="startVideoCall()"
+          size="small"
+          plain
+          circle
+          ><el-icon><VideoCamera /></el-icon
         ></el-button>
       </div>
     </div>
@@ -62,7 +77,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onBeforeUnmount, nextTick } from "vue";
+import {
+  ref,
+  onMounted,
+  computed,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import { setupSocket, sendMessage, getConnection } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
@@ -72,7 +94,6 @@ import EmojiButton from "@/components/chatroom/EmojiButton.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
-import { watch } from "vue";
 
 declare global {
   interface Window {
@@ -86,12 +107,17 @@ const pickerVisible = ref(false);
 const pickerContainer = ref<HTMLElement | null>(null);
 const pickerInstance = ref<any>(null);
 const scrollRef = ref();
-const audioCallRef = ref();
 
-const startCall = () => {
+// 通話邏輯
+const startAudioCall = () => {
   // @ts-ignore
-  window.audioCallRef?.startCall();
-  audioCallRef.value?.startCall();
+  window.audioCallRef?.startCall(false);
+};
+
+// 視訊邏輯
+const startVideoCall = () => {
+  // @ts-ignore
+  window.audioCallRef?.startCall(true);
 };
 
 function isScrolledToBottom() {
