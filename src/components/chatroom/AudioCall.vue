@@ -63,6 +63,8 @@ const acceptIncomingCall = async () => {
   callStatus.value = "接通中...";
   await acceptCall(incomingFromId.value, incomingOffer.value);
   isIncomingCall.value = false;
+  callStatus.value = "通話中...";
+  startTimer();
 };
 
 const rejectIncomingCall = async () => {
