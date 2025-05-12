@@ -141,6 +141,11 @@ onMounted(() => {
     stopTimer();
     setTimeout(() => endSession(), 3000);
   });
+  conn?.on("CallRejected", () => {
+    callStatus.value = "📴 對方已拒接";
+    stopTimer();
+    setTimeout(() => endSession(), 3000);
+  });
 });
 
 onUnmounted(() => {
