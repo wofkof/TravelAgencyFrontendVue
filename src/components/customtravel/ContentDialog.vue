@@ -3,9 +3,9 @@
     <el-form :model="form" :rules="computedRules" ref="formRef">
       <el-form-item label="category" prop="category" :label-width="formLabelWidth">
         <el-select v-model="form.category" placeholder="Please select">
-          <el-option label="景點" :value="0" />
-          <el-option label="餐廳" :value="1" />
-          <el-option label="住宿" :value="2" />
+          <el-option label="住宿" :value="0" />
+          <el-option label="景點" :value="1" />
+          <el-option label="餐廳" :value="2" />
           <el-option label="交通" :value="3" />
         </el-select>
       </el-form-item>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 
 const dialogFormVisible = ref(false)
@@ -49,7 +49,6 @@ const formLabelWidth = '140px'
 const formRef = ref()
 const mode = ref('create')
 const editState = reactive({ dayIndex: null, itemIndex: null })
-const suppressWatch = ref(false)
 
 const city = ref([])
 const district = ref([])
@@ -93,20 +92,20 @@ onMounted(async () => {
 const filteredDistricts = computed(() => district.value.filter(d => d.cityId === form.city))
 const filteredItems = computed(() => {
   switch (form.category) {
-    case 0: return attraction.value.filter(a => a.districtId === form.district)
-    case 1: return restaurant.value.filter(r => r.districtId === form.district)
-    case 2: return accommodation.value.filter(a => a.districtId === form.district)
+    case 0: return accommodation.value.filter(a => a.districtId === form.district)
+    case 1: return attraction.value.filter(a => a.districtId === form.district)
+    case 2: return restaurant.value.filter(r => r.districtId === form.district)
     case 3: return transport.value
     default: return []
   }
 })
 
 function getItemId(i) {
-  return i.attractionId || i.restaurantId || i.accommodationId || i.transportId
+  return i.accommodationId || i.attractionId || i.restaurantId || i.transportId
 }
 
 function getItemName(i) {
-  return i.attractionName || i.restaurantName || i.accommodationName || i.transportMethod
+  return i.accommodationName || i.attractionName || i.restaurantName || i.transportMethod
 }
 
 function clearForm() {
@@ -129,23 +128,20 @@ function openCreate() {
 }
 
 function openEdit({ data, dayIndex, itemIndex }) {
-  suppressWatch.value = true
-  clearForm()
-  const parsedData = {
+clearForm()
+  Object.assign(form, {
     category: data.category,
     item: Array.isArray(data.item) ? data.item[0] : data.item,
     city: Array.isArray(data.city) ? data.city[0] : data.city,
     district: Array.isArray(data.district) ? data.district[0] : data.district,
     time: Array.isArray(data.time) ? data.time[0] : data.time,
     desc: data.desc || ''
-  }
-  Object.assign(form, parsedData)
+  })
   editState.dayIndex = dayIndex
   editState.itemIndex = itemIndex
   mode.value = 'edit'
   dialogFormVisible.value = false
   nextTick(() => dialogFormVisible.value = true)
-  suppressWatch.value = false
 }
 
 function cancel() {
@@ -163,7 +159,7 @@ const computedRules = computed(() => {
     item: [{ required: true, message: '請選擇項目', trigger: 'change' }],
     time: [{ required: true, message: '請選擇時間', trigger: 'change' }]
   }
-  if (form.category !== 3) {
+  if (form.category !== category_transport) {
     rules.city = [{ required: true, message: '請選擇城市', trigger: 'change' }]
     rules.district = [{ required: true, message: '請選擇區域', trigger: 'change' }]
   }

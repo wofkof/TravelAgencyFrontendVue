@@ -4,7 +4,7 @@
     <div class="form">
     <el-form :model="form" label-position="left" label-width="80px" style="max-width: 600px">
       <el-form-item label="行程名稱">
-        <el-input v-model="form.name" />
+        <el-input v-model="form.title" />
       </el-form-item>    
       <el-form-item label="日期">        
       <el-date-picker
@@ -12,6 +12,8 @@
         type="daterange"
         start-placeholder="Start Date"
         end-placeholder="End Date"
+        value-format="YYYY-MM-DD"
+        :disabled-date="disabledBefore"
         @change="DateChange"
       />
       </el-form-item>
@@ -19,8 +21,7 @@
         <el-input v-model="form.days" readonly/>
       </el-form-item>
       <el-form-item label="人數">
-        <!-- 未綁定只能輸入數字 -->
-        <el-input v-model="form.people" />
+        <el-input v-model="form.people" @input="NumberInput"  placeholder="請輸入人數(1-50)"/>
       </el-form-item>        
       <el-form-item>
         <el-button type="primary" class="btn" @click="onSubmit">Create</el-button>      
@@ -33,39 +34,78 @@
   <script setup>
   import { reactive } from 'vue'
   import { useRouter } from 'vue-router'
+  import { useTravelStore } from '@/stores/customtravelStore'
+
 
   const router = useRouter()
+  const travelStore = useTravelStore()
   
   const form = reactive({
-    name: '',  
+    title: '',  
     daterange:[],
     days:'',
     people:'',  
   })
+
+  function disabledBefore(date) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // 清除時間部分
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+  return date < tomorrow
+}
   
-  function DateChange([start, end]) {
-  if (!start || !end) {
+  function DateChange([starts, ends]) {
+  if (!starts || !ends) {
     form.days = 0
   } else {
+    const start = new Date(starts)
+    const end = new Date(ends)
     const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
     form.days = diff
   }
 }
 
+function NumberInput(val) {
+  form.people = val.replace(/\D/g, '')  // 移除所有非數字
+const num = parseInt(cleanVal, 10)
+
+  if (!cleanVal) {
+    form.people = ''
+  } else if (num < 1) {
+    form.people = '1'
+  } else if (num > 50) {
+    form.people = '50'
+  } else {
+    form.people = cleanVal
+  }
+}
+
   const onSubmit = () => {
+const user = JSON.parse(localStorage.getItem('user'))
+  if (!user?.userId) {
+    router.push('/login')
+    return
+  }
+
     const id = Date.now()
     const newTravel = {
     id,
-    title: form.name,
+    title: form.title,
     daterange:form.daterange,
     days: form.days,
-    people: form.people
+    people: form.people,
+    userId: user.userId
   }
 
   const existing = JSON.parse(localStorage.getItem('list') || '[]')
   existing.push(newTravel)
   localStorage.setItem('list', JSON.stringify(existing))
-  router.push('/CustomtravelList') 
+  
+  travelStore.setTravelForm(newTravel)
+  travelStore.setDailyActivities(Array.from({ length: newTravel.days }, () => []))
+
+  router.push({ name: 'CustomtravelContent', params: { id } })
   }
   </script>
   
