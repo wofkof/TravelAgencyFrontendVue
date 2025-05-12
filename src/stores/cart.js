@@ -8,53 +8,83 @@ export const useCartStore = defineStore('cart', () => {
   // 核心狀態：一個包含購物車項目的陣列。
   // 初始狀態可以是空陣列或預設項目。
   // 持久化插件會在加載時使用 localStorage 中的數據覆蓋此狀態。
-  const items = ref([
-    // 範例項目：包含選項 (options)
-    {
-        id: 'expo-123', productId: 'OSAKA-EXPO', name: '大阪世界博覽會 EXPO 2025 門票',
-        details: '大阪、關西世博探索一日票...', imageUrl: null, // 考慮添加一個預設圖片 URL
-        departureDate: '2025/10/15', // 假設日期格式為 YYYY/MM/DD
-        options: [
-            { type: '嬰兒', quantity: 1, price: 500 },
-            { type: '兒童', quantity: 1, price: 1000 },
-            { type: '成人', quantity: 1, price: 2000 }
-        ],
-        category: '景點門票',
-        selected: true, // 項目是否被選中用於結帳
-        isFavorite: false // 項目是否被標記為收藏
-    },
-    // 範例項目：只有簡單數量 (quantity) 和單價 (pricePerUnit)
-    {
-       id: 'busan-pass-789', productId: 'BUSAN-PASS', name: '韓國釜山通行證 VISIT BUSAN PASS',
-       details: '【限時特惠】24小時通行證', imageUrl: null,
-       departureDate: '2025/05/26', 
-       quantity: 1, // 簡單數量
-       pricePerUnit: 1245, // 單位價格
-       category: '交通票券',
-       selected: true,
-       isFavorite: true
-    },
-    // 範例項目：包含選項 (根據目前日期 2025/05/06 判斷，此項目可能已過期)
-    {
-       id: 'expo-456', productId: 'OSAMI-TRIP', name: '京都三天兩夜旅遊行程',
-       details: '京都三日游', imageUrl: null,
-       departureDate: '2025/05/01', // 已過期
-       options: [
-            { type: '嬰兒', quantity: 1, price: 500 }, { type: '兒童', quantity: 1, price: 1000 }, { type: '成人', quantity: 1, price: 2000 }
-       ], category: '', selected: true, isFavorite: false
-    },
-    // 範例項目：只有簡單數量 (quantity) 和單價 (pricePerUnit)
-    {
-        id: 'busan-pass-456', productId: 'BUSAN-PASS', name: '韓國釜山通行證 VISIT BUSAN PASS',
-        details: '【限時特惠】24小時通行證', imageUrl: null,
-        departureDate: '2025/04/26', // 已過期
-        quantity: 1, // 簡單數量
-        pricePerUnit: 1245, // 單位價格
-        category: '交通票券',
-        selected: true,
-        isFavorite: true
-    }
-  ]);
+const items = ref([
+  // 1. 台北三天兩夜探索之旅 (國內旅遊，未來日期)
+  {
+    id: 'taipei-3d2n-tour-001',
+    productId: 'TPE-CITY-EXPLORER-001',
+    destinationCountryCode: 'TW',
+    name: '台北經典三天兩夜探索之旅',
+    details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
+    imageUrl: '/images/tours/taipei-101-skyline.jpg', // 假設圖片路徑
+    departureDate: '2025/08/15', // 未來日期
+    options: [ // 使用 options 陣列來表示不同身份的價格和數量
+      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
+      { type: '兒童', quantity: 0, price: 6500 }, // 假設兒童價格 (例如7-12歲)
+      { type: '嬰兒', quantity: 0, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
+    ],
+    category: '國內旅遊',
+    selected: true,
+    isFavorite: false
+  },
+
+  // 2. 澎湖花火節主題四日遊 (主題旅遊，未來日期)
+  {
+    id: 'penghu-fireworks-4d-002',
+    productId: 'PENGHU-FIREWORKS-FEST-002',
+    country: 'TW',
+    name: '澎湖國際海上花火節璀璨四日遊',
+    details: '限定出發！欣賞壯麗海上花火秀，暢玩吉貝島水上活動、七美雙心石滬，含來回機票、住宿及部分餐食。',
+    imageUrl: '/images/tours/penghu-fireworks.jpg',
+    departureDate: '2025/04/22', // 未來日期 (假設花火節期間)
+    options: [ // 使用 options 陣列來表示不同身份的價格和數量
+      { type: '成人', quantity: 1, price: 8400 }, // 假設成人價格
+      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
+      { type: '嬰兒', quantity: 1, price: 1500 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
+    ],
+    category: '主題旅遊',
+    selected: true,
+    isFavorite: true
+  },
+
+  // 3. 日本東京迪士尼樂園與富士山五日遊 (國外旅遊，未來日期)
+  {
+    id: 'tokyo-disney-fuji-5d-003',
+    productId: 'JPN-TDF-MTFUJI-003',
+    country: 'JP',
+    name: '日本東京迪士尼樂園與富士山經典五日遊',
+    details: '夢幻迪士尼一日暢玩、遠眺富士山絕景、淺草觀音寺祈福、銀座時尚購物，含來回機票與精選酒店。',
+    imageUrl: '/images/tours/tokyo-disney-fuji.jpg',
+    departureDate: '2025/06/20', // 未來日期
+    options: [ // 使用 options 陣列來表示不同身份的價格和數量
+      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
+      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
+      { type: '嬰兒', quantity: 1, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
+    ],
+    category: '國外旅遊',
+    selected: false,
+    isFavorite: true
+  },
+
+  // 4. 花蓮太魯閣峽谷秘境二日遊 (國內旅遊，已過期日期 - 測試用)
+  {
+    id: 'hualien-taroko-2d-004',
+    productId: 'HLN-TAROKO-GORGE-004',
+    country: 'TW',
+    name: '花蓮太魯閣峽谷秘境二日遊',
+    details: '探索雄偉的太魯閣峽谷，漫步砂卡礑步道，欣賞清水斷崖壯麗海景，夜宿特色民宿。',
+    imageUrl: '/images/tours/hualien-taroko.jpg',
+    departureDate: '2025/04/10', // 已過期日期 (相對於 2025/05/12)
+    options: [ // 使用 options 陣列來表示不同身份的價格和數量
+      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
+      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
+      { type: '嬰兒', quantity: 0, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
+    ],
+    category: '國內旅遊',
+    selected: true,
+    isFavorite: false
+  }
+]);
 
   // --- 計算屬性 (Getters) ---
 
