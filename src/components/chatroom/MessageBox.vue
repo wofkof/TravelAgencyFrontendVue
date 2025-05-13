@@ -1,3 +1,4 @@
+<!-- MessageBox.vue -->
 <template>
   <div class="message-area">
     <el-scrollbar ref="scrollRef" class="message-list">
@@ -39,31 +40,30 @@
         ></el-button>
 
         <!-- 表情按鈕 -->
-        <el-button
-          size="small"
-          type="success"
-          @click="toggleEmojiPicker"
-          plain
-          circle
-          ><svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            fill="currentColor"
-            class="bi bi-emoji-laughing-fill"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M7 6.5c0 .501-.164.396-.415.235C6.42 6.629 6.218 6.5 6 6.5s-.42.13-.585.235C5.164 6.896 5 7 5 6.5 5 5.672 5.448 5 6 5s1 .672 1 1.5m5.331 3a1 1 0 0 1 0 1A5 5 0 0 1 8 13a5 5 0 0 1-4.33-2.5A1 1 0 0 1 4.535 9h6.93a1 1 0 0 1 .866.5m-1.746-2.765C10.42 6.629 10.218 6.5 10 6.5s-.42.13-.585.235C9.164 6.896 9 7 9 6.5c0-.828.448-1.5 1-1.5s1 .672 1 1.5c0 .501-.164.396-.415.235"
-            /></svg
-        ></el-button>
+        <EmojiButton @click="toggleEmojiPicker" />
 
         <!-- 圖片按鈕 -->
         <ImageUploader />
         <!-- 錄音按鈕 -->
         <VoiceUploader />
         <!-- 通話按鈕 -->
-        <AudioCall />
+        <el-button
+          type="success"
+          @click="startAudioCall()"
+          size="small"
+          plain
+          circle
+          ><el-icon><Phone /></el-icon
+        ></el-button>
+        <!-- 視訊通話按鈕 -->
+        <el-button
+          type="primary"
+          @click="startVideoCall()"
+          size="small"
+          plain
+          circle
+          ><el-icon><VideoCamera /></el-icon
+        ></el-button>
       </div>
     </div>
 
@@ -77,16 +77,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onBeforeUnmount, nextTick } from "vue";
+import {
+  ref,
+  onMounted,
+  computed,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
 import { useChatStore } from "@/stores/chatStore";
-import connection, { setupSocket, sendMessage } from "@/utils/socket";
+import { setupSocket, sendMessage, getConnection } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
 import { getMessages, markAsRead } from "@/apis/messageApi";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
+import EmojiButton from "@/components/chatroom/EmojiButton.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
-import AudioCall from "@/components/chatroom/AudioCall.vue";
 
 declare global {
   interface Window {
@@ -100,6 +107,18 @@ const pickerVisible = ref(false);
 const pickerContainer = ref<HTMLElement | null>(null);
 const pickerInstance = ref<any>(null);
 const scrollRef = ref();
+
+// 通話邏輯
+const startAudioCall = () => {
+  // @ts-ignore
+  window.audioCallRef?.startCall(false);
+};
+
+// 視訊邏輯
+const startVideoCall = () => {
+  // @ts-ignore
+  window.audioCallRef?.startCall(true);
+};
 
 function isScrolledToBottom() {
   const wrap = scrollRef.value?.wrapRef;
@@ -134,7 +153,7 @@ const openPicker = () => {
   pickerInstance.value = new window.EmojiMart.Picker({
     emojiSize: 20,
     perLine: 6,
-    
+
     previewPosition: "none",
     searchPosition: "none",
     onEmojiSelect: (emoji: any) => {
@@ -172,11 +191,12 @@ const senderType = "Member";
 const senderId = 11110;
 
 const updateReadStatus = async (chatRoomId: number) => {
+  const conn = getConnection();
   await markAsRead(chatRoomId, senderId, senderType);
-  await connection.invoke("NotifyRead", chatRoomId, senderId, senderType);
+  await conn.invoke("NotifyRead", chatRoomId, senderId, senderType);
 };
 
-onMounted(async () => {
+onMounted(() => {
   window.addEventListener("click", handleClickOutside);
   // @ts-ignore
   window.isScrolledToBottom = isScrolledToBottom;
@@ -184,18 +204,21 @@ onMounted(async () => {
   if (!chatStore.currentChatRoomId) {
     chatStore.setCurrentChatRoom(1);
   }
-
-  const chatRoomId = chatStore.currentChatRoomId;
-
-  await setupSocket(chatRoomId);
-
-  const messages = await getMessages(chatRoomId);
-  chatStore.setMessages(chatRoomId, messages);
-
-  await updateReadStatus(chatRoomId);
-
-  scrollToBottom();
 });
+
+watch(
+  () => chatStore.currentChatRoomId,
+  async (chatRoomId) => {
+    if (!chatRoomId) return;
+
+    await setupSocket(chatRoomId);
+    const messages = await getMessages(chatRoomId);
+    chatStore.setMessages(chatRoomId, messages);
+    await updateReadStatus(chatRoomId);
+    scrollToBottom();
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);

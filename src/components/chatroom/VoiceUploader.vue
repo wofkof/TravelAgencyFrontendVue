@@ -44,6 +44,7 @@ const startRecording = async () => {
 
       try {
         await sendAudioMessage(file, 11110, "Member", durationInSeconds);
+        ElMessage.success("錄音已傳送");
       } catch (err) {
         ElMessage.error("錄音失敗（錄音時間請超過一秒）");
         console.log(err);

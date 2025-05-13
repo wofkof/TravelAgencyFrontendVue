@@ -55,7 +55,7 @@
               <option value="">請選擇</option>
               <option>護照</option>
               <option>居留證</option>
-              <option>入台證</option>
+              <option>台胞證</option>
             </select>
           </div>
           <div>

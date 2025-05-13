@@ -1,5 +1,6 @@
 <script setup>
 const emit = defineEmits(['switch-to-login'])
+import { ElMessage } from 'element-plus'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
@@ -38,16 +39,22 @@ const submit = async () => {
       password: password.value
     })
 
-    alert('註冊成功')
-
-    // ✅ 清空欄位再切換畫面，避免 race condition
+    ElMessage({
+      message: '註冊成功，3秒後將自動跳轉回登入頁面',
+      type: 'success',
+      duration: 3000 
+    })
+    // 清空欄位再切換畫面
     name.value = ''
     phone.value = ''
     email.value = ''
     password.value = ''
     confirmPassword.value = ''
+    // 延遲3秒再切換回登入頁
+    setTimeout(() => {
+      emit('switch-to-login')
+    }, 3000)
 
-    emit('switch-to-login') // 切換頁面
   } catch (error) {
     const resErrors = error.response?.data?.errors || {}
     errors.value = resErrors
@@ -74,6 +81,7 @@ function handleClickOutside(event) {
     showPrivacy.value = false
   }
 }
+
 
 // 掛載與卸載事件監聽器（控制點擊彈窗外部關閉條款)
 onMounted(() => {
@@ -159,7 +167,8 @@ function toggleConfirmPassword() {
       :type="showPassword ? 'text' : 'password'"
       id="password"
       v-model="password"
-      placeholder="請設定6~12位數密碼"
+      placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
+"
       required
       class="pr-10"
     />

@@ -50,6 +50,13 @@ export const useChatStore = defineStore("chat", () => {
     }
   }
 
+  const getTargetUserId = computed(() => {
+    const room = allChatRooms.value.find(
+      (r) => r.chatRoomId === currentChatRoomId.value
+    );
+    return memberType === "Member" ? room?.employeeId : room?.memberId;
+  });
+
   return {
     chatRooms,
     allChatRooms,
@@ -64,5 +71,6 @@ export const useChatStore = defineStore("chat", () => {
     showChat,
     memberId,
     memberType,
+    getTargetUserId,
   };
 });

@@ -16,8 +16,10 @@
     >
       <el-button type="primary" @click="goToExplore">前往探索商品</el-button>
     </el-empty>
-    <RecommendedTrips v-if="activeItems.length > 0 || expiredItems.length > 0" />
-    </div>
+    <RecommendedTrips
+      v-if="activeItems.length > 0 || expiredItems.length > 0"
+    />
+  </div>
 </template>
 
 <script setup>
