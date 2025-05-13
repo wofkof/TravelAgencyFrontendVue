@@ -29,7 +29,11 @@ const routes = [
     component: FreeTravelView,
   },
   { path: "/CruiseView", name: "CruiseView", component: CruiseView },
+
+  
   { path: "/VisaView", name: "VisaView", component: VisaView },
+
+
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
   {
