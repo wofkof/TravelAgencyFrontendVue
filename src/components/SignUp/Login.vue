@@ -178,8 +178,10 @@ async function handleLogin() {
         password: form.password,
       }
     );
-    //將會員名稱存入 localStorage
+    //將會員名稱及ID存入 localStorage
     const memberName = response.data.name;
+    const memberId = response.data.id;
+    localStorage.setItem("memberId", memberId);
     localStorage.setItem("memberName", memberName);
 
       ElMessage({
