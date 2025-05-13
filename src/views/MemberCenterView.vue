@@ -31,7 +31,6 @@ import Collection from '@/components/MemberCenter/Collection.vue'
 import Comment from '@/components/MemberCenter/Comment.vue'
 import AccountSetting from '@/components/MemberCenter/AccountSetting.vue'
 import Order from '@/components/MemberCenter/Order.vue'
-import CustomOrder from '@/components/MemberCenter/CustomOrder.vue'
 import StatusList from '@/components/customtravel/StatusList.vue'
 
 
@@ -46,8 +45,7 @@ const syncViewFromRoute = () => {
     '/member/favorite-travelers': 'TravelerList',
     '/member/favorites': 'Collection',
     '/member/comments': 'Comment',
-    '/member/customorder': 'CustomOrder',
-    '/member/customtravel-status': 'StatusList'  // ← 新增這一行！
+    '/member/customtravel-status': 'StatusList'
   }
   currentView.value = map[path] || 'TravelerList'
 }
@@ -62,7 +60,6 @@ const currentComponent = computed(() => {
     Comment,
     AccountSetting,
     Order,
-    CustomOrder,
     StatusList 
   }[currentView.value]
 })

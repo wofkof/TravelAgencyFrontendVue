@@ -202,7 +202,6 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
-import CustomOrder from "../MemberCenter/CustomOrder.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter } from 'vue-router'
 
