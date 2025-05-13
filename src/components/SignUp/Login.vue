@@ -24,12 +24,6 @@
                   placeholder="請輸入手機號碼或Email"
                   required
                 />
-                <span
-                  v-if="touched && !isValidAccount"
-                  class="text-red-500 text-xs"
-                >
-                  請輸入有效的手機號碼或 Email
-                </span>
               </div>
               <div class="grid gap-2 relative">
                 <Label for="password">密碼</Label>
@@ -38,7 +32,7 @@
                     :type="showPassword ? 'text' : 'password'"
                     id="password"
                     v-model="form.password"
-                    placeholder="請輸入6~12位數密碼"
+                    placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
                     required
                     class="pr-10"
                   />
@@ -55,15 +49,6 @@
                     />
                   </button>
                 </div>
-                <span
-                  v-if="
-                    touched &&
-                    (form.password.length < 6 || form.password.length > 12)
-                  "
-                  class="text-red-500 text-xs"
-                >
-                  密碼長度需為 6~12 位
-                </span>
               </div>
               <!-- 記住我 + 忘記密碼 -->
               <div
@@ -147,6 +132,7 @@ const rememberMe = ref(false);
 const touched = ref(false);
 
 import axios from "axios";
+import { ElMessage } from 'element-plus'
 
 async function handleLogin() {
   form.account = form.account.trim();
@@ -154,17 +140,25 @@ async function handleLogin() {
   touched.value = true;
 
   if (!isValidAccount.value) {
-    alert("請輸入有效的手機號碼或信箱格式");
+    ElMessage({
+      message: '請輸入有效的手機號碼或信箱格式',
+      type: 'warning',
+      duration: 3000
+    });
     return;
   }
 
   if (!form.password || form.password.length < 6 || form.password.length > 12) {
-    alert("密碼長度需為 6~12 位");
+     ElMessage({
+      message: '密碼長度為 6~12 位，且包含大、小寫英文',
+      type: 'warning',
+      duration: 3000
+    });
     return;
   }
 
   try {
-    // 呼叫後端登入 API
+    // ✅ 呼叫後端登入 API
     const response = await axios.post(
       "https://localhost:7265/api/account/login",
       {
@@ -172,13 +166,34 @@ async function handleLogin() {
         password: form.password,
       }
     );
+    //將會員名稱存入 localStorage
+    const memberName = response.data.name;
+    localStorage.setItem("memberName", memberName);
 
-    alert("登入成功");
+      ElMessage({
+      message: '登入成功！3秒後將自動跳轉至首頁',
+      type: 'success',
+      duration: 3000
+    });
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 3000);
+
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      alert("帳號或密碼錯誤");
+      ElMessage({
+        message: '帳號或密碼錯誤',
+        type: 'error',
+        duration: 3000
+      });
     } else {
-      alert("登入失敗，請稍後再試");
+      // 其他錯誤
+      ElMessage({
+        message: '登入失敗，請稍後再試',
+        type: 'error',
+        duration: 3000
+      });
       console.error(error);
     }
   }

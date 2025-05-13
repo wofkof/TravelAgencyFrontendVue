@@ -11,63 +11,150 @@
       </button>
     </div>
 
-    <table class="w-full table-auto border">
-      <thead>
-        <tr class="bg-gray-100 text-left">
-          <th class="px-4 py-2">中文姓名</th>
-          <th class="px-4 py-2">出生年月日</th>
-          <th class="px-4 py-2 text-center">操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="t in travelers" :key="t.id">
-          <td class="px-4 py-2">{{ t.chineseName }}</td>
-          <td class="px-4 py-2">{{ t.birthDate }}</td>
-          <td class="px-4 py-2 text-center">
-            <button @click="viewTraveler(t)" class="text-gray-700 hover:underline mr-2">查看</button>
-            <button @click="editTraveler(t)" class="text-blue-600 hover:underline mr-2">編輯</button>
-            <button @click="deleteTraveler(t.id)" class="text-red-600 hover:underline">刪除</button>
-          </td>
-        </tr>
-        <tr v-if="travelers.length === 0">
-          <td colspan="3" class="text-center py-4 text-gray-500">尚無旅客資料</td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-if="travelers.length === 0" class="text-center text-gray-500 py-4">
+      尚無旅客資料
+    </div>
 
-    <!-- 彈出 Modal 表單 -->
-    <TravelerFormModal
-      v-if="showForm"
-      :traveler="selectedTraveler"
-      :isEditing="isEditing"
-      :isReadonly="isReadonly"
-      @save="handleSave"
-      @close="closeModal"
-    />
+     <div
+        v-for="(t, index) in travelers"
+        :key="t.id"
+        class="border border-gray-200 rounded-md mb-3"
+      >
+      <div
+        class="bg-gray-100 px-4 py-3 cursor-pointer flex justify-between items-center"
+        @click="toggleAccordion(t.id)"
+      >
+    <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
+    <p><strong>生日：</strong>{{ t.birthDate }}</p>
+    <span>{{ expandedTravelerId === t.id ? '關閉▲' : '編輯▼' }}</span>
   </div>
+
+  <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-3">
+    <div class="flex gap-6">
+      <div class="col">
+      <label>中文姓名</label><br />
+      <el-input v-model="t.chineseName" style="width: 240px" placeholder="請輸入姓名" />
+    </div>
+
+    <div class="col">
+      <label>出生年月日</label><br />
+       <el-date-picker
+      v-model="t.birthDate"
+      type="date"
+      placeholder="請選擇出生日期"
+      format="YYYY-MM-DD"
+      value-format="YYYY-MM-DD"
+      style="width: 240px"
+    />
+    </div>
+  
+    </div>
+    <div class="flex gap-4">
+      <div class="col">
+      <label>身分證字號(旅遊保險辦理使用)</label><br />
+      <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號" />
+    </div>
+
+    <div class="col">
+      <label>性別</label><br />
+      <el-select v-model="t.gender" placeholder="請選取性別" style="width: 240px">
+        <el-option label="男性" value="男" />
+        <el-option label="女性" value="女" />
+        <el-option label="其他" value="其他" />
+      </el-select>
+    </div>
+
+      <div class="col">
+      <label>聯絡手機(行程相關資訊聯繫)</label><br />
+      <el-input v-model="t.phone" style="width: 240px" placeholder="請輸入手機號碼" />
+      </div>
+    </div>
+    
+      <div class="flex gap-6">
+        <div class="col">
+      <label>護照英文姓(Surname)</label><br />
+      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
+      </div>
+
+      <div class="col">
+      <label>護照英文名(Givenname)</label><br />
+      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
+      </div>
+      </div>
+      
+      <div class="flex gap-6">
+        <div class="col">
+      <label>證件類別</label><br />
+      <el-select v-model="t.documentType" placeholder="請選取證件" style="width: 240px">
+        <el-option label="護照" value="護照" />
+        <el-option label="居留證" value="居留證" />
+        <el-option label="台胞證" value="台胞證" />
+      </el-select>
+      </div>
+
+      <div class="col">
+      <label>證件號碼</label><br />
+      <el-input v-model="t.documentNumber" style="width: 240px" placeholder="請輸入證件號碼" />
+      </div>
+      </div>
+      
+    <div class="mt-3 flex justify-end">
+      <el-button @click="saveTraveler(t)" type="primary">儲存</el-button>
+       <el-button  @click="deleteTraveler(t.id)" type="danger" plain>刪除</el-button>
+    </div>
+  </div>
+</div>
+  </div>
+
 </template>
 
 <script>
-import TravelerFormModal from './TravelerFormModal.vue'
+import {
+  Check,
+  Delete,
+  Edit,
+  Message,
+  Search,
+  Star,
+} from '@element-plus/icons-vue'
 
 export default {
-  components: { TravelerFormModal },
   data() {
     return {
       travelers: [],
       showForm: false,
       selectedTraveler: {},
       isEditing: false,
-      isReadonly: false
+      isReadonly: false,
+      expandedTravelerId: null
     }
   },
   methods: {
-    handleAdd() {
-      this.selectedTraveler = {}
-      this.isEditing = false
-      this.isReadonly = false
-      this.showForm = true
+    toggleAccordion(id) {
+      this.expandedTravelerId = this.expandedTravelerId === id ? null : id
     },
+    saveTraveler(t) {
+  console.log('儲存資料:', t)
+  this.expandedTravelerId = null
+},
+    handleAdd() {
+  const newTraveler = {
+    id: Date.now(),
+    chineseName: '',
+    birthDate: '',
+    idNumber: '',
+    gender: '',
+    phone: '',
+    passportSurname: '',
+    passportGivenname: '',
+    documentType: '',
+    documentNumber: ''
+  }
+
+  this.travelers.push(newTraveler)
+  this.expandedTravelerId = newTraveler.id
+}
+,
     editTraveler(traveler) {
       this.selectedTraveler = { ...traveler }
       this.isEditing = true
@@ -85,6 +172,7 @@ export default {
         this.travelers = this.travelers.filter(t => t.id !== id)
       }
     },
+    
     handleSave(traveler) {
       const existing = this.travelers.findIndex(t => t.id === traveler.id)
       if (existing > -1) {
