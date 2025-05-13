@@ -5,9 +5,11 @@ import HeroContent from "@/components/travellian/HeroSection.vue";
 import FooterSection from "@/components/travellian/FooterSection.vue";
 import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
 import FloatingChat from "@/components/chatroom/FloatingChat.vue";
+import GlobalCallHandler from "@/components/chatroom/GlobalCallHandler.vue";
 import { computed } from "vue"; // <-- 匯入 computed
 import { useRoute } from "vue-router"; // <--  僅保留 useRoute 的引入
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue"; // --- 匯入新的步驟條元件 ---
+import AudioCall from "./components/chatroom/AudioCall.vue";
 
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route
@@ -26,6 +28,8 @@ const showCheckoutSteps = computed(() => {
   <Navbar />
   <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
+  <GlobalCallHandler />
+  <audio id="remote-audio" autoplay playsinline style="display: none"></audio>
   <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>
@@ -41,6 +45,7 @@ const showCheckoutSteps = computed(() => {
   </div>
 
   <FloatingChat />
+  <AudioCall ref="audioCallRef" />
 
   <NewsletterSection />
   <FooterSection />
