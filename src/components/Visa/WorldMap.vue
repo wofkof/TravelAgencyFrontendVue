@@ -10,4 +10,4 @@
 
 <script setup>
 import { GoogleMap } from 'vue3-google-map';
-</script>
+</script> 
