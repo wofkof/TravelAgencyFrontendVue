@@ -139,7 +139,7 @@ function toggleConfirmPassword() {
 
               <div class="grid gap-2">
                 <Label for="phone">聯絡手機</Label>
-                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required />
+                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required  maxlength="10" />
                 <span v-if="errors.Phone" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Phone" :key="i">{{ msg }}<br /></template>
 </span>
@@ -153,14 +153,7 @@ function toggleConfirmPassword() {
 </span>
               </div>
 
-              <!-- <div class="grid gap-2">
-                <Label for="password">密碼</Label>
-                <Input id="password" type="password" v-model="password" placeholder="請設定6~12位數密碼" required />
-                <span v-if="errors.Password" class="text-red-500 text-sm">
-  <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
-</span>
-              </div> -->
-              <div class="grid gap-2 relative">
+  <div class="grid gap-2 relative">
   <Label for="password">密碼</Label>
   <div class="relative">
     <Input
@@ -169,7 +162,7 @@ function toggleConfirmPassword() {
       v-model="password"
       placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
 "
-      required
+      required  maxlength="12"
       class="pr-10"
     />
     <button
@@ -195,7 +188,7 @@ function toggleConfirmPassword() {
       id="confirm-password"
       v-model="confirmPassword"
       placeholder="請再次輸入密碼"
-      required
+      required maxlength="12"
       class="pr-10"
     />
     <button

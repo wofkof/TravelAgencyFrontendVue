@@ -33,7 +33,7 @@
                     id="password"
                     v-model="form.password"
                     placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
-                    required
+                    required maxlength="12"
                     class="pr-10"
                   />
                   <button
