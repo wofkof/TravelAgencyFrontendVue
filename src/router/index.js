@@ -47,6 +47,7 @@ const routes = [
   name: "MemberCenter",
   component: () => import("@/views/MemberCenterView.vue"),
   },
+  
   {
     path: "/cart", // 購物車頁面的路徑
     name: "ShoppingCart",
