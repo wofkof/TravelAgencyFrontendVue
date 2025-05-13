@@ -74,9 +74,12 @@ const routes = [
     component: CustomtravelContent,
   },
   {
-    path: "/CustomtravelStatusList",
-    name: "CustomtravelStatusList",
-    component: CustomtravelStatusList,
+    // path: "/CustomtravelStatusList",
+    // name: "CustomtravelStatusList",
+    // component: CustomtravelStatusList,
+     path: "/member/customtravel-status",
+  name: "CustomtravelStatus",
+  component: () => import("@/views/MemberCenterView.vue"),
   },
   {
     path: "/CustomtravelStatusContent/:id",

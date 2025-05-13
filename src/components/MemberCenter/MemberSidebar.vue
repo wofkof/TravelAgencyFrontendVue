@@ -15,8 +15,8 @@
           </router-link>
         </li>
          <li>
-           <router-link to="/member/CustomOrder" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            自訂行程查詢
+           <router-link to="/member/customtravel-status" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
+            客製化行程
           </router-link>
         </li>
         <li>

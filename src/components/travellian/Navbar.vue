@@ -149,7 +149,7 @@
               <router-link to="/member/orders" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl text-center">歷史訂單查詢</router-link>
             </li>
             <li>
-              <router-link to="/member/CustomOrder" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl text-center">自訂行程查詢</router-link>
+              <router-link to="/member/customtravel-status" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl text-center">客製化行程</router-link>
             </li>
             <li>
               <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-red-50 text-center">常用旅客清單</router-link>
