@@ -128,7 +128,7 @@ const getItemQuantity = (item) => {
 .main-menu__item {
   padding: 10px; /* 增加點擊區域 */
   text-decoration: none;
-  color: #fbfafa; /* 圖標預設顏色 */
+  color: #040404; /* 圖標預設顏色 */
   transition: color 0.3s ease;
   position: relative; /* 相對定位，為了徽章的絕對定位 */
   display: inline-flex; /* 使用 inline-flex 佈局 */
