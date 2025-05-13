@@ -142,29 +142,29 @@
 
         <div
           v-if="isMenuOpen"
-          class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
+          class="absolute right-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50" style="width: 150px"
         >
           <ul class="divide-y divide-gray-100 text-sm text-gray-700">
             <li>
-              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl">歷史訂單查詢</router-link>
+              <router-link to="/member/orders" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl text-center">歷史訂單查詢</router-link>
             </li>
             <li>
-              <router-link to="/member/CustomOrder" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl">自訂行程查詢</router-link>
+              <router-link to="/member/CustomOrder" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl text-center">自訂行程查詢</router-link>
             </li>
             <li>
-              <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-red-50">常用旅客清單</router-link>
+              <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-red-50 text-center">常用旅客清單</router-link>
             </li>
             <li>
-              <router-link to="/member/favorites" class="block px-4 py-3 hover:bg-red-50">我的收藏</router-link>
+              <router-link to="/member/favorites" class="block px-4 py-3 hover:bg-red-50 text-center">我的收藏</router-link>
             </li>
             <li>
-              <router-link to="/member/comments" class="block px-4 py-3 hover:bg-red-50">我的評論</router-link>
+              <router-link to="/member/comments" class="block px-4 py-3 hover:bg-red-50 text-center">我的評論</router-link>
             </li>
             <li>
-              <router-link to="/member/profile" class="block px-4 py-3 hover:bg-red-50">會員帳號管理</router-link>
+              <router-link to="/member/profile" class="block px-4 py-3 hover:bg-red-50 text-center">會員帳號管理</router-link>
             </li>
             <li>
-              <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-b-xl text-red-600">登出</button>
+              <button @click="handleLogout" class="block w-full text-left px-4 py-3 hover:bg-red-50 rounded-b-xl text-red-600 text-center">登出</button>
             </li>
           </ul>
         </div>
