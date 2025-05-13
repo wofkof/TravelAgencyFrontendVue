@@ -21,7 +21,7 @@
               <el-date-picker v-model="item.daterange" type="daterange" start-placeholder="Start Date" end-placeholder="End Date" readonly />
               <el-input v-model="item.days" placeholder="Days" readonly style="width: 100px" />
               <span>天</span>
-              <el-icon ><Edit /></el-icon>
+              <!-- <el-icon ><Edit /></el-icon> -->
             </div>
           </div>
           <div class="action-area">
@@ -37,29 +37,39 @@
   import { ref , onMounted } from 'vue'
   import { Edit, Delete } from '@element-plus/icons-vue'
   import { useRouter } from 'vue-router'
+  import { useTravelStore } from '@/stores/customtravelStore'
 
   const router = useRouter()
   const list = ref([])
+  const travelStore = useTravelStore()
   
   onMounted(() => {
+    const user = JSON.parse(localStorage.getItem('user'))
+  if (!user?.userId) {
+    router.push('/login')
+    return
+  }
+
   const stored = localStorage.getItem('list')
   if (stored) {
-    list.value = JSON.parse(stored)
-  }
+    const all = JSON.parse(stored)
+    list.value = all.filter(x => x.userId === user.userId)
+    } 
 })
 
-  const createNew = () => {
+  const createNew = () => {   
     router.push('/CustomtravelCreate')
   }
   
   const editTravel = (item) => {
+    travelStore.setTravelForm(item)
+  travelStore.setDailyActivities(JSON.parse(localStorage.getItem(`activities_${item.id}`) || '[]'))
     router.push({ name: 'CustomtravelContent', params: { id: item.id } })
   }
   
   const deleteTravel = (index) => {
     const id = list.value[index].id
     localStorage.removeItem(`activities_${id}`)
-
     list.value.splice(index, 1)
     localStorage.setItem('list', JSON.stringify(list.value))
   }

@@ -24,12 +24,12 @@
           <el-timeline style="max-width: 600px">
             <el-timeline-item
               placement="top"
-              v-for="(item, index) in dailyActivities[day - 1]"
+              v-for="(item, index) in dailyActivities[day - 1].slice().sort((a, b) => a.time.localeCompare(b.time))"
               :key="index"
               :timestamp="item.time"
               :icon="LocationInformation"
             >
-              <el-card class="activity-card">
+              <el-card class="activity-card">           
                 <div class="content">
                   <div class="category">{{ CategoryName(item.category) }}</div>
                   <div class="item">{{ ItemName(item.category, item.item) }}</div>
@@ -50,6 +50,7 @@
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" />
     </div>
+    <el-button type="success" @click="saveToServe">送出審核</el-button>
 
     <Dialog ref="dialogRef" :onAdd="addContent" :onEdit="updateContent" />
   </div>
@@ -61,9 +62,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { LocationInformation } from '@element-plus/icons-vue'
 import Dialog from '@/components/customtravel/ContentDialog.vue'
 import axios from 'axios'
+import { useTravelStore } from '@/stores/customtravelStore'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
+const travelStore = useTravelStore()
 const activeDay = ref('1')
 const dialogRef = ref(null)
 const dailyActivities = ref([])
@@ -75,6 +79,7 @@ const accommodation = ref([])
 const transport = ref([])
 
 const form = reactive({
+  title:'',
   daterange: [],
   days: '',
   budget: ''
@@ -82,6 +87,21 @@ const form = reactive({
 
 
 onMounted(async ()=>{
+const user = JSON.parse(localStorage.getItem('user'))
+  if (!user?.userId) {
+    router.push('/login')
+    return
+  }
+
+  const id = route.params.id
+  const stored = JSON.parse(localStorage.getItem('list') || '[]')
+  const current = stored.find(x => x.id == id)
+
+  if (!current || current.userId !== user.userId) {
+    router.push('/CustomtravelList') 
+    return
+  }
+
   try{
     const [cityRes, districtRes, attractionRes, restaurantRes, accommodationRes, transportRes] = await Promise.all([
       axios.get('https://localhost:7265/api/City'),
@@ -101,29 +121,41 @@ onMounted(async ()=>{
   }catch (err) {
     console.error('API 錯誤:', err)
   }
+
+  travelStore.loadFromLocal()
+  form.title = travelStore.travelForm.title
+  form.daterange = travelStore.travelForm.daterange
+  form.days = travelStore.travelForm.days
+  form.budget = travelStore.travelForm.budget
+  dailyActivities.value = travelStore.dailyActivities
+
+  const dayCount = parseInt(form.days)
+  if (!Array.isArray(dailyActivities.value) || dailyActivities.value.length !== dayCount) {
+    dailyActivities.value = Array.from({ length: dayCount }, () => [])
+  }
+
 })
+
+const goBack = () => router.push('/CustomtravelList')
 
 const CategoryName = (id) => {
   switch (id) {
-    case 0: return '景點'
-    case 1: return '餐廳'
-    case 2: return '住宿'
+    case 0: return '住宿'
+    case 1: return '景點'
+    case 2: return '餐廳'
     case 3: return '交通'
     default: return '未知'
   }
 }
 
-const CityName = (id) => city.value.find(c => c.cityId === id)?.cityName || '未知'
-const DistrictName = (id) => district.value.find(d => d.districtId === id)?.districtName || '未知'
-
 const ItemName = (category, itemId) => {
   switch (category) {
     case 0:
-      return attraction.value.find(a => a.attractionId === itemId)?.attractionName || '未知'
-    case 1:
-      return restaurant.value.find(r => r.restaurantId === itemId)?.restaurantName || '未知'
-    case 2:
       return accommodation.value.find(a => a.accommodationId === itemId)?.accommodationName || '未知'
+    case 1:
+      return attraction.value.find(a => a.attractionId === itemId)?.attractionName || '未知'
+    case 2:
+      return restaurant.value.find(r => r.restaurantId === itemId)?.restaurantName || '未知'
     case 3:
       return transport.value.find(t => t.transportId === itemId)?.transportMethod || '未知'
     default:
@@ -133,34 +165,19 @@ const ItemName = (category, itemId) => {
 
 const removeItem = (dayIndex, itemIndex) => {
   dailyActivities.value[dayIndex].splice(itemIndex, 1)
+   travelStore.setDailyActivities(dailyActivities.value)
 }
 
-onMounted(() => {
-  const id = route.params.id
-  const stored = JSON.parse(localStorage.getItem('list') || '[]')
-  const list = stored.find(x => x.id == id)
-
-  if (list) {
-    form.daterange = list.daterange
-    form.days = list.days
-    const dayCount = parseInt(form.days)
-    dailyActivities.value = JSON.parse(localStorage.getItem(`activities_${id}`) || '[]') || Array.from({ length: dayCount }, () => [])
-  } else {
-    router.push('/CustomtravelList')
-  }
-})
-
-const goBack = () => router.push('/CustomtravelList')
 
 const addContent = (item) => {
   const dayIndex = parseInt(activeDay.value) - 1
-  if (dayIndex >= 0 && dayIndex < dailyActivities.value.length) {
-    dailyActivities.value[dayIndex].push({ ...item })
-  }
+  dailyActivities.value[dayIndex].push({ ...item })
+  travelStore.setDailyActivities(dailyActivities.value)
 }
 
 const updateContent = ({ dayIndex, itemIndex, ...updated }) => {
   dailyActivities.value[dayIndex][itemIndex] = updated
+  travelStore.setDailyActivities(dailyActivities.value)
 }
 
 const editItem = (dayIndex, itemIndex) => {
@@ -183,6 +200,54 @@ const openCreateDialog = () => {
 watch(dailyActivities, (newVal) => {
   localStorage.setItem(`activities_${route.params.id}`, JSON.stringify(newVal))
 }, { deep: true })
+
+const saveToServe = async() =>{
+  const user = JSON.parse(localStorage.getItem('user'))
+  if (!user?.userId) {
+    ElMessage.error('請先登入')
+    router.push('/login')
+    return
+  }
+  
+  const payload = {
+    memberId: user.userId,
+    note: form.title,
+    departureDate: form.daterange[0],
+    endDate: form.daterange[1],
+    days: Number(form.days),
+    totalAmount: Number(form.budget),
+    people: Number(travelStore.travelForm.people),
+    contents: dailyActivities.value.flatMap((dayList, dayIndex) =>
+      dayList.map(item => ({
+        day: dayIndex + 1,
+        time: item.time,
+        itemId: item.item,
+        category: item.category,
+        accommodationName: item.desc
+      }))
+    )
+  }
+
+  try {
+    await axios.post('https://localhost:7265/api/Content/Create', payload)
+
+    const list = JSON.parse(localStorage.getItem('list') || '[]')
+  const id = route.params.id
+  const updatedList = list.filter(item => item.id != id)
+  localStorage.setItem('list', JSON.stringify(updatedList))
+
+  localStorage.removeItem('travelForm')
+  localStorage.removeItem('dailyActivities')
+  localStorage.removeItem(`activities_${route.params.id}`)
+    travelStore.clearAll()
+
+    ElMessage.success('儲存成功，資料已清除')
+    router.push('/CustomtravelList')
+  } catch (err) {
+    ElMessage.error('儲存失敗')
+    console.error(err)
+  }
+}
 </script>
   
   <style scoped>
