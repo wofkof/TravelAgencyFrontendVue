@@ -50,6 +50,17 @@
                   </button>
                 </div>
               </div>
+              <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50">
+                <input type="checkbox" id="fake-recaptcha" class="w-5 h-5 accent-blue-600" />
+                <label for="fake-recaptcha" class="text-sm text-gray-700 select-none">
+                  我不是機器人
+                </label>
+                <img
+                  src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
+                  alt="reCAPTCHA"
+                  class="ml-auto w-10 h-10"
+                />
+              </div>
               <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
@@ -65,6 +76,7 @@
                   忘記密碼？
                 </button>
               </div>
+              
               <!-- 登入按鈕 -->
               <Button type="submit" class="w-full"> 登入 </Button>
               <!-- 分隔線文字 -->
