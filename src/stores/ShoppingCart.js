@@ -8,83 +8,223 @@ export const useCartStore = defineStore('cart', () => {
   // 核心狀態：一個包含購物車項目的陣列。
   // 初始狀態可以是空陣列或預設項目。
   // 持久化插件會在加載時使用 localStorage 中的數據覆蓋此狀態。
-const items = ref([
-  // 1. 台北三天兩夜探索之旅 (國內旅遊，未來日期)
-  {
-    id: 'taipei-3d2n-tour-001',
-    productId: 'TPE-CITY-EXPLORER-001',
-    destinationCountryCode: 'TW',
-    name: '台北經典三天兩夜探索之旅',
-    details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
-    imageUrl: '/images/tours/taipei-101-skyline.jpg', // 假設圖片路徑
-    departureDate: '2025/08/15', // 未來日期
-    options: [ // 使用 options 陣列來表示不同身份的價格和數量
-      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
-      { type: '兒童', quantity: 0, price: 6500 }, // 假設兒童價格 (例如7-12歲)
-      { type: '嬰兒', quantity: 0, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
-    ],
-    category: '國內旅遊',
-    selected: true,
-    isFavorite: false
-  },
+  const items = ref([
+    // 原有商品範例 (稍作擴充，假設它是一個簡單行程，無特定航班/住宿細節)
+    {
+      id: 'taipei-3d2n-tour-001',
+      productId: 'TPE-CITY-EXPLORER-001',
+      destinationCountryCode: 'TW', // 保留
+      name: '台北經典三天兩夜探索之旅',
+      details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
+      imageUrl: '/images/tours/taipei-101-skyline.jpg',
+      // --- 新增/修改的行程日期相關欄位 ---
+      startDate: '2025/08/15', // 用於顯示開始日期
+      startDayOfWeek: '五',    // 開始日的星期
+      endDate: '2025/08/17',   // 假設是3天2夜，結束日期
+      endDayOfWeek: '日',      // 結束日的星期
+      totalDays: 3,            // 總天數
+      // --- 由於此範例較簡單，航班和詳細住宿可能不適用或簡化 ---
+      flights: null, // 或留空，或提供一個通用描述
+      accommodation: {
+        description: '市中心舒適住宿', // 通用描述
+        roomType: '標準雙人房',      // 預設房型
+        // occupancy 資訊可以從 options 動態生成或在此處預設
+      },
+      options: [
+        { type: '成人', quantity: 1, price: 8200, unitLabel: '佔床' }, // unitLabel 可用於住宿人數描述
+        { type: '兒童', quantity: 0, price: 6500, unitLabel: '佔床' },
+        { type: '嬰兒', quantity: 0, price: 1000, unitLabel: '不佔床' }
+      ],
+      category: '國內旅遊',
+      selected: true,
+      isFavorite: false,
+      // --- 原有的 departureDate 可以保留，或者如果 startDate/endDate 更精確，則考慮其用途 ---
+      departureDate: '2025/08/15',
+    },
 
-  // 2. 澎湖花火節主題四日遊 (主題旅遊，未來日期)
-  {
-    id: 'penghu-fireworks-4d-002',
-    productId: 'PENGHU-FIREWORKS-FEST-002',
-    country: 'TW',
-    name: '澎湖國際海上花火節璀璨四日遊',
-    details: '限定出發！欣賞壯麗海上花火秀，暢玩吉貝島水上活動、七美雙心石滬，含來回機票、住宿及部分餐食。',
-    imageUrl: '/images/tours/penghu-fireworks.jpg',
-    departureDate: '2025/04/22', // 未來日期 (假設花火節期間)
-    options: [ // 使用 options 陣列來表示不同身份的價格和數量
-      { type: '成人', quantity: 1, price: 8400 }, // 假設成人價格
-      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
-      { type: '嬰兒', quantity: 1, price: 1500 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
-    ],
-    category: '主題旅遊',
-    selected: true,
-    isFavorite: true
-  },
+    // 澎湖花火節 - 假設可以添加一些通用交通/住宿資訊
+    {
+      id: 'penghu-fireworks-4d-002',
+      productId: 'PENGHU-FIREWORKS-FEST-002',
+      country: 'TW', // 建議統一使用 destinationCountryCode
+      destinationCountryCode: 'TW',
+      name: '澎湖國際海上花火節璀璨四日遊',
+      details: '限定出發！欣賞壯麗海上花火秀，暢玩吉貝島水上活動、七美雙心石滬，含來回機票、住宿及部分餐食。',
+      imageUrl: '/images/tours/penghu-fireworks.jpg',
+      startDate: '2025/04/22',
+      startDayOfWeek: '二',
+      endDate: '2025/04/25', // 4天
+      endDayOfWeek: '五',
+      totalDays: 4,
+      flights: { // 可以是通用描述或實際航班的簡化
+        outbound: {
+          airline: '立榮郵輪', // 範例
+          flightNumber: 'B78888', // 範例
+          date: '2025/04/22 (二)',
+          departureTime: '09:00',
+          departureCity: '台北(松山)',
+          arrivalTime: '10:00',
+          arrivalCity: '澎湖(馬公)'
+        },
+        return: {
+          airline: '華信郵輪', // 範例
+          flightNumber: 'AE333', // 範例
+          date: '2025/04/25 (五)',
+          departureTime: '17:00',
+          departureCity: '澎湖(馬公)',
+          arrivalTime: '18:00',
+          arrivalCity: '台北(松山)'
+        }
+      },
+      accommodation: {
+        description: '澎湖市區精選飯店或同級民宿',
+        roomType: '標準雙人房',
+        // occupancy 來自 options
+      },
+      options: [
+        { type: '成人', quantity: 1, price: 8400, unitLabel: '佔床' },
+        { type: '兒童', quantity: 1, price: 6500, unitLabel: '佔床' },
+        { type: '嬰兒', quantity: 1, price: 1500, unitLabel: '不佔床 (含保險)' }
+      ],
+      category: '國內旅遊',
+      selected: true,
+      isFavorite: true,
+      departureDate: '2025/04/22',
+    },
 
-  // 3. 日本東京迪士尼樂園與富士山五日遊 (國外旅遊，未來日期)
-  {
-    id: 'tokyo-disney-fuji-5d-003',
-    productId: 'JPN-TDF-MTFUJI-003',
-    country: 'JP',
-    name: '日本東京迪士尼樂園與富士山經典五日遊',
-    details: '夢幻迪士尼一日暢玩、遠眺富士山絕景、淺草觀音寺祈福、銀座時尚購物，含來回機票與精選酒店。',
-    imageUrl: '/images/tours/tokyo-disney-fuji.jpg',
-    departureDate: '2025/06/20', // 未來日期
-    options: [ // 使用 options 陣列來表示不同身份的價格和數量
-      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
-      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
-      { type: '嬰兒', quantity: 1, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
-    ],
-    category: '國外旅遊',
-    selected: false,
-    isFavorite: true
-  },
+    // --- 新增一個符合截圖風格的商品數據 ---
+    {
+      id: 'hokkaido-lavender-5d-001', // 新ID
+      productId: 'JPN-HKD-LAVENDER-001', // 新 Product ID
+      destinationCountryCode: 'JP', // 日本
+      name: '夏日紫戀薰衣草北海道～小樽函館山、富良野薰衣草、洞爺湖花火會、三大蟹溫泉香五日', // 截圖標題
+      details: '暢遊北海道夏季限定美景：富良野夢幻薰衣草花田、美瑛拼布之路、小樽運河浪漫風情、函館百萬夜景，入住溫泉飯店，品嚐三大蟹料理。', // 補充一些描述
+      imageUrl: '/images/tours/hokkaido-hakodate-night.jpg', // 假設這是函館夜景圖 (對應截圖)
+      startDate: '2025/06/16',
+      startDayOfWeek: '一',
+      endDate: '2025/06/20',
+      endDayOfWeek: '五',
+      totalDays: 5,
+      flights: {
+        outbound: {
+          airline: '星宇郵輪',
+          flightNumber: 'JX860',
+          date: '2025/06/16 (一)',
+          departureTime: '12:00',
+          departureCity: '台北(桃園)',
+          arrivalTime: '16:45',
+          arrivalCity: '函館市'
+        },
+        return: {
+          airline: '星宇郵輪',
+          flightNumber: 'JX861',
+          date: '2025/06/20 (五)',
+          departureTime: '17:45',
+          departureCity: '函館市',
+          arrivalTime: '20:55',
+          arrivalCity: '台北(桃園)'
+        }
+      },
+      accommodation: {
+        description: '行程所示之團體飯店', // 截圖文字
+        roomType: '預設雙人房',          // 截圖文字
+        occupancy: null // 這裡可以留空，因為會從 options 計算 (例如 "成人佔床 X 2")
+                        // 或者預設一個值，但優先使用 options 生成的
+      },
+      options: [
+        { type: '成人', quantity: 2, price: 48800, unitLabel: '佔床' }, // 假設2位成人，每位價格
+        { type: '兒童佔床', quantity: 0, price: 45800, unitLabel: '佔床' },
+        { type: '兒童不佔床', quantity: 0, price: 38800, unitLabel: '不佔床' },
+        { type: '嬰兒', quantity: 0, price: 5000, unitLabel: '不佔床 (含稅險)' }
+      ],
+      category: '國外旅遊',
+      selected: true, // 假設預設選中
+      isFavorite: false,
+      departureDate: '2025/06/16', // 與 startDate 保持一致
+    },
 
-  // 4. 花蓮太魯閣峽谷秘境二日遊 (國內旅遊，已過期日期 - 測試用)
-  {
-    id: 'hualien-taroko-2d-004',
-    productId: 'HLN-TAROKO-GORGE-004',
-    country: 'TW',
-    name: '花蓮太魯閣峽谷秘境二日遊',
-    details: '探索雄偉的太魯閣峽谷，漫步砂卡礑步道，欣賞清水斷崖壯麗海景，夜宿特色民宿。',
-    imageUrl: '/images/tours/hualien-taroko.jpg',
-    departureDate: '2025/04/10', // 已過期日期 (相對於 2025/05/12)
-    options: [ // 使用 options 陣列來表示不同身份的價格和數量
-      { type: '成人', quantity: 1, price: 8200 }, // 假設成人價格
-      { type: '兒童', quantity: 1, price: 6500 }, // 假設兒童價格 (例如7-12歲)
-      { type: '嬰兒', quantity: 0, price: 1000 }  // 假設嬰兒價格 (例如0-6歲，可能僅含保險或行政費)
-    ],
-    category: '國內旅遊',
-    selected: true,
-    isFavorite: false
-  }
-]);
+    // 日本東京迪士尼 (稍作擴充)
+    {
+      id: 'tokyo-disney-fuji-5d-003',
+      productId: 'JPN-TDF-MTFUJI-003',
+      country: 'JP', // 建議統一使用 destinationCountryCode
+      destinationCountryCode: 'JP',
+      name: '日本東京迪士尼樂園與富士山經典五日遊',
+      details: '夢幻迪士尼一日暢玩、遠眺富士山絕景、淺草觀音寺祈福、銀座時尚購物，含來回機票與精選酒店。',
+      imageUrl: '/images/tours/tokyo-disney-fuji.jpg',
+      startDate: '2025/06/20',
+      startDayOfWeek: '五',
+      endDate: '2025/06/24', // 5天
+      endDayOfWeek: '二',
+      totalDays: 5,
+      flights: { // 範例航班資訊
+        outbound: {
+          airline: '中華郵輪',
+          flightNumber: 'CI100',
+          date: '2025/06/20 (五)',
+          departureTime: '08:30',
+          departureCity: '台北(桃園)',
+          arrivalTime: '12:30',
+          arrivalCity: '東京(成田)'
+        },
+        return: {
+          airline: '中華郵輪',
+          flightNumber: 'CI101',
+          date: '2025/06/24 (二)',
+          departureTime: '18:00',
+          departureCity: '東京(成田)',
+          arrivalTime: '21:00',
+          arrivalCity: '台北(桃園)'
+        }
+      },
+      accommodation: {
+        description: '東京市區精選酒店或迪士尼好夥伴飯店',
+        roomType: '標準雙人房',
+        // occupancy 來自 options
+      },
+      options: [
+        { type: '成人', quantity: 1, price: 35000, unitLabel: '佔床' },
+        { type: '兒童', quantity: 1, price: 32000, unitLabel: '佔床' },
+        { type: '嬰兒', quantity: 1, price: 3000, unitLabel: '不佔床' }
+      ],
+      category: '國外旅遊',
+      selected: false,
+      isFavorite: true,
+      departureDate: '2025/06/20',
+    },
+
+    // 花蓮太魯閣 (假設這是巴士團或火車團，無航班資訊)
+    {
+      id: 'hualien-taroko-2d-004',
+      productId: 'HLN-TAROKO-GORGE-004',
+      country: 'TW', // 建議統一使用 destinationCountryCode
+      destinationCountryCode: 'TW',
+      name: '花蓮太魯閣峽谷秘境二日遊',
+      details: '探索雄偉的太魯閣峽谷，漫步砂卡礑步道，欣賞清水斷崖壯麗海景，夜宿特色民宿。',
+      imageUrl: '/images/tours/hualien-taroko.jpg',
+      startDate: '2025/04/10',
+      startDayOfWeek: '四',
+      endDate: '2025/04/11', // 2天
+      endDayOfWeek: '五',
+      totalDays: 2,
+      flights: null, // 無航班資訊
+      accommodation: {
+        description: '花蓮特色民宿或同級',
+        roomType: '標準雙人房',
+        // occupancy 來自 options
+      },
+      options: [
+        { type: '成人', quantity: 1, price: 4200, unitLabel: '佔床' },
+        { type: '兒童', quantity: 1, price: 3500, unitLabel: '佔床' },
+        { type: '嬰兒', quantity: 0, price: 500, unitLabel: '不佔床' }
+      ],
+      category: '國內旅遊',
+      selected: true,
+      isFavorite: false,
+      departureDate: '2025/04/10', // 已過期日期 (相對於 2025/05/12)
+    }
+  ]);
+
 
   // --- 計算屬性 (Getters) ---
 

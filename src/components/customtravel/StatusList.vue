@@ -35,7 +35,7 @@
   import { ref, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { View, ShoppingCart } from '@element-plus/icons-vue'
-  import { useCartStore } from '@/stores/cart'
+  import { useCartStore } from '@/stores/ShoppingCart'
   import { ElMessage } from 'element-plus'
   import axios from 'axios'
 
