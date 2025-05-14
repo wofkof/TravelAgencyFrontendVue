@@ -110,6 +110,7 @@ declare module 'vue' {
     SRlist: typeof import('./components/official/SRlist.vue')['default']
     StatusContent: typeof import('./components/customtravel/StatusContent.vue')['default']
     StatusList: typeof import('./components/customtravel/StatusList.vue')['default']
+    StatusMain: typeof import('./components/customtravel/StatusMain.vue')['default']
     TestFakeMessage: typeof import('./components/chatroom/TestFakeMessage.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
     TravelerFormModal: typeof import('./components/MemberCenter/TravelerFormModal.vue')['default']

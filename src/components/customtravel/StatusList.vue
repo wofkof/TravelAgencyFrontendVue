@@ -72,8 +72,10 @@ onMounted(async () => {
   }
 })
 
+const emit = defineEmits(['view-detail'])
 const viewTravel = (id) =>{
-  router.push({ name:'CustomtravelStatusContent',params:{id}})
+  emit('view-detail', id)
+  // router.push({ name:'CustomtravelStatusContent',params:{id}})
 }
 
 const addToCart = (item) => {
@@ -114,9 +116,8 @@ const addToCart = (item) => {
   
   .travel-info {
     flex: 1;
-      padding: 15px;
-      /* background-color: #f1f8e9; */
-      background-color: #c8ecf5;
+    padding: 15px;
+    background-color: #c8ecf5;
   }
   
   .row {

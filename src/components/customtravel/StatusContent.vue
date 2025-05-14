@@ -64,7 +64,10 @@ const form = ref({
 
 const route = useRoute()
 const router = useRouter()
-const customTravelId = route.params.id
+// const customTravelId = route.params.id
+const { customTravelId } = defineProps({
+  customTravelId: Number
+})
 const activeDay = ref('1')
 const dailyActivities = ref([])
 
@@ -98,7 +101,9 @@ const memberId = localStorage.getItem('memberId')
   }
 })
 
-const goBack = () => {router.push('/CustomtravelStatusList')}
+const emit = defineEmits(['go-back'])
+const goBack = () => {emit('go-back')}
+// const goBack = () => {router.push('/CustomtravelStatusList')}
 </script>
   
 <style scoped>
