@@ -3,7 +3,7 @@
     <router-link
       v-for="item in results"
       :key="item.id"
-      to="/Trip"
+      :to="{ name: 'DetailPage', params: { id: item.id } }"
       class="block"
     >
       <div class="shadow-lg rounded-lg p-4 mb-4 grid grid-cols-3 gap-4 h-auto">
@@ -26,6 +26,7 @@
 <script setup>
 import { useSearchResultStore } from '@/stores/useSearchResultStore';
 import { computed,onMounted } from 'vue';
+
 
 const searchResultStore = useSearchResultStore();
 const results = computed(() => searchResultStore.searchResult);

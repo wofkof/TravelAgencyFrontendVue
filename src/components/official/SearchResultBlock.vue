@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-4 mb-5">
+  <div class="pb-4 mb-5 text-center">
     <SRlist/>
   </div>
 </template>
