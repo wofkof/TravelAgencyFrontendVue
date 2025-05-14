@@ -5,9 +5,11 @@ import HeroContent from "@/components/travellian/HeroSection.vue";
 import FooterSection from "@/components/travellian/FooterSection.vue";
 import NewsletterSection from "@/components/travellian/NewsletterSection.vue";
 import FloatingChat from "@/components/chatroom/FloatingChat.vue";
+import GlobalCallHandler from "@/components/chatroom/GlobalCallHandler.vue";
 import { computed } from "vue"; // <-- 匯入 computed
 import { useRoute } from "vue-router"; // <--  僅保留 useRoute 的引入
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue"; // --- 匯入新的步驟條元件 ---
+import AudioCall from "./components/chatroom/AudioCall.vue";
 
 
 
@@ -28,21 +30,14 @@ const showCheckoutSteps = computed(() => {
   <Navbar />
   <CheckoutSteps style="margin-top: 155px" v-if="showCheckoutSteps" />
 
+  <GlobalCallHandler />
+  <audio id="remote-audio" autoplay playsinline style="display: none"></audio>
   <main class="main-content-area" style="margin-top: 155px">
     <router-view />
   </main>
 
-  <!-- ✅ 會員中心測試按鈕 -->
-  <div class="fixed bottom-4 right-4 z-50">
-    <router-link
-      to="/member-center"
-      class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 text-center"
-    >
-      測試會員中心
-    </router-link>
-  </div>
-
   <FloatingChat />
+  <AudioCall ref="audioCallRef" />
 
   <NewsletterSection />
   <FooterSection />

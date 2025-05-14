@@ -8,25 +8,23 @@
       >
         <div class="travel-info">
           <div class="row">
-            <el-input v-model="item.title" placeholder="Title" disabled />
-            <el-input v-model="item.people" placeholder="People" disabled style="width: 100px" />
+            <el-input v-model="item.title" placeholder="Title" readonly />
+            <el-input v-model="item.people" placeholder="People" readonly style="width: 100px" />
             <span>人</span>
           </div>
           <div class="row">
-            <el-date-picker v-model="item.start" type="date" disabled placeholder="Starts" />
-            <span>-</span>
-            <el-date-picker v-model="item.end" type="date" disabled placeholder="End" />
-            <el-input v-model="item.days" placeholder="Days" disabled style="width: 100px" />
+            <el-date-picker v-model="item.daterange" type="daterange" start-placeholder="Start Date" end-placeholder="End Date" readonly />
+            <el-input v-model="item.days" placeholder="Days" readonly style="width: 100px" />
             <span>天</span>
           </div>
         </div>
         <div class="status-section">
-          <div class="status-bar" :class="statusClass(item.status)">
+          <div class="status-bar" :class="statusClass(item.statusText)">
             <span class="status-text">{{ item.statusText }}</span>
           </div>
             <div class="actions">
-            <el-icon><View /></el-icon>
-            <el-icon v-if="item.status === '完成'"><ShoppingCart /></el-icon>
+            <el-icon @click="viewTravel(item.customTravelId)"><View /></el-icon>
+            <el-icon v-if="item.statusText === '審核完成'" @click="addToCart(item)" style="cursor: pointer"><ShoppingCart /></el-icon>
           </div>
         </div>
       </div>
@@ -34,26 +32,57 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
   import { View, ShoppingCart } from '@element-plus/icons-vue'
-  
-  // 模擬資料
-  const travelList = ref([
-    { title: 'Title', people: 2, start: '', end: '', days: 3, status: '待審核', statusText: '待審核' },
-    { title: 'Title', people: 4, start: '', end: '', days: 5, status: '審核中', statusText: '審核中' },
-    { title: 'Title', people: 1, start: '', end: '', days: 2, status: '完成', statusText: '審核完成' },
-    { title: 'Title', people: 3, start: '', end: '', days: 4, status: '取消', statusText: '已取消' },
-  ])
-  
-  const statusClass = (status) => {
-    switch (status) {
+  import { useCartStore } from '@/stores/cart'
+  import { ElMessage } from 'element-plus'
+  import axios from 'axios'
+
+  const travelList = ref([])
+  const router = useRouter()
+  const cartStore = useCartStore()
+    
+  const statusClass = (statusText) => {
+    switch (statusText) {
       case '待審核': return 'status-pending'
       case '審核中': return 'status-review'
-      case '完成': return 'status-success'
-      case '取消': return 'status-cancel'
+      case '審核完成': return 'status-success'
+      case '已取消': return 'status-cancel'
       default: return ''
     }
   }
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('https://localhost:7265/api/List')
+    travelList.value = res.data.map(item => ({
+      customTravelId: item.customTravelId,
+      title: item.note || '無標題',
+      people: item.people,
+      startDate: item.departureDate,
+      endDate: item.endDate,
+      days: item.days,
+      statusText: item.statusText,
+      daterange: [item.departureDate, item.endDate]
+    }))
+  } catch (error) {
+    console.error('載入資料失敗:', error)
+  }
+})
+
+const viewTravel = (id) =>{
+  router.push({ name:'CustomtravelStatusContent',params:{id}})
+}
+
+const addToCart = (item) => {
+  if (!cartStore.cartItems.some(x => x.customTravelId === item.customTravelId)) {
+    cartStore.addItem(item)
+    ElMessage.success('已加入購物車')
+  } else {
+    ElMessage.warning('此行程已在購物車中')
+  }
+}
   </script>
   
   <style scoped>

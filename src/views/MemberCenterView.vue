@@ -12,29 +12,56 @@
       <!-- 右側主要內容（卡片樣式） -->
       <div class="flex-1">
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-          <TravelerList :travelers="travelerList" @delete="removeTraveler" />
+           <!-- 動態切換內容元件 -->
+           <component :is="currentComponent" />
         </div>
       </div>
   
     </div>
   </div>
 </template>
+ 
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-    
-    <script setup>
-    // import TravelerFormModal from '@/components/MemberCenter/TravelerFormModal.vue'
-    import TravelerList from '@/components/MemberCenter/TravelerList.vue'
-    import MemberSidebar from '@/components/MemberCenter/MemberSidebar.vue'
-    import { ref } from 'vue'
-    
-    const travelerList = ref([])
-    
-    function addTraveler(traveler) {
-      travelerList.value.push(traveler)
-    }
-    
-    function removeTraveler(index) {
-      travelerList.value.splice(index, 1)
-    }
-    </script>
+import MemberSidebar from '@/components/MemberCenter/MemberSidebar.vue'
+import TravelerList from '@/components/MemberCenter/TravelerList.vue'
+import Collection from '@/components/MemberCenter/Collection.vue'
+import Comment from '@/components/MemberCenter/Comment.vue'
+import AccountSetting from '@/components/MemberCenter/AccountSetting.vue'
+import Order from '@/components/MemberCenter/Order.vue'
+import StatusList from '@/components/customtravel/StatusList.vue'
+
+
+const route = useRoute()
+const currentView = ref('TravelerList')
+
+const syncViewFromRoute = () => {
+  const path = route.path.toLowerCase()
+  const map = {
+    '/member/profile': 'AccountSetting',
+    '/member/orders': 'Order',
+    '/member/favorite-travelers': 'TravelerList',
+    '/member/favorites': 'Collection',
+    '/member/comments': 'Comment',
+    '/member/customtravel-status': 'StatusList'
+  }
+  currentView.value = map[path] || 'TravelerList'
+}
+
+onMounted(syncViewFromRoute)
+watch(() => route.path, syncViewFromRoute)
+
+const currentComponent = computed(() => {
+  return {
+    TravelerList,
+    Collection,
+    Comment,
+    AccountSetting,
+    Order,
+    StatusList 
+  }[currentView.value]
+})
+</script>
   

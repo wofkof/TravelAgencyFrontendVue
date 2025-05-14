@@ -357,64 +357,112 @@ const loadOrderItems = () => {
 
 // 提交訂單
 const submitOrder = async () => {
-    console.log("嘗試提交訂單...");
-    submitError.value = null; // 清除之前的錯誤
-    submitSuccess.value = false;
+    // --- 1. 準備訂購人資訊 (OrdererInfo) ---
+    // 來自 ParticipantForm.vue (formData.ordererInfo)
+    // ParticipantForm.vue 的 modelValue: { firstName, lastName, country, countryCode, phoneNumber, email, updateProfile, documentType, documentNumber }
+    const preparedOrdererInfo = {
+        name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
+        mobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''), // 合併國碼和號碼，並移除空格
+        email: formData.ordererInfo.email || null
+    };
 
-    // 前端基礎驗證 (雖然按鈕已禁用，但多一層保險)
-    if (isCheckoutButtonDisabled.value) {
-        console.warn("提交按鈕被禁用，無法提交。");
-        // TODO: 可能需要更友好的提示，例如滾動到第一個未填寫的區塊
-        alert("請完整填寫訂單資訊並選擇付款方式。");
-        return;
-    }
+    // --- 2. 準備旅客列表 (Participants) ---
+    // 來自 ItemParticipantForm.vue (formData.participantsByItem[itemId])
+    // ItemParticipantForm.vue 每個 participant 物件的結構: { id, country, firstNameZh, lastNameZh, documentNumber, birthDate, (可能還有 gender, email, phone, documentType 等) }
+    // 後端 OrderParticipantDto 需要: Name, BirthDate, IdNumber, Gender, Phone, Email, DocumentType, Nationality 等
+    const preparedParticipants = Object.values(formData.participantsByItem).flat().map(p_vue => {
+        const participantName = `${p_vue.lastNameZh || ''}${p_vue.firstNameZh || ''}`.trim();
 
-    isSubmitting.value = true; // 開始提交，禁用按鈕等
+        // 假設 ItemParticipantForm.vue 也收集了 gender, email, phone, documentType
+        // 如果沒有，您需要在 ItemParticipantForm.vue 中添加這些欄位
+        // 或者在後端將它們設為可選 (nullable)
 
-    // 準備提交到後端的數據結構
-    // 1. 訂單明細 (可能需要轉換格式)
-    const orderDetails = selectedOrderItems.value.map(item => {
-        // 根據後端 API 需求調整這裡的格式
+        // 處理 DocumentType 映射 (假設 Vue 的 'ID_CARD_TW' 對應後端某個 Enum 值)
+        let backendDocumentType;
+        switch (p_vue.documentType) { // 假設 p_vue.documentType 是從 ItemParticipantForm 來的
+            case 'ID_CARD_TW': backendDocumentType = 0; break; // 假設後端 DocumentType Enum 0 是台灣身分證
+            case 'PASSPORT': backendDocumentType = 1; break;   // 假設後端 DocumentType Enum 1 是護照
+            case 'ARC': backendDocumentType = 2; break;        // 假設後端 DocumentType Enum 2 是居留證
+            case 'ENTRY_PERMIT': backendDocumentType = 3; break; // 假設後端 DocumentType Enum 3 是入台證
+            default: backendDocumentType = null; // 或一個預設值
+        }
+
+        // 處理 GenderType 映射 (假設 ItemParticipantForm 有 gender 欄位)
+        let backendGender;
+        switch (p_vue.gender) { // 假設 p_vue.gender 是從 ItemParticipantForm 來的 (例如 'male', 'female', 'other')
+            case 'male': backendGender = 0; break;   // 假設後端 GenderType Enum 0 是 Male
+            case 'female': backendGender = 1; break; // 假設後端 GenderType Enum 1 是 Female
+            case 'other': backendGender = 2; break;  // 假設後端 GenderType Enum 2 是 Other
+            default: backendGender = null;
+        }
+
+
         return {
-            productId: item.productId,
-            quantity: getItemParticipantCount(item), // 使用計算出的總數量
-            unitPrice: item.pricePerUnit || null, // 單價 (如果適用)
-            subtotal: cartStore.calculateItemTotal(item), // 小計
-            options: item.options ? item.options.filter(opt => opt.quantity > 0) : null // 只提交數量大於0的選項
-            // ... 可能需要的其他商品資訊
+            favoriteTravelerId: p_vue.favoriteTravelerId || null, // 假設 ItemParticipantForm 有此欄位
+            memberIdAsParticipant: p_vue.memberIdAsParticipant || null, // 假設 ItemParticipantForm 有此欄位
+            name: participantName,
+            birthDate: p_vue.birthDate, // 確保是 "YYYY-MM-DD" 或 "YYYY-MM-DDTHH:mm:ss"
+            idNumber: p_vue.documentNumber, // 後端用 IdNumber 代表主要證件號
+            gender: backendGender, // 使用映射後的 Gender Enum 整數值
+            phone: p_vue.phoneNumber || '', // 假設 ItemParticipantForm 有 phoneNumber 欄位
+            email: p_vue.email || '',     // 假設 ItemParticipantForm 有 email 欄位
+            documentType: backendDocumentType, // 使用映射後的 DocumentType Enum 整數值
+            documentNumber: p_vue.documentNumber, // 可以與 IdNumber 相同，或如果用途不同則分別提供
+            passportSurname: p_vue.lastNameEn || '', // 假設 ItemParticipantForm 有 lastNameEn
+            passportGivenName: p_vue.firstNameEn || '', // 假設 ItemParticipantForm 有 firstNameEn
+            passportExpireDate: p_vue.passportExpireDate || null, // 假設 ItemParticipantForm 有
+            nationality: p_vue.country, // 直接使用前端的國家代碼 (例如 'TW')
+            note: p_vue.note || '' // 假設 ItemParticipantForm 有
         };
     });
 
-    // 2. 整合所有旅客資料
-    const allParticipants = Object.values(formData.participantsByItem).flat().map(p => ({
-        // 根據後端 API 需求調整欄位名稱和格式
-        firstNameZh: p.firstNameZh,
-        lastNameZh: p.lastNameZh,
-        firstNameEn: p.firstNameEn || '', // 英文名可能非必填
-        lastNameEn: p.lastNameEn || '',
-        country: p.country,
-        // birthDate: p.birthDate ? new Date(p.birthDate).toISOString().split('T')[0] : null, // 格式化日期
-        birthDate: p.birthDate, // 直接傳遞，由後端處理格式
-        gender: p.gender || null,
-        documentType: p.documentType,
-        documentNumber: p.documentNumber,
-        // ... 可能需要的其他旅客資訊
-    }));
+    // --- 3. 準備發票請求資訊 (InvoiceRequestInfo) ---
+    // 來自 EInvoiceForm.vue (formData.eInvoiceInfo)
+    // EInvoiceForm.vue 的 modelValue: { type: 'personal', taxId: '', companyTitle: '', donationCode: '' }
+    // 後端 OrderInvoiceRequestDto 需要: InvoiceOption (enum), InvoiceDeliveryEmail, InvoiceUniformNumber, InvoiceTitle, InvoiceAddBillingAddr, InvoiceBillingAddress
+    let backendInvoiceOption;
+    switch (formData.eInvoiceInfo.type) {
+        case 'personal': backendInvoiceOption = 0; break; // 假設後端 InvoiceOption Enum 0 是 Personal
+        case 'company': backendInvoiceOption = 1; break;  // 假設後端 InvoiceOption Enum 1 是 Company
+        // case 'donation': // 您說暫時不需要捐贈
+        default: backendInvoiceOption = 0; // 預設為個人
+    }
 
-
-    // 3. 組合最終 Payload
-    const orderPayload = {
-        memberId: formData.memberId,
-        paymentMethod: formData.paymentMethod,
-        note: formData.note,
-        ordererInfo: { ...formData.ordererInfo },
-        participants: allParticipants,
-        eInvoiceInfo: { ...formData.eInvoiceInfo },
-        orderDetails: orderDetails,
-        totalAmount: totalAmount.value // 附加總金額，方便後端校驗
+    const preparedInvoiceRequestInfo = {
+        invoiceOption: backendInvoiceOption,
+        invoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // EInvoiceForm 應有 deliveryEmail，或預設用訂購人 email
+        invoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
+        invoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
+        invoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // EInvoiceForm 應有此欄位
+        invoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // EInvoiceForm 應有此欄位
     };
 
-    console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
+    // --- 4. 準備選擇的付款方式 (SelectedPaymentMethod) ---
+    // 來自 PaymentOptions.vue (formData.paymentMethod)
+    // PaymentOptions.vue 的 modelValue: 'CreditCard', 'BankTransfer'
+    // 後端 PaymentMethod enum: CreditCard = 0, BankTransfer = 1, Other = 2
+    let backendSelectedPaymentMethod;
+    switch (formData.paymentMethod) {
+        case 'CreditCard': backendSelectedPaymentMethod = 0; break;
+        case 'BankTransfer': backendSelectedPaymentMethod = 1; break;
+        case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 假設 LINEPay 對應 Other 或您新增的 Enum 值
+        default: backendSelectedPaymentMethod = 0; // 或拋出錯誤，因為必須選擇
+    }
+
+
+    // --- 5. 組合最終 Payload ---
+    const orderPayload = {
+        totalAmount: totalAmount.value, // 來自 computed totalAmount
+        orderNotes: formData.note,
+        ordererInfo: preparedOrdererInfo,
+        participants: preparedParticipants,
+        invoiceRequestInfo: preparedInvoiceRequestInfo,
+        selectedPaymentMethod: backendSelectedPaymentMethod
+        // memberId 不從前端傳送
+        // orderDetails 也不在初次建立訂單時傳送
+    };
+
+    console.log("準備提交的訂單 Payload (精確映射後):", JSON.stringify(orderPayload, null, 2));
 
     try {
         const response = await api.createOrder(orderPayload); // 調用 API
@@ -583,7 +631,7 @@ onMounted(() => {
     flex: 1;
     min-width: 300px;
     position: sticky;
-    top: 80px; /* Sticky 定位的起始位置 */
+    top: 160px; /* Sticky 定位的起始位置 */
     /* height: calc(100vh - 100px); */ /* 移除固定高度，讓它自適應內容 */
     /* overflow-y: auto; */ /* 移除內部滾動，讓頁面滾動 */
   }

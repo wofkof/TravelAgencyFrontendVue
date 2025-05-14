@@ -10,6 +10,8 @@ import Login from "@/components/SignUp/Login.vue";
 import CustomtravelCreate from "@/components/customtravel/Create.vue";
 import CustomtravelList from "@/components/customtravel/List.vue";
 import CustomtravelContent from "@/components/customtravel/Content.vue";
+import CustomtravelStatusList from "@/components/customtravel/StatusList.vue";
+import CustomtravelStatusContent from "@/components/customtravel/StatusContent.vue";
 import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
@@ -35,12 +37,13 @@ const routes = [
     name: "SignUp",
     component: () => import("@/components/SignUp/SignUp.vue"),
   },
-  // 會員中心測試
+  // 會員中心
   {
-    path: "/member-center",
-    name: "MemberCenter",
-    component: () => import("@/views/MemberCenterView.vue"),
+  path: "/member/:section?",
+  name: "MemberCenter",
+  component: () => import("@/views/MemberCenterView.vue"),
   },
+  
   {
     path: "/cart", // 購物車頁面的路徑
     name: "ShoppingCart",
@@ -65,6 +68,19 @@ const routes = [
     path: "/CustomtravelContent/:id",
     name: "CustomtravelContent",
     component: CustomtravelContent,
+  },
+  {
+    // path: "/CustomtravelStatusList",
+    // name: "CustomtravelStatusList",
+    // component: CustomtravelStatusList,
+     path: "/member/customtravel-status",
+  name: "CustomtravelStatus",
+  component: () => import("@/views/MemberCenterView.vue"),
+  },
+  {
+    path: "/CustomtravelStatusContent/:id",
+    name: "CustomtravelStatusContent",
+    component: CustomtravelStatusContent,
   },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
   { path: "/Trip", name: "Trip", component: Trip },
