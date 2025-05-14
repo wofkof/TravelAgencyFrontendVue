@@ -228,6 +228,8 @@ onMounted(() => {
 // 登出
 function handleLogout() {
   localStorage.removeItem("memberName");
+  localStorage.removeItem("memberId");
+  //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
   router.push("/");
