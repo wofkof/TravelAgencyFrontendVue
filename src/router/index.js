@@ -5,7 +5,6 @@ import ForeignView from "@/views/ForeignView.vue";
 import FreeTravelView from "@/views/FreeTravelView.vue";
 import CruiseView from "@/views/CruiseView.vue";
 import PricingView from "@/views/PricingView.vue";
-import VisaView from "@/views/VisaView.vue";
 import ContactView from "@/views/ContactView.vue";
 import Login from "@/components/SignUp/Login.vue";
 import CustomtravelCreate from "@/components/customtravel/Create.vue";
@@ -15,6 +14,7 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
+import VisaPage from "@/views/VisaPage.vue";//富成
 
 
 const routes = [
@@ -27,10 +27,6 @@ const routes = [
     component: FreeTravelView,
   },
   { path: "/CruiseView", name: "CruiseView", component: CruiseView },
-
-  
-  { path: "/VisaView", name: "VisaView", component: VisaView },
-
 
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
@@ -72,14 +68,12 @@ const routes = [
   },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
   { path: "/Trip", name: "Trip", component: Trip },
-];
 
+  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
+  
+];
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-  scrollBehavior(to, from, savedPosition) {
-    return { top: 45 };
-  },
+  routes
 });
-
-export default router;
+export default router;//富成
