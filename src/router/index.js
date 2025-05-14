@@ -11,8 +11,6 @@ import Login from "@/components/SignUp/Login.vue";
 import CustomtravelCreate from "@/components/customtravel/Create.vue";
 import CustomtravelList from "@/components/customtravel/List.vue";
 import CustomtravelContent from "@/components/customtravel/Content.vue";
-import CustomtravelStatusList from "@/components/customtravel/StatusList.vue";
-import CustomtravelStatusContent from "@/components/customtravel/StatusContent.vue";
 import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
@@ -48,6 +46,7 @@ const routes = [
   name: "MemberCenter",
   component: () => import("@/views/MemberCenterView.vue"),
   },
+  
   {
     path: "/ShoppingCart", // 購物車頁面的路徑
     name: "ShoppingCart",
@@ -80,18 +79,8 @@ const routes = [
     name: "CustomtravelContent",
     component: CustomtravelContent,
   },
-  {
-    path: "/CustomtravelStatusList",
-    name: "CustomtravelStatusList",
-    component: CustomtravelStatusList,
-  },
-  {
-    path: "/CustomtravelStatusContent/:id",
-    name: "CustomtravelStatusContent",
-    component: CustomtravelStatusContent,
-  },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
-  { path: "/Trip", name: "Trip", component: Trip },
+  { path: '/detail/:id',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
 ];
 
 const router = createRouter({

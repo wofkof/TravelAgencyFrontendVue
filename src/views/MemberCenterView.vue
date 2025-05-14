@@ -31,6 +31,8 @@ import Collection from '@/components/MemberCenter/Collection.vue'
 import Comment from '@/components/MemberCenter/Comment.vue'
 import AccountSetting from '@/components/MemberCenter/AccountSetting.vue'
 import Order from '@/components/MemberCenter/Order.vue'
+import StatusMain from '@/components/customtravel/StatusMain.vue'
+
 
 const route = useRoute()
 const currentView = ref('TravelerList')
@@ -42,7 +44,8 @@ const syncViewFromRoute = () => {
     '/member/orders': 'Order',
     '/member/favorite-travelers': 'TravelerList',
     '/member/favorites': 'Collection',
-    '/member/comments': 'Comment'
+    '/member/comments': 'Comment',
+    '/member/customtravel-status': 'StatusMain'
   }
   currentView.value = map[path] || 'TravelerList'
 }
@@ -56,7 +59,8 @@ const currentComponent = computed(() => {
     Collection,
     Comment,
     AccountSetting,
-    Order
+    Order,
+    StatusMain 
   }[currentView.value]
 })
 </script>

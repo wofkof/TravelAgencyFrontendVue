@@ -20,10 +20,11 @@ const submit = async () => {
   errors.value = {} // reset
 
   // 先檢查所有欄位是否填寫
-  if (!name.value || !phone.value || !email.value || !password.value || !confirmPassword.value) {
-    alert('請完整填寫所有欄位')
-    return
-  }
+  if (!name.value || !phone.value || !email.value || !password.value || !confirmPassword.value || !emailCode.value) {
+  alert('請完整填寫所有欄位')
+  return
+}
+
 
   // 密碼確認一致性
   if (password.value !== confirmPassword.value) {
@@ -36,7 +37,9 @@ const submit = async () => {
       name: name.value,
       phone: phone.value,
       email: email.value,
-      password: password.value
+      password: password.value,
+      emailVerificationCode: emailCode.value
+
     })
 
     ElMessage({
@@ -104,6 +107,35 @@ function togglePassword() {
 function toggleConfirmPassword() {
   showConfirmPassword.value = !showConfirmPassword.value
 }
+//Email驗證倒數區
+const emailCode = ref('')
+const countdown = ref(0)
+let countdownTimer = null
+const sendVerificationCode = async () => {
+  if (!email.value) {
+    ElMessage.warning('請先輸入 Email')
+    return
+  }
+
+  try {
+    await axios.post('https://localhost:7265/api/account/send-email-code', {
+      email: email.value
+    })
+
+    ElMessage.success('驗證碼已發送至信箱，請查收')
+
+    // 開始倒數 30 秒
+    countdown.value = 30
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(countdownTimer)
+      }
+    }, 1000)
+  } catch (err) {
+    ElMessage.error('驗證碼發送失敗')
+  }
+}
 </script>
 
 <template>
@@ -139,28 +171,40 @@ function toggleConfirmPassword() {
 
               <div class="grid gap-2">
                 <Label for="phone">聯絡手機</Label>
-                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required />
+                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required  maxlength="10" />
                 <span v-if="errors.Phone" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Phone" :key="i">{{ msg }}<br /></template>
 </span>
               </div>
 
-              <div class="grid gap-2">
+              <!-- <div class="grid gap-2">
                 <Label for="email">聯絡信箱</Label>
                 <Input id="email" v-model="email" placeholder="travellian@example.com" required />
                 <span v-if="errors.Email" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Email" :key="i">{{ msg }}<br /></template>
 </span>
-              </div>
-
-              <!-- <div class="grid gap-2">
-                <Label for="password">密碼</Label>
-                <Input id="password" type="password" v-model="password" placeholder="請設定6~12位數密碼" required />
-                <span v-if="errors.Password" class="text-red-500 text-sm">
-  <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
-</span>
               </div> -->
-              <div class="grid gap-2 relative">
+<!-- 新增發送驗證碼鈕 -->
+ <div class="grid gap-2">
+  <Label for="email">聯絡信箱</Label>
+  <div class="flex gap-2">
+    <Input id="email" v-model="email" placeholder="travellian@example.com" required class="flex-1" />
+    <Button type="button" :disabled="countdown > 0" @click="sendVerificationCode">
+      {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
+    </Button>
+  </div>
+  <span v-if="errors.Email" class="text-red-500 text-sm">
+    <template v-for="(msg, i) in errors.Email" :key="i">{{ msg }}<br /></template>
+  </span>
+</div>
+ <!-- 驗證碼欄位&重新發送鈕 -->
+  <div class="grid gap-2">
+  <Label for="email-code">Email 驗證碼</Label>
+  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" required />
+  <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
+    <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
+  </span>
+  <div class="grid gap-2 relative">
   <Label for="password">密碼</Label>
   <div class="relative">
     <Input
@@ -169,7 +213,7 @@ function toggleConfirmPassword() {
       v-model="password"
       placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
 "
-      required
+      required  maxlength="12"
       class="pr-10"
     />
     <button
@@ -195,7 +239,7 @@ function toggleConfirmPassword() {
       id="confirm-password"
       v-model="confirmPassword"
       placeholder="請再次輸入密碼"
-      required
+      required maxlength="12"
       class="pr-10"
     />
     <button
@@ -211,23 +255,12 @@ function toggleConfirmPassword() {
   <span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
   </span>
+ 
 </div>
 
-
 </div>
 
-              <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50">
-                <input type="checkbox" id="fake-recaptcha" class="w-5 h-5 accent-blue-600" />
-                <label for="fake-recaptcha" class="text-sm text-gray-700 select-none">
-                  我不是機器人
-                </label>
-                <img
-                  src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
-                  alt="reCAPTCHA"
-                  class="ml-auto w-10 h-10"
-                />
-              </div>
-
+</div>
               <Button type="submit" class="w-full">
                 立即註冊
               </Button>

@@ -143,7 +143,6 @@
               歡迎，{{ memberName }}
               <span :class="isMenuOpen ? 'rotate-180 transition-transform' : 'transition-transform'">▼</span>
             </button>
-
           <div
             v-if="isMenuOpen"
             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
@@ -239,6 +238,8 @@ onMounted(() => {
 // 登出
 function handleLogout() {
   localStorage.removeItem("memberName");
+  localStorage.removeItem("memberId");
+  //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
   router.push("/");
