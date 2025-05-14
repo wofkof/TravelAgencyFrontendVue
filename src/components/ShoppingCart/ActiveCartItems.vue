@@ -168,7 +168,7 @@ import { useRouter } from "vue-router";
 
 // --- 狀態管理 (Pinia) ---
 import { storeToRefs } from "pinia";
-import { useCartStore } from "@/stores/cart";
+import { useCartStore } from "@/stores/ShoppingCart";
 
 import { Minus, Plus, Delete } from "@element-plus/icons-vue";
 // ^^^ Element Plus *圖標* 的導入是 **必要** 的，因為它們在模板中被用作 :icon 屬性的變數值 (e.g., :icon="Minus")。
@@ -342,18 +342,11 @@ const goToCheckout = () => {
 /* --- 購物車單項樣式 (使用 Grid 佈局) --- */
 .cart-item {
   display: grid;
-  /* 定義網格佈局的列：複選框 | 圖片 | 商品資訊 | 日期 | 數量選項 | 價格 | 操作按鈕 */
-  /* min-content: 根據內容自適應寬度 */
-  /* 80px: 固定圖片寬度 */
-  /* 1fr: 商品資訊佔據剩餘彈性空間 */
-  /* 100px: 固定日期寬度 */
-  /* minmax(130px, auto): 數量選項最小130px，可隨內容增大 */
-  /* minmax(90px, auto): 價格最小90px，可隨內容增大 */
   grid-template-columns: min-content 80px 1fr 100px minmax(130px, auto) minmax(90px, auto) min-content;
   gap: 10px 15px; /* 行間距 10px，列間距 15px */
   padding: 15px 0; /* 上下內邊距 15px */
   border-bottom: 1px solid #eee; /* 項目間的分隔線 */
-  align-items: center; /* 垂直居中對齊網格項目 */
+  align-items: baseline;
 }
 
 /* 可以為選中的項目添加不同的背景色 */
@@ -380,11 +373,13 @@ const goToCheckout = () => {
   display: flex;
   flex-direction: column; /* 選項垂直排列 */
   gap: 5px; /* 選項之間的間距 */
+  align-items: flex-start; /* 左對齊 */
 }
 .item-price {
   grid-column: 6 / 7; /* 價格在第 6 列 */
   font-weight: bold;
-  text-align: right; /* 價格靠右對齊 */
+  text-align: left; /* 價格靠左對齊 */
+  align-self: start;
 }
 .item-actions-icons {
   grid-column: 7 / 8; /* 操作按鈕在第 7 列 */

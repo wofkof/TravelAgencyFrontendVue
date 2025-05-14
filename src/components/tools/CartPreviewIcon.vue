@@ -1,7 +1,7 @@
 <script setup>
 // --- 狀態管理 (Pinia) ---
 import { storeToRefs } from 'pinia'; // 用於將 store state/getters 轉為 ref
-import { useCartStore } from '@/stores/cart'; // 導入購物車相關的 Pinia store
+import { useCartStore } from '@/stores/ShoppingCart'; // 導入購物車相關的 Pinia store
 import { Delete } from '@element-plus/icons-vue'; // Delete 圖標因用於 :icon 綁定，故*需要*導入
 
 // --- 本地工具 ---
@@ -64,7 +64,7 @@ const getItemQuantity = (item) => {
 
     <template #reference>
       <router-link
-        to="/cart"  導航目標="購物車頁面路由"
+        to="/ShoppingCart"  導航目標="購物車頁面路由"
         class="main-menu__item cart-icon-link"  樣式="CSS class"
         active-class="main-menu__item--active"  活動狀態="活動路由 class"
         exact  精確匹配="路由精確匹配"
@@ -113,7 +113,7 @@ const getItemQuantity = (item) => {
             <span class="total-items-preview">共 {{ itemCount }} 件商品</span>
             <div class="footer-right">
               <span class="total-price-preview">總計: NT$ {{ totalPrice }}</span>
-              <router-link to="/cart">
+              <router-link to="/ShoppingCart">
                   <el-button type="primary" size="small">查看購物車</el-button>
               </router-link>
             </div>

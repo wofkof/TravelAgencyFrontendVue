@@ -17,6 +17,7 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
+import OrderComplete from "@/views/OrderComplete.vue";
 
 
 const routes = [
@@ -48,7 +49,7 @@ const routes = [
   component: () => import("@/views/MemberCenterView.vue"),
   },
   {
-    path: "/cart", // 購物車頁面的路徑
+    path: "/ShoppingCart", // 購物車頁面的路徑
     name: "ShoppingCart",
     component: ShoppingCart, // 對應到 ShoppingCart 組件
   },
@@ -56,6 +57,13 @@ const routes = [
     path: "/order-form", // 訂單表單頁面的路徑
     name: "OrderForm",
     component: OrderForm, // 對應到 OrderForm 組件
+    meta: { simpleNavbar: true }
+  },  
+  {
+    path: "/order-complete", // 訂單完成的路徑
+    name: "Ordercomplete",
+    component: OrderComplete, // 對應到 Ordercomplete 組件
+    meta: { simpleNavbar: true }
   },
   {
     path: "/CustomtravelCreate",
@@ -90,7 +98,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    return { top: 45 };
+    return { top: 0 };
   },
 });
 
