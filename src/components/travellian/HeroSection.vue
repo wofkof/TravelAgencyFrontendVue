@@ -25,15 +25,20 @@
         </select>
       </div>
       <div class="search__group">
-        <label for="checkin" class="search__lbl">出發日期區間</label>
-        <el-date-picker 
-          :locale="zhCn"
+        <label for="checkin" class="search__lbl">最早出發日</label>
+        <input
+          type="date"
+          id="checkin"
           v-model="search.checkin"
-          type="daterange"
-          range-separator="~"
-          start-placeholder="最早"
-          end-placeholder="最晚"
-          :size="size"
+          class="search__input"
+        />
+      </div>
+      <div class="search__group">
+        <label for="checkout" class="search__lbl">最晚出發日</label>
+        <input
+          type="date"
+          id="checkout"
+          v-model="search.checkout"
           class="search__input"
         />
       </div>
@@ -57,14 +62,16 @@ const searchResultStore = useSearchResultStore();
 const search = reactive({
   destination: "",
   person: 1,
-  checkin: ""
+  checkin: null,
+  checkout: null
 });
 
 const handleSearch = async () => {
   const payload = {
     destination: search.destination,
     peopleCount: search.person,
-    startDate: search.checkin
+    startDate: search.checkin,
+    endDate: search.checkout
   };
 
   try {

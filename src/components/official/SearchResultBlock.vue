@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl p-4 text-center text-gray-700 shadow">
+  <div class="pb-4 mb-5">
     <SRlist/>
   </div>
 </template>
