@@ -9,6 +9,9 @@ import "@/assets/main.css";
 
 import router from "./router";
 import App from "./App.vue";
+import axios from 'axios'
+
+axios.defaults.withCredentials = true
 
 const app = createApp(App);
 const pinia = createPinia();

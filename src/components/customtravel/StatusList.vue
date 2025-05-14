@@ -23,8 +23,8 @@
             <span class="status-text">{{ item.statusText }}</span>
           </div>
             <div class="actions">
-            <el-icon @click="viewTravel(item.customTravelId)"><View /></el-icon>
-            <el-icon v-if="item.statusText === '審核完成'" @click="addToCart(item)" style="cursor: pointer"><ShoppingCart /></el-icon>
+              <el-button color="#4ac2e091" @click="viewTravel(item.customTravelId)" :icon="View" circle />         
+              <el-button v-if="item.statusText === '審核完成'" color="#f34fc28f" @click="addToCart(item)" style="cursor: pointer" :icon="ShoppingCart" circle />               
           </div>
         </div>
       </div>
@@ -55,7 +55,8 @@
 
 onMounted(async () => {
   try {
-    const res = await axios.get('https://localhost:7265/api/List')
+    const memberId = localStorage.getItem('memberId')
+    const res = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
     travelList.value = res.data.map(item => ({
       customTravelId: item.customTravelId,
       title: item.note || '無標題',
@@ -71,8 +72,10 @@ onMounted(async () => {
   }
 })
 
+const emit = defineEmits(['view-detail'])
 const viewTravel = (id) =>{
-  router.push({ name:'CustomtravelStatusContent',params:{id}})
+  emit('view-detail', id)
+  // router.push({ name:'CustomtravelStatusContent',params:{id}})
 }
 
 const addToCart = (item) => {
@@ -87,10 +90,10 @@ const addToCart = (item) => {
   
   <style scoped>
   .custom-list-container {
-    background-color: #71b2d879;
     padding: 30px;
     border-radius: 25px;
     max-width: 800px;
+    height: 600px;
     margin: 0 auto;
   }
   
@@ -113,8 +116,8 @@ const addToCart = (item) => {
   
   .travel-info {
     flex: 1;
-      padding: 15px;
-      background-color: #f1f8e9;
+    padding: 15px;
+    background-color: #c8ecf5;
   }
   
   .row {
@@ -150,15 +153,20 @@ const addToCart = (item) => {
     text-align: center;
     margin-bottom: 10px;
   }
+
+  .actions .el-button {
+  margin: 0;
+  padding: 4px 8px;
+}
   
   .actions { 
     flex: 1;
-    background-color: #e3effd;
+    background-color: #dce8f7;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
   }
   
   .status-pending {
