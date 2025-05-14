@@ -26,8 +26,26 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue';
 import FilterBar from "@/components/official/FilterBar.vue";
 import SearchResultBlock from "@/components/official/SearchResultBlock.vue";
+import { useSearchResultStore } from '@/stores/useSearchResultStore';
+import { onMounted } from 'vue';
 
-const budget = ref([10000, 100000]);
+const searchResultStore = useSearchResultStore()
+
+// 預算範圍
+const budget = ref([10000, 100000])
+
+// 監看 budget，並通知 block 過濾資料
+watch(budget, (newValue) => {
+  console.log("預算改變：", newValue)
+})
+
+onMounted(() => {
+  console.log('searchResult:', searchResultStore.searchResult);
+});
+
+// this.$router.push({ name: 'DetailPage', params: { id: item.id } });
+
 </script>

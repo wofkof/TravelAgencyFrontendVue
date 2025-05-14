@@ -1,10 +1,16 @@
 <template>
-    <div class="bg-white rounded-xl p-4 text-center text-gray-700 shadow">
-      <SRlist/>
-    </div>
-
+  <div class="pb-4 mb-5 text-center">
+    <SRlist/>
+  </div>
 </template>
 
 <script setup>
-import SRlist from './SRlist.vue';
+import { computed } from 'vue'
+import SRlist from './SRlist.vue'
+import { useSearchResultStore } from '@/stores/useSearchResultStore'
+
+
+const store = useSearchResultStore()
+
+
 </script>

@@ -72,7 +72,7 @@ const routes = [
     component: CustomtravelContent,
   },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
-  { path: "/Trip", name: "Trip", component: Trip },
+  { path: '/detail/:id',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
 ];
 
 const router = createRouter({
