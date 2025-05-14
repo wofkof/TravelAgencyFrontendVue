@@ -9,6 +9,10 @@
         readonly
         style="max-width: 300px"
       />
+      <div class="budget">
+      <label>預算總金額</label>
+      <el-input v-model="form.budget" placeholder="Money" style="width: 200px" readonly/>
+    </div>
       <el-button type="primary" @click="goBack">返回</el-button>
     </div>
 
@@ -25,26 +29,24 @@
               placement="top"
               v-for="(item, index) in dailyActivities[day - 1]"
               :key="index"
-              :timestamp="item.time"
+              :timestamp="`${item.time} ${item.categoryText}`"
               :icon="LocationInformation"
             >
-              <el-card class="activity-card">
-                <div class="content">
-                  <div class="category">{{ item.categoryText }}</div>
-                  <div class="item">{{ item.itemName}}</div>
-                  <div class="desc">{{ item.desc }}</div>
+               <div class="activity-card"> 
+                <div class="info-area">
+                <div class="row">
+                  <div class="item">{{ item.itemName}}</div>                 
                 </div>                
-              </el-card>
+                <div class="row">
+                  <div class="desc">{{ item.desc }}</div>
+             </div>
+              </div>
+              </div>
             </el-timeline-item>
           </el-timeline>
         </div>
       </el-tab-pane>
     </el-tabs>
-
-    <div class="budget">
-      <label>預算總金額</label>
-      <el-input v-model="form.budget" placeholder="Money" style="width: 200px" readonly/>
-    </div>
   </div>
 </template>
   
@@ -56,8 +58,8 @@ import { LocationInformation } from '@element-plus/icons-vue'
 
 const form = ref({
   daterange: [],
-  days: 3,
-  budget: 0
+  days: '',
+  budget: ''
 })
 
 const route = useRoute()
@@ -70,8 +72,8 @@ onMounted(async () => {
   try {
     const res = await axios.get(`https://localhost:7265/api/Content?id=${customTravelId}`)
     const raw = res.data
-
-    const travelRes = await axios.get(`https://localhost:7265/api/List`)
+const memberId = localStorage.getItem('memberId')
+    const travelRes = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
     const travel = travelRes.data.find(t => t.customTravelId == customTravelId)
 
     if (travel) {
@@ -126,23 +128,67 @@ const goBack = () => {router.push('/CustomtravelStatusList')}
   }
   
   .activity-card {
+    width: 100%;
+  max-width: 700px;
     background-color: #6ab8e6;
-    padding: 12px 20px;
     border-radius: 10px;
-    color: #fff;
+    padding: 5px;
+    color: black;
     font-weight: bold;
+    display: flex;
+  align-items: stretch;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.233);
   }
   
-  .content{
+.info-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+}
+
+  .row{
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   
   .budget {
-    margin-top: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
   }
+
+  .item {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.desc {
+  font-size: 16px;
+  color: #333;
+}
+
+.el-button{
+  font-size: 18px;
+  height: 36px;
+  padding: 6px 12px;
+}
+
+::v-deep(.el-timeline-item__timestamp) {
+  font-size: 17px;
+  color: black;
+}
+::v-deep(.el-timeline-item__icon) {
+  font-size: 16px;
+  color: #274106;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
 </style>

@@ -1,5 +1,7 @@
 <template>
   <div class="container">
+    <DeleteDialog ref="deleteDialog"/>
+    <Dialog ref="dialogRef" :onAdd="addContent" :onEdit="updateContent" />
     <div class="header">
       <el-date-picker
         v-model="form.daterange"
@@ -10,7 +12,7 @@
         style="max-width: 300px"
       />
       <el-button type="primary" @click="goBack">返回</el-button>
-      <el-button type="success" @click="openCreateDialog">新增行程</el-button>
+      <el-button type="success" @click="openCreateDialog">新增項目</el-button>
     </div>
 
     <el-tabs v-model="activeDay" type="border-card" class="tabs">
@@ -21,46 +23,51 @@
         :name="day.toString()"
       >
         <div class="scroll-wrapper">
-          <el-timeline style="max-width: 600px">
+          <el-timeline style="width: 100%">
             <el-timeline-item
               placement="top"
               v-for="(item, index) in dailyActivities[day - 1].slice().sort((a, b) => a.time.localeCompare(b.time))"
               :key="index"
-              :timestamp="item.time"
+              :timestamp="`${item.time} ${CategoryName(item.category)}`"
               :icon="LocationInformation"
             >
-              <el-card class="activity-card">           
-                <div class="content">
-                  <div class="category">{{ CategoryName(item.category) }}</div>
+              <div class="activity-card"> 
+                <div class="info-area">
+                <div class="row">
                   <div class="item">{{ ItemName(item.category, item.item) }}</div>
+                </div>
+                <div class="row">
                   <div class="desc">{{ item.desc }}</div>
                 </div>
-                <div class="actions">
-                  <el-button type="danger" size="small" @click="removeItem(day - 1, index)">刪除</el-button>
-                  <el-button type="primary" size="small" @click="editItem(day - 1, index)">修改</el-button>
-                </div>
-              </el-card>
+              </div>
+              <div class="actions">
+                    <el-button color="#626aef"  @click="editItem(day - 1, index)" :icon="Edit" circle></el-button>                    
+                    <el-button type="danger" @click="removeItem(day - 1, index)" :icon="Delete" circle></el-button>
+                </div>          
+              </div>
             </el-timeline-item>
           </el-timeline>
         </div>
       </el-tab-pane>
     </el-tabs>
 
+    <div class="down">
     <div class="budget">
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" />
     </div>
-    <el-button type="success" @click="saveToServe">送出審核</el-button>
-
-    <Dialog ref="dialogRef" :onAdd="addContent" :onEdit="updateContent" />
+      <el-button type="success" @click="saveToServe">送出審核</el-button>
+    </div>
+    
   </div>
 </template>
 
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { LocationInformation } from '@element-plus/icons-vue'
+import { LocationInformation, Edit, Delete } from '@element-plus/icons-vue'
 import Dialog from '@/components/customtravel/ContentDialog.vue'
+import DeleteDialog from '@/components/customtravel/DeleteDialog.vue'
 import axios from 'axios'
 import { useTravelStore } from '@/stores/customtravelStore'
 import { ElMessage } from 'element-plus'
@@ -70,6 +77,7 @@ const router = useRouter()
 const travelStore = useTravelStore()
 const activeDay = ref('1')
 const dialogRef = ref(null)
+const deleteDialog = ref(null)
 const dailyActivities = ref([])
 const city = ref([])
 const district = ref([])
@@ -77,6 +85,7 @@ const attraction = ref([])
 const restaurant = ref([])
 const accommodation = ref([])
 const transport = ref([])
+const memberId = localStorage.getItem('memberId')
 
 const form = reactive({
   title:'',
@@ -87,17 +96,11 @@ const form = reactive({
 
 
 onMounted(async ()=>{
-const user = JSON.parse(localStorage.getItem('user'))
-  if (!user?.userId) {
-    router.push('/login')
-    return
-  }
-
   const id = route.params.id
   const stored = JSON.parse(localStorage.getItem('list') || '[]')
   const current = stored.find(x => x.id == id)
 
-  if (!current || current.userId !== user.userId) {
+  if (!current) {
     router.push('/CustomtravelList') 
     return
   }
@@ -140,11 +143,11 @@ const goBack = () => router.push('/CustomtravelList')
 
 const CategoryName = (id) => {
   switch (id) {
-    case 0: return '住宿'
-    case 1: return '景點'
-    case 2: return '餐廳'
-    case 3: return '交通'
-    default: return '未知'
+    case 0: return '🏡住宿'
+    case 1: return '🗺景點'
+    case 2: return '🍽餐廳'
+    case 3: return '🚘交通'
+    default: return '❓未知'
   }
 }
 
@@ -163,9 +166,19 @@ const ItemName = (category, itemId) => {
   }
 }
 
-const removeItem = (dayIndex, itemIndex) => {
-  dailyActivities.value[dayIndex].splice(itemIndex, 1)
-   travelStore.setDailyActivities(dailyActivities.value)
+const removeItem = async(dayIndex, itemIndex) => {
+  try{
+    await deleteDialog.value.open({
+      title:'確認刪除',
+      message:'確定要刪除這筆行程內容嗎?',
+    })
+    dailyActivities.value[dayIndex].splice(itemIndex, 1)
+    travelStore.setDailyActivities(dailyActivities.value)
+   
+    ElMessage.success('刪除成功')
+  }catch{
+    ElMessage.info('取消刪除')
+  }
 }
 
 
@@ -201,16 +214,13 @@ watch(dailyActivities, (newVal) => {
   localStorage.setItem(`activities_${route.params.id}`, JSON.stringify(newVal))
 }, { deep: true })
 
-const saveToServe = async() =>{
-  const user = JSON.parse(localStorage.getItem('user'))
-  if (!user?.userId) {
-    ElMessage.error('請先登入')
-    router.push('/login')
+const saveToServe = async() =>{ 
+  if (!memberId) {
+    ElMessage.warning('請先登入會員，才可送出審核!')
     return
   }
-  
   const payload = {
-    memberId: user.userId,
+    memberId: memberId,
     note: form.title,
     departureDate: form.daterange[0],
     endDate: form.daterange[1],
@@ -241,16 +251,16 @@ const saveToServe = async() =>{
   localStorage.removeItem(`activities_${route.params.id}`)
     travelStore.clearAll()
 
-    ElMessage.success('儲存成功，資料已清除')
+    ElMessage.success('送出成功，訂單已送出審核')
     router.push('/CustomtravelList')
   } catch (err) {
-    ElMessage.error('儲存失敗')
+    ElMessage.error('發送失敗')
     console.error(err)
   }
 }
 </script>
   
-  <style scoped>
+<style scoped>
   .container {
     padding: 20px;
     max-width: 900px;
@@ -277,24 +287,91 @@ const saveToServe = async() =>{
   }
   
   .activity-card {
+    width: 100%;
+  max-width: 700px;
     background-color: #6ab8e6;
-    padding: 12px 20px;
     border-radius: 10px;
-    color: #fff;
+    padding: 5px;
+    color: black;
     font-weight: bold;
+    display: flex;
+  align-items: stretch;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.233);
   }
   
-  .content{
+.info-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+}
+
+  .row{
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   
-  .budget {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
+  .actions .el-button {
+  margin: 0;
+  padding: 4px 8px;
+}
+  
+  .actions {
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding:0;
+}
+
+.down {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.item {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.desc {
+  font-size: 16px;
+  color: #333;
+}
+
+.el-button{
+  font-size: 18px;
+  height: 36px;
+  padding: 6px 12px;
+}
+
+::v-deep(.el-timeline-item__timestamp) {
+  font-size: 17px;
+  color: black;
+}
+::v-deep(.el-timeline-item__icon) {
+  font-size: 16px;
+  color: #274106;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
   </style>
   

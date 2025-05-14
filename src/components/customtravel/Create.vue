@@ -24,11 +24,14 @@
         <el-input v-model="form.people" @input="NumberInput"  placeholder="請輸入人數(1-50)"/>
       </el-form-item>        
       <el-form-item>
-        <el-button type="primary" class="btn" @click="onSubmit">Create</el-button>      
+        <el-button type="primary" class="btn" @click="onSubmit">新增行程</el-button>      
       </el-form-item>
     </el-form>
   </div>
+  <div class="backbtn">
+    <el-button type="primary" @click="goBack">返回</el-button>
   </div>
+</div>
   </template>
   
   <script setup>
@@ -81,13 +84,7 @@ const num = parseInt(cleanVal, 10)
   }
 }
 
-  const onSubmit = () => {
-const user = JSON.parse(localStorage.getItem('user'))
-  if (!user?.userId) {
-    router.push('/login')
-    return
-  }
-
+  const onSubmit = () => {   
     const id = Date.now()
     const newTravel = {
     id,
@@ -95,7 +92,6 @@ const user = JSON.parse(localStorage.getItem('user'))
     daterange:form.daterange,
     days: form.days,
     people: form.people,
-    userId: user.userId
   }
 
   const existing = JSON.parse(localStorage.getItem('list') || '[]')
@@ -107,6 +103,8 @@ const user = JSON.parse(localStorage.getItem('user'))
 
   router.push({ name: 'CustomtravelContent', params: { id } })
   }
+
+  const goBack = () => {router.push('/CustomtravelList')}
   </script>
   
   <style scoped>
@@ -135,4 +133,18 @@ const user = JSON.parse(localStorage.getItem('user'))
     width: 100%;
     font-size: 18px;
   }
+
+  .el-form-item{    
+    font-weight: bold;
+  }
+
+  .backbtn{
+    margin-top: 30px;
+  }
+
+  .el-button{
+  font-size: 18px;
+  height: 36px;
+  padding: 6px 12px;
+}
   </style>
