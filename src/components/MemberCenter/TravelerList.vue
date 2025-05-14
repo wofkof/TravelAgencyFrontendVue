@@ -25,7 +25,7 @@
         @click="toggleAccordion(t.id)"
       >
     <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
-    <p><strong>生日：</strong>{{ t.birthDate }}</p>
+    <p><strong>生日：</strong>{{ formatDate(t.birthDate) }}</p>
     <span>{{ expandedTravelerId === t.id ? '關閉▲' : '編輯▼' }}</span>
   </div>
 
@@ -108,7 +108,7 @@
 
 </template>
 
-<script>
+<!-- <script>
 import {
   Check,
   Delete,
@@ -189,4 +189,137 @@ export default {
     }
   }
 }
+</script> -->
+<script>
+import axios from 'axios' // ✅ 加入 axios 串接 API
+import {
+  Check,
+  Delete,
+  Edit,
+  Message,
+  Search,
+  Star,
+} from '@element-plus/icons-vue'
+
+export default {
+  data() {
+    return {
+      travelers: [],
+      showForm: false,
+      selectedTraveler: {},
+      isEditing: false,
+      isReadonly: false,
+      expandedTravelerId: null
+    }
+  },
+  mounted() {
+    this.fetchTravelers() // ✅ 一進頁面就載入會員的常用旅客
+  },
+  methods: {
+    toggleAccordion(id) {
+      this.expandedTravelerId = this.expandedTravelerId === id ? null : id
+    },
+    async fetchTravelers() {
+      const memberId = localStorage.getItem('memberId') // ✅ 從 localStorage 取出會員編號
+      try {
+        const res = await axios.get(`https://localhost:7265/api/FavoriteTraveler/${memberId}`)
+        this.travelers = res.data.map(t => ({
+          ...t,
+          id: t.favoriteTravelerId, // ✅ 用於畫面顯示與編輯切換
+          chineseName: t.name
+        }))
+      } catch (err) {
+        console.error('載入旅客資料失敗', err)
+      }
+    },
+    async saveTraveler(t) {
+      const memberId = localStorage.getItem('memberId') // ✅ 套用登入會員 ID
+
+      const payload = {
+        favoriteTravelerId: t.favoriteTravelerId,
+        memberId: Number(memberId),
+        name: t.chineseName,
+        phone: t.phone,
+        idNumber: t.idNumber,
+        birthDate: t.birthDate,
+        gender: t.gender,
+        email: 'placeholder@email.com', // ⚠ 後續可改為從前端填寫
+        documentType: t.documentType,
+        documentNumber: t.documentNumber,
+        passportSurname: t.passportSurname,
+        passportGivenName: t.passportGivenname,
+        passportExpireDate: null,
+        nationality: '',
+        note: ''
+      }
+
+      try {
+        if (!t.favoriteTravelerId) {
+          await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
+        } else {
+          await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
+        }
+        await this.fetchTravelers()
+        this.expandedTravelerId = null
+      } catch (err) {
+        console.error('儲存失敗', err)
+      }
+    },
+    handleAdd() {
+      const isEditing = this.travelers.some(t => !t.favoriteTravelerId) // ✅ 防止新增多筆未儲存
+      if (isEditing) {
+        alert('請先完成目前旅客的儲存，再新增新旅客')
+        return
+      }
+
+       const newTraveler = {
+    id: Date.now(), // ✅ 前端暫存用的 id，不傳到後端
+    favoriteTravelerId: null, // ✅ 這樣 saveTraveler() 才知道是新增
+    chineseName: '',
+    birthDate: '',
+    idNumber: '',
+    gender: '',
+    phone: '',
+    passportSurname: '',
+    passportGivenname: '',
+    documentType: '',
+    documentNumber: '',
+    //email: '',
+    //passportExpireDate: '',
+    //nationality: '',
+    //note: ''
+  }
+
+  this.travelers.push(newTraveler)
+  this.expandedTravelerId = newTraveler.id
+    },
+    async deleteTraveler(id) {
+      const traveler = this.travelers.find(t => t.id === id)
+      if (!traveler || !traveler.favoriteTravelerId) {
+        this.travelers = this.travelers.filter(t => t.id !== id) // ✅ 尚未儲存者直接從前端刪除
+        return
+      }
+
+      if (confirm('確定要刪除這位旅客嗎？')) {
+        try {
+          await axios.delete(`https://localhost:7265/api/FavoriteTraveler/${traveler.favoriteTravelerId}`)
+          await this.fetchTravelers()
+        } catch (err) {
+          console.error('刪除失敗', err)
+        }
+      }
+    },
+    closeModal() {
+      this.showForm = false
+      this.isEditing = false
+      this.isReadonly = false
+    },
+    formatDate(dateStr) {
+  if (!dateStr) return ''
+  return dateStr.split('T')[0] // ✅ 僅取出日期部分
+}
+
+  }
+}
+
 </script>

@@ -47,6 +47,7 @@ const routes = [
   name: "MemberCenter",
   component: () => import("@/views/MemberCenterView.vue"),
   },
+  
   {
     path: "/cart", // 購物車頁面的路徑
     name: "ShoppingCart",
@@ -73,9 +74,12 @@ const routes = [
     component: CustomtravelContent,
   },
   {
-    path: "/CustomtravelStatusList",
-    name: "CustomtravelStatusList",
-    component: CustomtravelStatusList,
+    // path: "/CustomtravelStatusList",
+    // name: "CustomtravelStatusList",
+    // component: CustomtravelStatusList,
+     path: "/member/customtravel-status",
+  name: "CustomtravelStatus",
+  component: () => import("@/views/MemberCenterView.vue"),
   },
   {
     path: "/CustomtravelStatusContent/:id",
