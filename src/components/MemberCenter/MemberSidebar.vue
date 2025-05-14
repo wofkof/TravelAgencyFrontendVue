@@ -11,27 +11,32 @@
       <ul>
         <li>
            <router-link to="/member/orders" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            📦 歷史訂單查詢
+            歷史訂單查詢
+          </router-link>
+        </li>
+         <li>
+           <router-link to="/member/customtravel-status" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
+            客製化行程
           </router-link>
         </li>
         <li>
            <router-link to="/member/favorite-travelers" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            👥 常用旅客清單
+            常用旅客清單
           </router-link>
         </li>
         <li>
           <router-link to="/member/favorites" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            ❤️ 我的收藏
+            我的收藏
           </router-link>
         </li>
         <li>
            <router-link to="/member/comments" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            🗝 我的評論
+            我的評論
           </router-link>
         </li>
         <li>
            <router-link to="/member/profile" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            🙍‍♂️ 會員帳號管理
+            會員帳號管理
           </router-link>
         </li>
         <li>
