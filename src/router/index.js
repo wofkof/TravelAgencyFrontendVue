@@ -5,7 +5,6 @@ import ForeignView from "@/views/ForeignView.vue";
 import FreeTravelView from "@/views/FreeTravelView.vue";
 import CruiseView from "@/views/CruiseView.vue";
 import PricingView from "@/views/PricingView.vue";
-import VisaView from "@/views/VisaView.vue";
 import ContactView from "@/views/ContactView.vue";
 import Login from "@/components/SignUp/Login.vue";
 import CustomtravelCreate from "@/components/customtravel/Create.vue";
@@ -15,7 +14,9 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
+import VisaPage from "@/views/VisaPage.vue";//富成
 import OrderComplete from "@/views/OrderComplete.vue";
+
 
 
 const routes = [
@@ -28,10 +29,6 @@ const routes = [
     component: FreeTravelView,
   },
   { path: "/CruiseView", name: "CruiseView", component: CruiseView },
-
-  
-  { path: "/VisaView", name: "VisaView", component: VisaView },
-
 
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
@@ -80,9 +77,16 @@ const routes = [
     component: CustomtravelContent,
   },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
+  
+  { path: "/Trip", name: "Trip", component: Trip },
+
   { path: '/detail/:id',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
 ];
 
+
+  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
+  
+];
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -90,5 +94,4 @@ const router = createRouter({
     return { top: 0 };
   },
 });
-
-export default router;
+export default router;//富成
