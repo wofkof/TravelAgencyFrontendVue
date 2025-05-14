@@ -1,35 +1,36 @@
 <template>
   <div class="e-invoice-form">
     <h3>電子發票 / 收據</h3>
-    <el-radio-group v-model="invoiceType" @change="updateType">
+
+    <el-radio-group :model-value="invoiceType" @update:modelValue="updateType">
       <el-radio label="personal">個人 (二聯式)</el-radio>
       <el-radio label="company">公司 (三聯式)</el-radio>
-    </el-radio-group>
+       </el-radio-group>
 
     <div v-if="invoiceType === 'company'" class="company-fields">
       <el-form :model="form" label-width="80px" :rules="rules" ref="companyFormRef">
         <el-form-item label="統一編號" prop="taxId">
-          <el-input v-model="form.taxId" @input="updateField('taxId', $event)"></el-input>
+          <el-input :model-value="form.taxId" @update:modelValue="updateField('taxId', $event)"></el-input>
         </el-form-item>
         <el-form-item label="發票抬頭" prop="companyTitle">
-          <el-input v-model="form.companyTitle" @input="updateField('companyTitle', $event)"></el-input>
+          <el-input :model-value="form.companyTitle" @update:modelValue="updateField('companyTitle', $event)"></el-input>
         </el-form-item>
         <el-form-item label-width="0">
-          <el-checkbox v-model="form.addBillingAddress" @change="toggleBillingAddress">加註報帳地址</el-checkbox>
+          <el-checkbox :model-value="form.addBillingAddress" @update:modelValue="toggleBillingAddress">加註報帳地址</el-checkbox>
         </el-form-item>
         <el-form-item v-if="form.addBillingAddress" label="報帳地址" prop="billingAddress">
           <el-input
-            v-model="form.billingAddress"
-            @input="updateField('billingAddress', $event)"
-            placeholder="報帳地址（非必填）"
+            :model-value="form.billingAddress"
+            @update:modelValue="updateField('billingAddress', $event)"
+            placeholder="報帳地址（必填，因為選擇了加註）"
           ></el-input>
         </el-form-item>
       </el-form>
     </div>
 
-    <div class="invoice-description">
+     <div class="invoice-description">
       <p>依財政部台財稅第821481937號函，本公司開立「旅行業代收轉付電子收據」，收據以email寄送，感謝您為地球環保盡一份心。如行程異動或取消時，為加速退款作業，同意授權本公司代為處理銷貨退回或折讓證明。</p>
-      <a href="#" @click.prevent="toggleRemarks">
+       <a href="#" @click.prevent="toggleRemarks">
         需協助事項備註 <el-icon><component :is="showRemarks ? ArrowUp : ArrowDown" /></el-icon>
       </a>
     </div>
@@ -39,18 +40,22 @@
         <el-input
           type="textarea"
           :rows="3"
-          placeholder="需協助事項備註於此"
-          v-model="form.remarks"
-          @input="updateField('remarks', $event)"
+          placeholder="請在此輸入您需要特別協助的事項備註"
+          :model-value="form.remarks"
+          @update:modelValue="updateField('remarks', $event)"
         ></el-input>
-      </div>
+         </div>
     </el-collapse-transition>
 
   </div>
 </template>
 
 <script setup>
-import { ref, watch, reactive } from 'vue';
+import { ref, watch, reactive, defineProps, defineEmits, defineExpose, nextTick, computed } from 'vue'; // 引入所有必要的 Composition API
+
+// 引入 Element Plus 組件和圖標 (如果沒有全局自動註冊，這裡需要顯式引入)
+// 假設 ElRadioGroup, ElRadio, ElForm, ElFormItem, ElInput, ElCheckbox, ElIcon, ElCollapseTransition 是全局註冊的，所以註解掉顯式引入
+/*
 import {
   ElRadioGroup,
   ElRadio,
@@ -59,159 +64,305 @@ import {
   ElInput,
   ElCheckbox,
   ElIcon,
-  ElCollapseTransition // 引入摺疊動畫組件
+  ElCollapseTransition
 } from 'element-plus';
-import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'; // 引入上下箭頭圖示
+*/
+// Element Plus Icons 需要顯式引入，因為它們是組件
+import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 
+
+// 定義組件接收的 props
 const props = defineProps({
-  modelValue: {
+  modelValue: { // v-model 綁定的發票資料物件
     type: Object,
     required: true,
     default: () => ({
-      type: 'personal',
-      taxId: '',
-      companyTitle: '',
-      addBillingAddress: false,
-      billingAddress: '',
-      remarks: '' // 新增：備註欄位
+      type: 'personal', // 發票類型 ('personal', 'company')
+      taxId: '', // 統一編號
+      companyTitle: '', // 公司抬頭
+      addBillingAddress: false, // 是否加註報帳地址
+      billingAddress: '', // 報帳地址
+      remarks: '', // 備註欄位
+      deliveryEmail: '' // 用於接收電子發票的 email (通常從訂購人資料帶入或單獨輸入)
     })
   }
 });
 
+// 定義組件發出的事件
 const emit = defineEmits(['update:modelValue']);
 
-const invoiceType = ref(props.modelValue.type);
-const showRemarks = ref(!!props.modelValue.remarks); // 新增：控制備註欄位顯示/隱藏，如果初始有值則展開
+// 內部狀態，同步自 props.modelValue
+const invoiceType = ref(props.modelValue.type); // 發票類型 (使用 ref 因為它直接綁定到 el-radio-group)
+// 控制備註欄位顯示/隱藏，如果初始有值則展開
+const showRemarks = ref(!!props.modelValue.remarks);
 
+// 使用 reactive 創建內部表單數據副本，與 props.modelValue 雙向同步
+// 這樣 el-form 的 :model 就可以指向這個 reactive 對象
 const form = reactive({
   taxId: props.modelValue.taxId,
   companyTitle: props.modelValue.companyTitle,
   addBillingAddress: props.modelValue.addBillingAddress || false,
   billingAddress: props.modelValue.billingAddress || '',
-  remarks: props.modelValue.remarks || '' // 新增：備註欄位
+  remarks: props.modelValue.remarks || '',
+  deliveryEmail: props.modelValue.deliveryEmail || '' // 同步 deliveryEmail
 });
 
+// Element Plus 表單驗證規則 (使用 reactive)
 const rules = reactive({
   taxId: [
     { required: true, message: '請輸入統一編號', trigger: 'blur' },
+    { pattern: /^[0-9]{8}$/, message: '統一編號需為8位數字', trigger: 'blur' } // 添加簡單的8位數字格式驗證
   ],
   companyTitle: [
     { required: true, message: '請輸入發票抬頭', trigger: 'blur' },
   ],
+  // 報帳地址的規則是當 addBillingAddress 為 true 時才必填
+  billingAddress: [
+     {
+          // 使用 computed 屬性來動態判斷是否必填
+          // 這裡直接在規則對象中使用 computed，Element Plus 會處理其響應性
+          required: computed(() => form.addBillingAddress),
+          message: '選擇加註報帳地址時，請輸入報帳地址',
+          trigger: 'blur'
+     }
+      // 如果需要地址格式驗證，可以在這裡添加 validator
+  ]
+   // TODO: 如果備註或 deliveryEmail 需要驗證，在這裡添加規則
+   // deliveryEmail: [ { required: true, message: '請輸入電子郵件', trigger: 'blur' }, { type: 'email', message: '請輸入有效的電子郵件格式', trigger: ['blur', 'change'] } ]
 });
 
+// 用於獲取「公司」類型發票的 el-form 引用
 const companyFormRef = ref(null);
 
+
+// 發票類型改變時更新父組件數據，並處理相關欄位清空和驗證清除
 const updateType = (newType) => {
-  invoiceType.value = newType;
-  const updatedValue = {
-    ...props.modelValue,
-    type: newType,
-    taxId: newType !== 'company' ? '' : form.taxId,
-    companyTitle: newType !== 'company' ? '' : form.companyTitle,
-    addBillingAddress: newType !== 'company' ? false : form.addBillingAddress,
-    billingAddress: (newType !== 'company' || !form.addBillingAddress) ? '' : form.billingAddress,
-    remarks: form.remarks // 保留備註欄位的值
-  };
-  emit('update:modelValue', updatedValue);
+  invoiceType.value = newType; // 更新本地類型狀態
 
-  if (newType !== 'company' && companyFormRef.value) {
-    companyFormRef.value.clearValidate();
-    form.addBillingAddress = false;
-    form.billingAddress = '';
+  // 根據新類型，清空或保留相關欄位數據
+  // 注意：這裡直接修改 form reactive 對象，Vue 會自動偵測變化
+  form.taxId = newType !== 'company' ? '' : form.taxId;
+  form.companyTitle = newType !== 'company' ? '' : form.companyTitle;
+  form.addBillingAddress = newType !== 'company' ? false : form.addBillingAddress;
+  // 只有當類型是 company 且 addBillingAddress 為 true 時才保留 billingAddress 的值
+  form.billingAddress = (newType !== 'company' || !form.addBillingAddress) ? '' : form.billingAddress;
+  // remarks 和 deliveryEmail 通常不因類型改變而清空，保持原值
+
+  // 發送完整的更新數據給父組件 (發送 form reactive 對象的副本)
+   emit('update:modelValue', { ...form, type: newType });
+
+
+  // 如果切換到非公司類型，清除公司表單的驗證狀態
+  // 使用 nextTick 確保 DOM 狀態更新（el-form 被 v-if 移除）之後再嘗試清除驗證
+  if (newType !== 'company') {
+       nextTick(() => {
+           if (companyFormRef.value) {
+              companyFormRef.value.clearValidate();
+              console.log("EInvoiceForm: Cleared company form validation.");
+           }
+       });
   }
 };
 
+// 更新單個欄位時同步數據到本地 reactive 對象，並發送給父組件
 const updateField = (field, value) => {
-  form[field] = value;
-  // 構建要發送的完整數據，確保包含所有欄位
-  const updatedValue = {
-    type: invoiceType.value, // 包含當前選擇的發票類型
-    taxId: form.taxId,
-    companyTitle: form.companyTitle,
-    addBillingAddress: form.addBillingAddress,
-    billingAddress: form.billingAddress,
-    remarks: form.remarks, // 包含備註
-    [field]: value // 確保當前更新的欄位是最新的
-  };
+  form[field] = value; // 更新本地 reactive 對象
 
-  if (field === 'addBillingAddress' && !value) {
-    form.billingAddress = '';
-    updatedValue.billingAddress = ''; // 同步到發送的數據
-  }
-  emit('update:modelValue', updatedValue);
-};
+  // 發送完整的更新數據給父組件 (發送 form reactive 對象的副本)
+   emit('update:modelValue', { ...form, type: invoiceType.value });
 
-const toggleBillingAddress = (checked) => {
-  updateField('addBillingAddress', checked);
-  if (!checked) {
-    form.billingAddress = '';
-    updateField('billingAddress', '');
-    if (companyFormRef.value) {
-      companyFormRef.value.clearValidate('billingAddress');
+   // 如果是 'addBillingAddress' 欄位改變
+   if (field === 'addBillingAddress') {
+        // 如果從勾選變為未勾選，清空 billingAddress 欄位並清除驗證狀態
+       if (!value) {
+           form.billingAddress = ''; // 清空本地
+           // emit('update:modelValue', { ...form, billingAddress: '' }); // 確保同步清空給父組件 (已包含在上面的 emit 中)
+            // 使用 nextTick 確保 DOM 移除 billingAddress 欄位後再嘗試清除驗證 (如果欄位會因此移除)
+            nextTick(() => {
+                if (companyFormRef.value) {
+                    companyFormRef.value.clearValidate('billingAddress'); // 清除單個欄位的驗證狀態
+                    console.log("EInvoiceForm: Cleared billingAddress validation.");
+                }
+            });
+       }
+        // 如果從未勾選變為勾選，可以選擇觸發 billingAddress 的驗證 (如果它是必填的話)
+        else {
+            nextTick(() => {
+                 if (companyFormRef.value) {
+                     companyFormRef.value.validateField('billingAddress', () => {});
+                     console.log("EInvoiceForm: Triggered billingAddress validation.");
+                 }
+            });
+        }
+   }
+
+   // 如果更新的是 billingAddress 欄位本身，在更新值後觸發其自身的驗證
+    if (field === 'billingAddress' && invoiceType.value === 'company' && form.addBillingAddress && companyFormRef.value) {
+         nextTick(() => {
+            companyFormRef.value.validateField('billingAddress', () => {});
+            console.log("EInvoiceForm: Triggered billingAddress validation on input.");
+         });
     }
-  }
+
+    // 對於 taxId 和 companyTitle，在更新時觸發驗證 (如果當前是公司類型)
+    if (['taxId', 'companyTitle'].includes(field) && invoiceType.value === 'company' && companyFormRef.value) {
+         nextTick(() => {
+            companyFormRef.value.validateField(field, () => {});
+            console.log(`EInvoiceForm: Triggered ${field} validation on input.`);
+         });
+    }
+     // TODO: 如果 deliveryEmail 需要驗證，在這裡添加觸發邏輯
+     // if (field === 'deliveryEmail' && formRef.value) { // 如果整個組件包裹在一個 form 中
+     //      nextTick(() => { formRef.value.validateField('deliveryEmail', () => {}); });
+     // }
 };
 
-// 新增：切換備註欄位顯示/隱藏的函數
+// 切換加註報帳地址複選框時觸發
+const toggleBillingAddress = (checked) => {
+  updateField('addBillingAddress', checked); // 直接呼叫 updateField 處理數據同步和 emit
+};
+
+// 切換備註欄位顯示/隱藏
 const toggleRemarks = () => {
   showRemarks.value = !showRemarks.value;
-  if (!showRemarks.value) {
-    // 如果選擇隱藏，可以選擇是否清空備註內容
-    // form.remarks = '';
-    // updateField('remarks', ''); // 如果需要清空並同步
-  }
+  // 如果選擇隱藏，可以考慮是否清空備註內容
+  // if (!showRemarks.value) {
+  //    form.remarks = '';
+  //    updateField('remarks', ''); // 如果需要清空並同步
+  // }
 };
 
+// 監聽父組件傳來的 modelValue 變化，同步到本地狀態
 watch(() => props.modelValue, (newValue) => {
+  // 執行深層同步，確保本地狀態與父組件一致
+  // 使用 Object.assign 或逐個賦值來確保 reactive 對象的響應性不丟失
+  Object.assign(form, newValue);
+  // 手動同步 ref 狀態
   invoiceType.value = newValue.type;
-  form.taxId = newValue.taxId;
-  form.companyTitle = newValue.companyTitle;
-  form.addBillingAddress = newValue.addBillingAddress || false;
-  form.billingAddress = newValue.billingAddress || '';
-  form.remarks = newValue.remarks || ''; // 同步備註
   showRemarks.value = !!newValue.remarks; // 如果父組件傳來的 remarks 有值，則展開
 
-  if (newValue.type !== 'company') {
-    form.addBillingAddress = false;
-    form.billingAddress = '';
+  // 同步後，如果當前是公司類型，可能需要清除舊的驗證狀態，或者觸發一次驗證
+  if (invoiceType.value === 'company') {
+       nextTick(() => {
+            if (companyFormRef.value) {
+                // 清除所有驗證狀態 (簡單粗暴但有效)
+                companyFormRef.value.clearValidate();
+                console.log("EInvoiceForm: Cleared company form validation after modelValue sync.");
+                // 或者觸發所有欄位驗證 (更精確)
+                // companyFormRef.value.validate(() => {});
+            }
+       });
+  } else {
+       // 如果同步後是非公司類型，確保公司表單的驗證狀態被清除
+       nextTick(() => {
+            if (companyFormRef.value) {
+               companyFormRef.value.clearValidate();
+               console.log("EInvoiceForm: Cleared company form validation after modelValue sync (non-company).");
+            }
+       });
   }
-}, { deep: true });
+
+}, { deep: true }); // 使用 deep watch 監聽 modelValue 物件內部屬性變化
+
+
+// --- **新增：暴露驗證方法給父組件** ---
+// 這個方法負責觸發當前可見/需要的表單驗證
+const validate = () => {
+  // 返回一個 Promise，父組件可以 await 這個 Promise 來獲取驗證結果
+  return new Promise((resolve) => {
+    // 如果當前選擇的是「公司」類型發票
+    if (invoiceType.value === 'company') {
+      // 檢查公司表單的 ref 是否存在
+      if (companyFormRef.value) {
+        console.log("觸發 EInvoiceForm (公司類型) 驗證...");
+        // 呼叫公司表單的 validate 方法
+        companyFormRef.value.validate((valid, fields) => {
+           if (valid) {
+             console.log("EInvoiceForm (公司類型) 驗證通過.");
+             resolve(true); // 驗證通過
+           } else {
+              console.warn("EInvoiceForm (公司類型) 驗證失敗:", fields);
+              resolve(false); // 驗證失敗
+           }
+        });
+      } else {
+         // 如果是公司類型，但 companyFormRef 不存在 (不應該發生在正常流程，除非 v-if 有問題或時序問題)
+         console.error("EInvoiceForm: Company form ref not available when type is 'company'. Cannot validate.");
+         resolve(false); // 視為驗證失敗
+      }
+    } else {
+      // 如果當前選擇的是「個人」或其他類型發票，且這些類型沒有需要 ElForm 驗證的欄位
+      // 目前個人類型沒有需要驗證的必填欄位，所以直接視為驗證通過
+      console.log("EInvoiceForm (非公司類型) 無需 ElForm 驗證，視為通過.");
+      // TODO: 如果個人類型或備註未來有需要手動驗證的邏輯，在這裡實現
+      // 例如：如果 deliveryEmail 是必填且不在公司表單中，需要在這裡手動驗證
+      // if (!form.deliveryEmail) {
+      //     console.warn("EInvoiceForm: Delivery email is required.");
+      //     resolve(false);
+      // } else { resolve(true); }
+      resolve(true); // 暫時視為通過
+    }
+  });
+};
+
+// 使用 defineExpose 將 validate 方法暴露給父組件
+defineExpose({
+  validate
+  // 如果你希望父組件能獲取當前選擇的發票類型或其他狀態，也可以在這裡暴露
+  // invoiceType // 例如 defineExpose({ validate, invoiceType })
+});
 
 </script>
 
 <style scoped>
+/* **使用 Element Plus CSS 變數和組件樣式** */
+/* 這部分樣式可以從你 OrderForm 的 style 中搬過來或整合 */
+
+/* 標題樣式 */
 h3 {
-  margin-bottom: 15px;
-  color: #337ab7;
-  font-weight: bold;
+  margin-bottom: var(--el-margin-base, 15px); /* 使用 Element Plus 變數 */
+  color: var(--el-text-color-primary, #303133); /* 使用 Element Plus 主要文字顏色 */
+  font-weight: var(--el-font-weight-bold, bold); /* 使用 Element Plus 字體粗細 */
+   /* 如果需要左邊藍線等，請在 AccordionSection 的標題樣式中處理 */
 }
 
+/* 單選組件的樣式 */
 .el-radio-group {
   margin-bottom: 20px;
+  /* gap: 15px; */ /* 可以考慮使用 flex gap */
 }
 
+/* 公司欄位區塊樣式 */
 .company-fields {
   margin-top: 15px;
-  padding-left: 10px;
+  padding-left: 10px; /* 縮進效果 */
+  /* 可選：添加邊框或背景色以區分 */
+  /* border: 1px dashed var(--el-border-color-light); */
+  /* padding: 15px; */
+  /* border-radius: var(--el-border-radius-base); */
 }
 
+/* 公司欄位內部的 ElFormItem 樣式 */
 .company-fields .el-form-item {
-  margin-bottom: 15px;
+  margin-bottom: 15px; /* 保持間距 */
 }
 
-.company-fields .el-form-item .el-checkbox {
+/* 公司欄位內的複選框樣式 */
+.company-fields .el-form-item :deep(.el-checkbox) {
   margin-top: 5px;
 }
 
+/* 公司欄位 ElFormItem 的 Label 樣式 */
 .company-fields .el-form-item :deep(.el-form-item__label) {
-  font-weight: normal;
+  font-weight: var(--el-font-weight-primary, 500); /* 使用 Element Plus 字體粗細 */
+  color: var(--el-text-color-regular, #606266); /* 使用 Element Plus 常規文字顏色 */
 }
 
+/* 發票描述文字區塊樣式 */
 .invoice-description {
   margin-top: 20px;
-  font-size: 13px;
-  color: #666;
+  font-size: var(--el-font-size-small, 13px); /* 使用 Element Plus 小字體 */
+  color: var(--el-text-color-secondary, #909399); /* 使用 Element Plus 次要文字顏色 */
   line-height: 1.6;
 }
 
@@ -219,42 +370,49 @@ h3 {
   margin-bottom: 10px;
 }
 
+/* 發票描述中的連結樣式 */
 .invoice-description a {
-  color: #337ab7;
+  color: var(--el-color-primary, #409eff); /* 使用 Element Plus 主題色 */
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  cursor: pointer; /* 讓連結看起來可點擊 */
+  cursor: pointer;
 }
 
 .invoice-description a:hover {
   text-decoration: underline;
 }
 
-/* 新增：備註欄位樣式 */
+/* 備註欄位外部容器樣式 */
 .remarks-field {
-  margin-top: 10px; /* 與上方連結的間距 */
-  border: 1px solid #DCDFE6; /* 類似圖片的邊框 */
-  border-radius: 4px; /* 圓角 */
-  padding: 10px; /* 內邊距，讓 textarea 不會緊貼邊框 */
+  margin-top: 10px;
+  border: 1px solid var(--el-border-color-light, #dcdfe6); /* 使用 Element Plus 邊框顏色 */
+  border-radius: var(--el-border-radius-base, 4px); /* 使用 Element Plus 圓角 */
+  padding: 10px;
+  background-color: var(--el-fill-color-extra-light, #f5f7fa); /* 可選：稍微淺的背景色 */
 }
 
+/* 備註欄位內部 textarea 樣式 */
 .remarks-field .el-textarea :deep(textarea) {
-  border: none !important; /* 移除 textarea 自身的邊框，因為外部 div 已經有邊框 */
-  box-shadow: none !important; /* 移除可能的陰影 */
-  resize: vertical; /* 允許垂直調整大小，如果需要 */
+  border: none !important;
+  box-shadow: none !important;
+  resize: vertical; /* 允許垂直調整大小 */
+  /* 可選：調整 placeholder 顏色 */
+  /* color: var(--el-text-color-placeholder); */
 }
 
-
+/* 自定義 radio 樣式 */
 :deep(.el-radio__input.is-checked .el-radio__inner) {
-  border-color: #0a69ed;
-  background: #0a69ed;
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary);
 }
 :deep(.el-radio__input .el-radio__inner) {
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--el-border-color-base);
 }
 :deep(.el-radio__label) {
-  color: #333;
+  color: var(--el-text-color-regular);
+  font-weight: var(--el-font-weight-primary);
 }
 </style>
+

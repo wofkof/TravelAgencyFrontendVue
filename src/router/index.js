@@ -10,13 +10,13 @@ import Login from "@/components/SignUp/Login.vue";
 import CustomtravelCreate from "@/components/customtravel/Create.vue";
 import CustomtravelList from "@/components/customtravel/List.vue";
 import CustomtravelContent from "@/components/customtravel/Content.vue";
-import CustomtravelStatusList from "@/components/customtravel/StatusList.vue";
-import CustomtravelStatusContent from "@/components/customtravel/StatusContent.vue";
 import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
 import VisaPage from "@/views/VisaPage.vue";//富成
+import OrderComplete from "@/views/OrderComplete.vue";
+
 
 
 const routes = [
@@ -45,7 +45,7 @@ const routes = [
   },
   
   {
-    path: "/cart", // 購物車頁面的路徑
+    path: "/ShoppingCart", // 購物車頁面的路徑
     name: "ShoppingCart",
     component: ShoppingCart, // 對應到 ShoppingCart 組件
   },
@@ -53,6 +53,13 @@ const routes = [
     path: "/order-form", // 訂單表單頁面的路徑
     name: "OrderForm",
     component: OrderForm, // 對應到 OrderForm 組件
+    meta: { simpleNavbar: true }
+  },  
+  {
+    path: "/order-complete", // 訂單完成的路徑
+    name: "Ordercomplete",
+    component: OrderComplete, // 對應到 Ordercomplete 組件
+    meta: { simpleNavbar: true }
   },
   {
     path: "/CustomtravelCreate",
@@ -69,27 +76,22 @@ const routes = [
     name: "CustomtravelContent",
     component: CustomtravelContent,
   },
-  {
-    // path: "/CustomtravelStatusList",
-    // name: "CustomtravelStatusList",
-    // component: CustomtravelStatusList,
-     path: "/member/customtravel-status",
-  name: "CustomtravelStatus",
-  component: () => import("@/views/MemberCenterView.vue"),
-  },
-  {
-    path: "/CustomtravelStatusContent/:id",
-    name: "CustomtravelStatusContent",
-    component: CustomtravelStatusContent,
-  },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
+  
   { path: "/Trip", name: "Trip", component: Trip },
+
+  { path: '/detail/:id',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
+];
+
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
   
 ];
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 };
+  },
 });
 export default router;//富成

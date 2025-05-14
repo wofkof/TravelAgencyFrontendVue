@@ -11,13 +11,13 @@ const route = useRoute();
 // --- 計算屬性 ---
 /**
  * 計算目前活動步驟的索引 (0-based)。
- * /cart      -> 步驟 0
+ * /ShoppingCart      -> 步驟 0
  * /order-form -> 步驟 1
  * /order-complete -> 步驟 2 (標示訂購完成步驟為當前或已完成)
  */
 const activeStepIndex = computed(() => {
   switch (route.path) {
-    case '/cart': return 0;
+    case '/ShoppingCart': return 0;
     case '/order-form': return 1;
     case '/order-complete': return 2; // 完成步驟對應索引 2
     default: return 0; // 如果路由不匹配，默認顯示購物車步驟
@@ -33,7 +33,7 @@ const activeStepIndex = computed(() => {
     <el-steps :active="activeStepIndex" finish-status="success" simple>
       <el-step :icon="ShoppingCart">
         <template #title>
-          <router-link to="/cart" class="step-link">購物車</router-link>
+          <router-link to="/ShoppingCart" class="step-link">購物車</router-link>
         </template>
       </el-step>
       <el-step :icon="Document">
@@ -54,11 +54,10 @@ const activeStepIndex = computed(() => {
 /* 步驟條容器樣式 */
 .checkout-steps-container {
   max-width: 800px; /* 限制最大寬度 */
-  margin: 0 auto 20px auto; /* 上方無邊距，左右自動居中，下方 20px 邊距 */
+  margin: 180px auto 20px auto; 
   padding: 15px 15px; /* 內邊距 */
   background-color: #ffffff; /* 白色背景 */
   border-radius: 4px; /* 可選：小圓角 */
-  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); */ /* 可選：細微陰影 */
 }
 
 /* --- 基礎連結樣式 --- */

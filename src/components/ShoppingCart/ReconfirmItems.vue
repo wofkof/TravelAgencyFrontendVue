@@ -66,7 +66,7 @@
 import { computed } from 'vue'; // 導入 computed (雖然目前未使用，可能未來會用到)
 
 // --- 狀態管理 (Pinia) ---
-import { useCartStore } from '@/stores/cart';
+import { useCartStore } from '@/stores/ShoppingCart';
 
 import { Delete } from '@element-plus/icons-vue'; // 需要的圖標 (用於 :icon 綁定)
 // --- 本地工具 ---

@@ -2,33 +2,33 @@
   <div class="order-form-page">
     <div v-if="isLoading" class="loading-container status-container">
       <el-skeleton :rows="6" animated />
-      </div>
+    </div>
 
     <div v-else-if="error" class="status-container error-container">
        <el-alert
-         title="載入訂單資訊時發生錯誤"
-         :description="error"
-         type="error"
-         show-icon
-         :closable="false"
-         center
-         style="margin-bottom: 20px;"
-       />
-       <div class="status-actions">
-         <el-button type="primary" @click="loadOrderItems" :icon="RefreshRight">重試</el-button>
-         <router-link to="/cart">
-           <el-button :icon="ShoppingCart">回到購物車</el-button>
-         </router-link>
-       </div>
+          title="載入訂單資訊時發生錯誤"
+          :description="error"
+          type="error"
+          show-icon
+          :closable="false"
+          center
+          style="margin-bottom: 20px;"
+        />
+        <div class="status-actions">
+          <el-button type="primary" @click="loadOrderItems" :icon="RefreshRight">重試</el-button>
+          <router-link to="/cart">
+            <el-button :icon="ShoppingCart">回到購物車</el-button>
+          </router-link>
+        </div>
     </div>
 
-     <div v-else-if="!selectedOrderItems || selectedOrderItems.length === 0" class="status-container empty-container">
-        <el-empty description="購物車中沒有選擇任何商品">
-           <router-link to="/cart">
-             <el-button type="primary" :icon="ShoppingCart">回到購物車選擇商品</el-button>
-           </router-link>
-        </el-empty>
-    </div>
+      <div v-else-if="!selectedOrderItems || selectedOrderItems.length === 0" class="status-container empty-container">
+         <el-empty description="購物車中沒有選擇任何商品">
+            <router-link to="/cart">
+              <el-button type="primary" :icon="ShoppingCart">回到購物車選擇商品</el-button>
+            </router-link>
+         </el-empty>
+     </div>
 
     <div v-else class="order-form-content">
       <form @submit.prevent="submitOrder" ref="orderFormRef">
@@ -43,7 +43,7 @@
                 class="section-card section-items"
                 data-section-name="items"
               >
-                 <OrderItemsDisplay :items="selectedOrderItems" />
+                <OrderItemsDisplay :items="selectedOrderItems" />
               </AccordionSection>
 
               <AccordionSection
@@ -52,7 +52,7 @@
                 class="section-card section-orderer"
                 data-section-name="ordererInfo"
               >
-                <ParticipantForm v-model="formData.ordererInfo" />
+                <ParticipantForm v-model="formData.ordererInfo" ref="ordererFormRef" />
               </AccordionSection>
 
               <AccordionSection
@@ -61,14 +61,15 @@
                 :title="`旅客資料 - ${item.name}`"
                 :section-name="`travelers-${item.id}`"
                 class="section-card section-traveler"
-                :data-section-name="`travelers-${item.id}`"
-              >
-                 <ItemParticipantForm
-                   v-if="formData.participantsByItem[item.id]"
-                   :order-item="item"
-                   v-model:participants="formData.participantsByItem[item.id]"
-                 />
-                 <div v-else>此商品無需填寫旅客資料或資料載入異常。</div>
+                :data-section-name="`travelers-${item.id}`" >
+                <ItemParticipantForm
+                  v-if="formData.participantsByItem[item.id]"
+                  :order-item="item"
+                  v-model:participants="formData.participantsByItem[item.id]"
+                  :trip-destination-country="item.destinationCountryCode"
+                  :ref="el => { if (el) itemTravelerFormRefs[item.id] = el }"
+                  @validity-changed="handleItemTravelerFormValidityChange(item.id, $event)" />
+                <div v-else>此商品無需填寫旅客資料或資料載入異常。</div>
               </AccordionSection>
 
               <AccordionSection
@@ -76,8 +77,12 @@
                 section-name="payment"
                 class="section-card section-payment"
                 data-section-name="payment"
+                ref="paymentAccordionRef"
               >
-                 <PaymentOptions v-model="formData.paymentMethod" />
+                <PaymentOptions
+                  v-model="formData.paymentMethod"
+                  v-model:creditCardInfo="formData.creditCardDetails" @creditCardFormValidityChanged="handleCreditCardFormValidityChange"
+                   ref="paymentOptionsRef" />
               </AccordionSection>
 
               <AccordionSection
@@ -88,7 +93,7 @@
                 class="section-card section-einvoice"
                 data-section-name="einvoice"
               >
-                 <EInvoiceForm v-model="formData.eInvoiceInfo" />
+                <EInvoiceForm v-model="formData.eInvoiceInfo" ref="einvoiceFormRef" />
               </AccordionSection>
 
             </el-collapse>
@@ -116,39 +121,62 @@
                 :is-submitting="isSubmitting"
                 :is-checkout-disabled="isCheckoutButtonDisabled"
                 @submit-order="submitOrder"
-                class="cost-summary-component" />
+                class="cost-summary-component"
+                :order-items="selectedOrderItems"
+                :orderer-status-message="ordererStatusMessage"
+                :participants-status-message="participantsStatusMessage"
+                :scroll-to-items="scrollToItemsSection"
+                :is-orderer-basic-info-filled="isOrdererBasicInfoFilled"
+                :are-all-participant-quantities-filled="areAllParticipantQuantitiesFilled"
+                :all-travelers-valid="allTravelersValid" />
           </div>
 
         </div>
       </form>
 
       <el-alert
-         v-if="submitError"
-         title="訂單提交失敗"
-         :description="submitError"
-         type="error"
-         show-icon
-         style="margin-top: 20px; max-width: 1200px; margin-left: auto; margin-right: auto;"
-         @close="submitError = null"
-       />
+          v-if="submitError"
+          title="訂單提交失敗"
+          :description="submitError"
+          type="error"
+          show-icon
+          style="margin-top: 20px; max-width: 1200px; margin-left: auto; margin-right: auto;"
+          @close="submitError = null"
+        />
     </div>
   </div>
 </template>
 
 <script setup>
 // --- 基本引入 ---
-import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '@/utils/api'; // 引入 API Service
-import { useCartStore } from '@/stores/cart';
+import { ref, reactive, computed, onMounted, watch, nextTick, onBeforeUpdate } from 'vue'; // 引入所有必要的 Composition API
+import { useRouter } from 'vue-router'; // Vue Router
+import api from '@/utils/api'; // API Service
+import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
 
-// --- 引入 Element Plus 圖標 (如果需要) ---
-import { RefreshRight, ShoppingCart, Goods, User, Tickets, Wallet, Document as DocIcon } from '@element-plus/icons-vue';
+// --- 引入 Element Plus 圖標 ---
+// 只需要引入這個組件 *直接使用* 的 Icons
+// 子組件中使用的 Icons 應該在子組件內部引入
+import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
 
+// 引入國際化庫和語言包 (通常在 main.js 全局做一次)
 import countries from 'i18n-iso-countries';
-import zhLocale from '/zh-tw.json'; // **請再次確認此路徑正確**
+import zhLocale from '/zh-tw.json'; // 確認路徑正確
+
+
+// --- 註冊語言包 (最佳實踐是在 main.js 全局做一次) ---
+/*
+try {
+    countries.registerLocale(zhLocale);
+    console.log("i18n-iso-countries Chinese locale registered.");
+} catch (e) {
+    console.error("Failed to register i18n-iso-countries locale:", e);
+    // 根據需要處理錯誤，例如顯示提示或使用預設語言
+}
+*/
 
 // --- 引入子元件 ---
+// 確保這些子元件的路徑正確
 import AccordionSection from '@/components/OrderForm/AccordionSection.vue';
 import OrderItemsDisplay from '@/components/OrderForm/OrderItemsDisplay.vue';
 import ParticipantForm from '@/components/OrderForm/ParticipantForm.vue';
@@ -157,58 +185,58 @@ import PaymentOptions from '@/components/OrderForm/PaymentOptions.vue';
 import EInvoiceForm from '@/components/OrderForm/EInvoiceForm.vue';
 import CostSummary from '@/components/OrderForm/CostSummary.vue';
 
-// --- 在 setup 頂層註冊中文語言包** ---
-try {
-    countries.registerLocale(zhLocale);
-    console.log("i18n-iso-countries Chinese locale registered.");
-} catch (e) {
-    console.error("Failed to register i18n-iso-countries locale:", e);
-    // 根據需要處理錯誤，例如顯示提示或使用預設語言
-}
 // --- 狀態管理 ---
-const router = useRouter();
-const cartStore = useCartStore();
-const orderFormRef = ref(null); // 用於獲取表單的 DOM 引用
-const isLoading = ref(true);       // 是否正在載入購物車資料
-const error = ref(null);           // 載入或提交時的錯誤訊息
-const isSubmitting = ref(false);   // 是否正在提交訂單
-const submitError = ref(null);     // 提交訂單失敗的錯誤訊息
-const submitSuccess = ref(false);  // 訂單是否提交成功 (通常由跳轉處理)
-const createdOrderId = ref(null);  // 成功創建的訂單 ID
-const selectedOrderItems = ref([]); // 從購物車載入的、用於此訂單的商品列表
+const router = useRouter(); // Vue Router 實例
+const cartStore = useCartStore(); // Pinia 購物車 Store
+const orderFormRef = ref(null); // 原生 form 元素的引用 (如果需要直接操作原生 form)
+const isLoading = ref(true); // 載入狀態
+const error = ref(null); // 載入錯誤訊息
+const isSubmitting = ref(false); // 提交狀態
+const submitError = ref(null); // 提交錯誤訊息
+const submitSuccess = ref(false); // 提交成功狀態
+const createdOrderId = ref(null); // 創建的訂單 ID
+const selectedOrderItems = ref([]); // 從購物車 Store 加載的選中商品列表
+
+// 子組件表單的引用
+const ordererFormRef = ref(null); // ParticipantForm 實例引用
+const itemTravelerFormRefs = ref({}); // ItemParticipantForm 實例引用物件 (key: item.id, value: ItemParticipantForm 實例)
+const einvoiceFormRef = ref(null); // EInvoiceForm 實例引用
+const paymentOptionsRef = ref(null); // PaymentOptions 實例引用 (用於呼叫其 validate 方法，如果暴露)
+
+// ItemParticipantForm 的驗證狀態集合 (key: item.id, value: boolean)
+const itemTravelerValidity = reactive({});
+
 
 // --- Accordion (手風琴) 狀態管理 ---
-// 預設展開的區塊名稱集合 (可以調整預設展開哪些)
-const activeCollapseNames = ref(['items', 'ordererInfo', 'payment']);
+// 控制哪些 AccordionSection 區塊是展開的
+const activeCollapseNames = ref(['items', 'ordererInfo', 'payment']); // 預設展開 商品、訂購人、付款方式 區塊
 
-const paymentAccordionRef = ref(null); // 用於獲取付款方式 AccordionSection 的 DOM 引用
+// 獲取 PaymentOptions 所在 AccordionSection 的引用 (用於滾動，也可以用 data-section-name 查找)
+const paymentAccordionRef = ref(null); // 在模板中綁定到 PaymentOptions 所在 AccordionSection
 
-// --- 表單資料模型 (使用 reactive) ---
+
+// --- 表單數據模型 (使用 reactive) ---
+// 集中管理所有子組件表單的數據
 const formData = reactive({
-  memberId: 11110, // ** TODO: 應從登入狀態獲取真實 Member ID **
-  note: '',
-  // 訂購人資料 (與 ParticipantForm v-model 對應)
+  memberId: 11110, // 會員 ID，通常從登入狀態獲取
+  note: '', // 訂單備註 (直接綁定到 el-input)
+  // 訂購人資料 (ParticipantForm v-model 綁定)
   ordererInfo: {
-    firstName: '',
-    lastName: '',
-    country: 'TW', // 預設台灣
-    countryCode: '+886', // 預設台灣區號
-    phoneNumber: '',
-    email: '',
-    updateProfile: false, // 是否同步更新會員資料
-    documentType: 'ID_CARD_TW', // 證件類型預設
-    documentNumber: ''       // 證件號碼
+    firstName: '', lastName: '', country: 'TW', countryCode: '+886',
+    phoneNumber: '', email: '', updateProfile: false,
+    documentType: 'ID_CARD_TW', documentNumber: ''
   },
-  // 旅客資料 (按商品分組，key 為 item.id)
+  // 旅客資料 (按商品分組，ItemParticipantForm v-model 綁定對應的陣列)
   participantsByItem: {},
-  // 付款方式 (與 PaymentOptions v-model 對應)
+  // 付款方式 (PaymentOptions v-model 綁定)
   paymentMethod: null,
-  // 電子發票資訊 (與 EInvoiceForm v-model 對應)
+  // 電子發票資訊 (EInvoiceForm v-model 綁定)
   eInvoiceInfo: {
-    type: 'personal',     // 預設個人發票
-    taxId: '',          // 統一編號
-    companyTitle: '',   // 公司抬頭
-    donationCode: '',   // 捐贈碼
+    type: 'personal', taxId: '', companyTitle: '', deliveryEmail: ''
+  },
+  // 信用卡詳細資料 (PaymentOptions 內部 CreditCardForm v-model 綁定)
+  creditCardDetails: {
+    cardHolderName: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvc: ''
   }
 });
 
@@ -217,6 +245,13 @@ const formData = reactive({
 // 判斷付款方式是否已選擇
 const isPaymentMethodSelected = computed(() => !!formData.paymentMethod);
 
+// 追蹤信用卡表單自身的驗證狀態 (從 PaymentOptions 通過事件傳遞上來)
+const isCreditCardFormValid = ref(false);
+const handleCreditCardFormValidityChange = (isValid) => {
+  isCreditCardFormValid.value = isValid;
+};
+
+
 // 計算訂單商品總 "單位" 數量 (例如總票數)
 const selectedItemsTotalQuantity = computed(() => {
     return selectedOrderItems.value.reduce((totalQty, item) => {
@@ -224,107 +259,176 @@ const selectedItemsTotalQuantity = computed(() => {
     }, 0);
 });
 
-// 計算訂單總金額
+// 計算訂單總金額 (使用 cartStore 的方法)
 const totalAmount = computed(() => {
   return selectedOrderItems.value.reduce((sum, item) => {
-    return sum + cartStore.calculateItemTotal(item); // 直接調用 Store 中的計算方法
+    return sum + cartStore.calculateItemTotal(item);
   }, 0);
 });
 
-// 判斷所有旅客資料是否有效 (基礎檢查)
+// 判斷訂購人資料是否已填寫基本資訊 (簡易檢查，更嚴謹應通過子組件驗證方法判斷)
+const isOrdererBasicInfoFilled = computed(() => {
+   const orderer = formData.ordererInfo;
+   // 這裡根據你在 ParticipantForm 中的必填欄位做簡易判斷
+   return !!orderer.firstName && !!orderer.lastName && !!orderer.country && !!orderer.phoneNumber && !!orderer.email;
+});
+
+// 計算已填寫旅客資料的數量 (簡單計數陣列長度，不檢查內容是否有效)
+const filledParticipantsCount = computed(() => {
+    return Object.values(formData.participantsByItem).reduce((total, paxArray) => total + (paxArray?.length || 0), 0);
+});
+
+// 檢查所有需要旅客資料的商品，其旅客陣列長度是否已滿足預期數量
+const areAllParticipantQuantitiesFilled = computed(() => {
+     return selectedOrderItems.value.every(item => {
+         const expectedCount = getItemParticipantCount(item);
+         // 如果商品不需要旅客 (expectedCount === 0)，則視為數量已滿足
+         if (expectedCount === 0) return true;
+         // 否則，檢查對應的旅客陣列是否存在且長度等於預期數量
+         const actualArray = formData.participantsByItem[item.id];
+         return actualArray && actualArray.length === expectedCount;
+     });
+});
+
+// 判斷所有需要旅客資料的 ItemParticipantForm 是否都通過了自身的驗證
 const allTravelersValid = computed(() => {
-    // 檢查是否存在旅客資料區塊
-    if (Object.keys(formData.participantsByItem).length === 0 && selectedOrderItems.value.length > 0) {
-        // 如果有商品但旅客資料結構是空的 (可能初始化問題)，視為無效
-        const needsTravelers = selectedOrderItems.value.some(item => getItemParticipantCount(item) > 0);
-        if (needsTravelers) return false;
+    // 找出所有需要旅客資料的商品 ID
+    const itemIdsWithTravelers = selectedOrderItems.value
+        .filter(item => getItemParticipantCount(item) > 0)
+        .map(item => item.id);
+
+    // 如果沒有需要旅客資料的商品，則視為驗證通過
+    if (itemIdsWithTravelers.length === 0) {
+        return true;
     }
-    // 遍歷所有商品的旅客陣列
-    return Object.values(formData.participantsByItem).every(paxArray =>
-        // 每個陣列都必須存在，並且內部每個旅客都必須有效
-        paxArray && paxArray.length > 0 && paxArray.every(pax =>
-            pax &&
-            pax.firstNameZh && // 假設這些是必填欄位
-            pax.lastNameZh &&
-            pax.country &&
-            pax.documentNumber &&
-            pax.birthDate
-            // ... 可根據 ParticipantForm 添加更多必填驗證
-        )
-    );
+
+    // 檢查每個需要旅客資料的商品 ID，在 itemTravelerValidity 中對應的狀態是否為 true
+    return itemIdsWithTravelers.every(itemId => itemTravelerValidity[itemId] === true);
 });
 
-// 判斷每個商品的旅客數量是否與訂購數量匹配
-const quantitiesMatch = computed(() => {
-    return selectedOrderItems.value.every(item => {
-        const expectedCount = getItemParticipantCount(item);
-        // 如果預期數量為 0 (例如某些商品不需旅客資料)，則視為匹配
-        if (expectedCount === 0) return true;
-        // 否則檢查實際填寫的旅客數量是否等於預期數量
-        return formData.participantsByItem[item.id]?.length === expectedCount;
-    });
+
+// 計算屬性：訂購人資料狀態訊息 (顯示在 CostSummary 中)
+const ordererStatusMessage = computed(() => {
+   // 更精確的狀態判斷應該結合 ParticipantForm 的驗證結果 (如果 ParticipantForm 暴露了狀態)
+   // 但目前先使用簡易檢查狀態
+   return isOrdererBasicInfoFilled.value ? '訂購人資料已填寫' : '請填寫訂購人資料';
 });
 
-// 判斷結帳按鈕是否應禁用
+// 計算屬性：旅客資料狀態訊息 (顯示在 CostSummary 中)
+const participantsStatusMessage = computed(() => {
+     const totalExpected = selectedItemsTotalQuantity.value;
+     // 如果沒有需要旅客資料的商品，直接返回無需填寫訊息
+     if (totalExpected === 0) {
+         return '此訂單無需填寫旅客資料';
+     }
+
+     const totalFilledSlots = filledParticipantsCount.value;
+
+     // 如果所有商品的旅客數量都已填滿
+     if (areAllParticipantQuantitiesFilled.value) {
+         // 如果所有 ItemParticipantForm 都通過了自身的驗證
+         if (allTravelersValid.value) {
+              return `共 ${totalExpected} 位旅客資料已完成`; // 數量對且驗證通過
+         } else {
+             // 數量對但有 ItemParticipantForm 驗證未通過 (表示有錯誤)
+              return `共 ${totalExpected} 位旅客資料有誤，請檢查`;
+         }
+     } else {
+         // 顯示已填寫數量和總數，表示待填寫
+         return `共 ${totalFilledSlots} / ${totalExpected} 位旅客資料待填寫`;
+     }
+});
+
+
+// 判斷結帳按鈕是否應禁用 (包含更完整的簡易檢查)
 const isCheckoutButtonDisabled = computed(() => {
-    // 基礎檢查：是否正在提交、是否有商品、是否選了付款方式
+    // 基礎檢查：是否正在提交、是否有選中商品、是否選了付款方式
     if (isSubmitting.value || selectedOrderItems.value.length === 0 || !isPaymentMethodSelected.value) {
+        // console.log("禁用原因: 基礎檢查失敗");
         return true;
     }
-    // 檢查訂購人資料是否有效 (簡單檢查姓名)
-    const isOrdererInfoValid = formData.ordererInfo && formData.ordererInfo.firstName && formData.ordererInfo.lastName;
-    if (!isOrdererInfoValid) {
-        // console.log("禁用原因：訂購人資料無效");
+    // 檢查訂購人資料基本資訊是否已填寫 (簡易檢查)
+    if (!isOrdererBasicInfoFilled.value) {
+        // console.log("禁用原因: 訂購人基本資料未填寫");
         return true;
     }
-    // 檢查旅客數量是否匹配
-    if (!quantitiesMatch.value) {
-       // console.log("禁用原因：旅客數量不匹配");
-       return true;
+    // 檢查所有需要旅客資料的商品，其旅客陣列長度是否已填滿
+    if (!areAllParticipantQuantitiesFilled.value) {
+        // console.log("禁用原因: 旅客數量未填滿");
+        return true;
     }
-    // 檢查所有旅客資料是否有效 (根據 allTravelersValid 的計算結果)
+    // 檢查所有 ItemParticipantForm 是否都通過了自身的驗證
     if (!allTravelersValid.value) {
-        // console.log("禁用原因：旅客資料無效");
+        // console.log("禁用原因: 旅客資料驗證失敗");
         return true;
     }
-    // 如果所有檢查都通過，則不禁用
-    return false;
+     // 如果選擇了信用卡支付，則信用卡表單必須有效 (從 PaymentOptions 通過事件傳遞狀態)
+     if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
+       if (!isCreditCardFormValid.value) {
+         // console.log("禁用原因: 信用卡表單無效");
+         return true;
+       }
+     }
+
+    // 只有當以上所有簡易檢查都通過，按鈕才不被禁用 (但最終提交前仍需要呼叫所有子組件的 validate 方法來執行嚴謹驗證)
+    // console.log("禁用狀態: false (通過簡易檢查)");
+    return false; // 通過簡易檢查，按鈕啟用
 });
+
 
 // --- 方法 (Methods) ---
 
+// 滾動到指定的區塊並展開
+const scrollToSection = (sectionName) => {
+     const sectionElement = document.querySelector(`[data-section-name="${sectionName}"]`);
+     if (sectionElement) {
+         const headerElement = sectionElement.querySelector('.el-collapse-item__header');
+         const targetElement = headerElement || sectionElement;
 
-// 滾動到付款方式區塊並展開
-const scrollToPaymentOptions = () => {
-    // 使用 data-attribute 選擇器
-    const paymentSectionElement = document.querySelector('[data-section-name="payment"]');
-    if (paymentSectionElement) {
-        // 找到元素後，可以選擇滾動到元素本身，或者滾動到它的頭部
-        // 如果 AccordionSection 內部渲染的是 el-collapse-item，可能需要滾動到 header
-        const headerElement = paymentSectionElement.querySelector('.el-collapse-item__header');
-        const targetElement = headerElement || paymentSectionElement; // 優先滾動到 header
+         targetElement.scrollIntoView({ behavior: 'smooth', block: sectionName === 'items' ? 'start' : 'center' }); // 商品區塊滾動到頂部，其他滾動到中間
 
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // 確保付款區塊是展開的
-        if (!activeCollapseNames.value.includes('payment')) {
-             activeCollapseNames.value.push('payment');
-        }
-    } else {
-        console.warn("無法找到 data-section-name='payment' 的區塊元素進行滾動。");
-    }
+         // 確保目標區塊是展開的
+         if (!activeCollapseNames.value.includes(sectionName)) {
+               nextTick(() => { // 在滾動後或 DOM 更新後展開
+                   activeCollapseNames.value.push(sectionName);
+               });
+         }
+     } else {
+         console.warn(`無法找到 data-section-name='${sectionName}' 的區塊元素進行滾動。`);
+     }
 };
 
 
-// 輔助函式：計算單個商品需要填寫的旅客數量
+// 滾動到訂單商品區塊並展開 (使用通用滾動方法)
+const scrollToItemsSection = () => {
+    scrollToSection('items');
+};
+
+// 滾動到付款方式區塊並展開 (使用通用滾動方法)
+const scrollToPaymentOptions = () => {
+    scrollToSection('payment');
+};
+
+// 處理 ItemParticipantForm 發出的 validity-changed 事件
+const handleItemTravelerFormValidityChange = (itemId, isValid) => {
+    // 更新對應商品 ID 的旅客表單驗證狀態
+    itemTravelerValidity[itemId] = isValid;
+     console.log(`ItemParticipantForm (${itemId}) validity changed: ${isValid}`);
+};
+
+
+// 輔助函式：計算單個商品需要填寫的旅客數量 (使用數字類型，預設0)
 const getItemParticipantCount = (item) => {
-    if (item?.participantRequired === false) { // 假設商品數據有個標誌指示是否需要旅客資料
+    if (item?.participantRequired === false) {
         return 0;
     }
     let quantity = 0;
     if (item.options && item.options.length > 0) {
-        quantity = item.options.reduce((sum, option) => sum + option.quantity, 0);
+        // 確保 quantity 是數字
+        quantity = item.options.reduce((sum, option) => sum + (Number(option.quantity) || 0), 0);
     } else if (item.quantity !== undefined) {
-        quantity = item.quantity;
+        // 確保 quantity 是數字
+        quantity = Number(item.quantity) || 0;
     }
     return quantity;
 };
@@ -335,17 +439,15 @@ const loadOrderItems = () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // 直接從 store 的 selectedItems getter 獲取數據
-    // selectedItems getter 應確保只返回有效的、選中的商品
     const itemsFromStore = cartStore.selectedItems;
     console.log("從 Store 獲取的商品:", itemsFromStore);
 
     // 深拷貝一份數據，避免後續操作意外修改 store 狀態
+    // TODO: 如果商品結構複雜 (例如嵌套響應式對象)，JSON.parse(JSON.stringify) 可能不足夠，可以考慮 lodash.cloneDeep
     selectedOrderItems.value = JSON.parse(JSON.stringify(itemsFromStore));
 
     if (selectedOrderItems.value.length === 0) {
       console.warn("購物車中沒有選擇任何商品進行結帳。");
-      // error.value = '沒有選擇任何商品進行結帳。'; // 或者讓模板處理空狀態
     }
     isLoading.value = false;
   } catch (err) {
@@ -355,223 +457,433 @@ const loadOrderItems = () => {
   }
 };
 
-// 提交訂單
+// 提交訂單 - **重要：在提交前需要觸發所有子表單的驗證**
 const submitOrder = async () => {
-    // --- 1. 準備訂購人資訊 (OrdererInfo) ---
-    // 來自 ParticipantForm.vue (formData.ordererInfo)
-    // ParticipantForm.vue 的 modelValue: { firstName, lastName, country, countryCode, phoneNumber, email, updateProfile, documentType, documentNumber }
-    const preparedOrdererInfo = {
-        name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
-        mobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''), // 合併國碼和號碼，並移除空格
-        email: formData.ordererInfo.email || null
-    };
-
-    // --- 2. 準備旅客列表 (Participants) ---
-    // 來自 ItemParticipantForm.vue (formData.participantsByItem[itemId])
-    // ItemParticipantForm.vue 每個 participant 物件的結構: { id, country, firstNameZh, lastNameZh, documentNumber, birthDate, (可能還有 gender, email, phone, documentType 等) }
-    // 後端 OrderParticipantDto 需要: Name, BirthDate, IdNumber, Gender, Phone, Email, DocumentType, Nationality 等
-    const preparedParticipants = Object.values(formData.participantsByItem).flat().map(p_vue => {
-        const participantName = `${p_vue.lastNameZh || ''}${p_vue.firstNameZh || ''}`.trim();
-
-        // 假設 ItemParticipantForm.vue 也收集了 gender, email, phone, documentType
-        // 如果沒有，您需要在 ItemParticipantForm.vue 中添加這些欄位
-        // 或者在後端將它們設為可選 (nullable)
-
-        // 處理 DocumentType 映射 (假設 Vue 的 'ID_CARD_TW' 對應後端某個 Enum 值)
-        let backendDocumentType;
-        switch (p_vue.documentType) { // 假設 p_vue.documentType 是從 ItemParticipantForm 來的
-            case 'ID_CARD_TW': backendDocumentType = 0; break; // 假設後端 DocumentType Enum 0 是台灣身分證
-            case 'PASSPORT': backendDocumentType = 1; break;   // 假設後端 DocumentType Enum 1 是護照
-            case 'ARC': backendDocumentType = 2; break;        // 假設後端 DocumentType Enum 2 是居留證
-            case 'ENTRY_PERMIT': backendDocumentType = 3; break; // 假設後端 DocumentType Enum 3 是入台證
-            default: backendDocumentType = null; // 或一個預設值
-        }
-
-        // 處理 GenderType 映射 (假設 ItemParticipantForm 有 gender 欄位)
-        let backendGender;
-        switch (p_vue.gender) { // 假設 p_vue.gender 是從 ItemParticipantForm 來的 (例如 'male', 'female', 'other')
-            case 'male': backendGender = 0; break;   // 假設後端 GenderType Enum 0 是 Male
-            case 'female': backendGender = 1; break; // 假設後端 GenderType Enum 1 是 Female
-            case 'other': backendGender = 2; break;  // 假設後端 GenderType Enum 2 是 Other
-            default: backendGender = null;
-        }
-
-
-        return {
-            favoriteTravelerId: p_vue.favoriteTravelerId || null, // 假設 ItemParticipantForm 有此欄位
-            memberIdAsParticipant: p_vue.memberIdAsParticipant || null, // 假設 ItemParticipantForm 有此欄位
-            name: participantName,
-            birthDate: p_vue.birthDate, // 確保是 "YYYY-MM-DD" 或 "YYYY-MM-DDTHH:mm:ss"
-            idNumber: p_vue.documentNumber, // 後端用 IdNumber 代表主要證件號
-            gender: backendGender, // 使用映射後的 Gender Enum 整數值
-            phone: p_vue.phoneNumber || '', // 假設 ItemParticipantForm 有 phoneNumber 欄位
-            email: p_vue.email || '',     // 假設 ItemParticipantForm 有 email 欄位
-            documentType: backendDocumentType, // 使用映射後的 DocumentType Enum 整數值
-            documentNumber: p_vue.documentNumber, // 可以與 IdNumber 相同，或如果用途不同則分別提供
-            passportSurname: p_vue.lastNameEn || '', // 假設 ItemParticipantForm 有 lastNameEn
-            passportGivenName: p_vue.firstNameEn || '', // 假設 ItemParticipantForm 有 firstNameEn
-            passportExpireDate: p_vue.passportExpireDate || null, // 假設 ItemParticipantForm 有
-            nationality: p_vue.country, // 直接使用前端的國家代碼 (例如 'TW')
-            note: p_vue.note || '' // 假設 ItemParticipantForm 有
-        };
-    });
-
-    // --- 3. 準備發票請求資訊 (InvoiceRequestInfo) ---
-    // 來自 EInvoiceForm.vue (formData.eInvoiceInfo)
-    // EInvoiceForm.vue 的 modelValue: { type: 'personal', taxId: '', companyTitle: '', donationCode: '' }
-    // 後端 OrderInvoiceRequestDto 需要: InvoiceOption (enum), InvoiceDeliveryEmail, InvoiceUniformNumber, InvoiceTitle, InvoiceAddBillingAddr, InvoiceBillingAddress
-    let backendInvoiceOption;
-    switch (formData.eInvoiceInfo.type) {
-        case 'personal': backendInvoiceOption = 0; break; // 假設後端 InvoiceOption Enum 0 是 Personal
-        case 'company': backendInvoiceOption = 1; break;  // 假設後端 InvoiceOption Enum 1 是 Company
-        // case 'donation': // 您說暫時不需要捐贈
-        default: backendInvoiceOption = 0; // 預設為個人
+    // 檢查按鈕是否已被禁用 (避免重複點擊)
+    if (isCheckoutDisabled.value || isSubmitting.value) {
+        console.warn("提交按鈕被禁用或正在提交中。");
+        // ElMessage.warning("請檢查表單是否填寫完整或正在提交中。");
+        return;
     }
 
-    const preparedInvoiceRequestInfo = {
-        invoiceOption: backendInvoiceOption,
-        invoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // EInvoiceForm 應有 deliveryEmail，或預設用訂購人 email
-        invoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
-        invoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
-        invoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // EInvoiceForm 應有此欄位
-        invoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // EInvoiceForm 應有此欄位
-    };
+    isSubmitting.value = true; // 設定提交狀態
+    submitError.value = null; // 清除上次的提交錯誤
 
-    // --- 4. 準備選擇的付款方式 (SelectedPaymentMethod) ---
-    // 來自 PaymentOptions.vue (formData.paymentMethod)
-    // PaymentOptions.vue 的 modelValue: 'CreditCard', 'BankTransfer'
-    // 後端 PaymentMethod enum: CreditCard = 0, BankTransfer = 1, Other = 2
-    let backendSelectedPaymentMethod;
-    switch (formData.paymentMethod) {
-        case 'CreditCard': backendSelectedPaymentMethod = 0; break;
-        case 'BankTransfer': backendSelectedPaymentMethod = 1; break;
-        case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 假設 LINEPay 對應 Other 或您新增的 Enum 值
-        default: backendSelectedPaymentMethod = 0; // 或拋出錯誤，因為必須選擇
-    }
-
-
-    // --- 5. 組合最終 Payload ---
-    const orderPayload = {
-        totalAmount: totalAmount.value, // 來自 computed totalAmount
-        orderNotes: formData.note,
-        ordererInfo: preparedOrdererInfo,
-        participants: preparedParticipants,
-        invoiceRequestInfo: preparedInvoiceRequestInfo,
-        selectedPaymentMethod: backendSelectedPaymentMethod
-        // memberId 不從前端傳送
-        // orderDetails 也不在初次建立訂單時傳送
-    };
-
-    console.log("準備提交的訂單 Payload (精確映射後):", JSON.stringify(orderPayload, null, 2));
+    console.log("開始訂單提交前嚴謹驗證...");
 
     try {
-        const response = await api.createOrder(orderPayload); // 調用 API
+        let isFormValid = true; // 總體表單驗證結果
+
+        // --- **觸發所有子表單的嚴謹驗證** ---
+
+        // 1. 訂購人表單驗證 (ParticipantForm 暴露了 validateForm 方法)
+        if (ordererFormRef.value && ordererFormRef.value.validateForm) {
+             const ordererValid = await ordererFormRef.value.validateForm();
+             if (!ordererValid) {
+                 console.log("訂購人表單驗證失敗");
+                 isFormValid = false;
+                 // 滾動到訂購人區塊並展開
+                 scrollToSection('ordererInfo');
+                 // 可以添加提示給用戶
+                 // ElMessage.error("請檢查訂購人資料。");
+             }
+        } else {
+             // 如果 ParticipantForm 引用不存在或未暴露 validateForm 方法，視為驗證失敗
+             console.error("無法獲取 ParticipantForm 引用或其 validateForm 方法。訂購人驗證失敗。");
+             isFormValid = false; // 訂購人驗證是必須的
+        }
+
+        // 如果訂購人驗證失敗，停止後續驗證和提交
+        if (!isFormValid) {
+             isSubmitting.value = false;
+             return;
+        }
+        console.log("訂購人表單驗證通過");
+
+
+        // 2. 所有商品旅客資料表單驗證 (ItemParticipantForm 暴露了 validateAll 方法)
+        // 遍歷 itemTravelerFormRefs.value 物件中所有 ItemParticipantForm 實例的引用
+        const itemTravelerFormInstances = Object.values(itemTravelerFormRefs.value); // 獲取所有 ItemParticipantForm 實例的陣列
+        for (const formInstance of itemTravelerFormInstances) {
+            // 檢查引用是否存在且暴露了 validateAll 方法
+            // 並且只有當這個 ItemParticipantForm 應該顯示時才進行驗證 (由模板中的 v-if 控制)
+            // 這裡可以再加一層檢查，確保這個 ItemParticipantForm 對應的商品確實需要旅客資料
+            const relatedItem = selectedOrderItems.value.find(item => item.id === formInstance.orderItem?.id);
+            // 如果商品需要旅客且 ItemParticipantForm 引用存在並暴露了 validateAll
+            if (relatedItem && getItemParticipantCount(relatedItem) > 0 && formInstance && formInstance.validateAll) {
+                 console.log(`觸發商品旅客資料表單 (${relatedItem.id}) 驗證...`);
+                 const valid = await formInstance.validateAll(); // validateAll 應返回 Promise<boolean>
+                 if (!valid) {
+                     const itemId = formInstance.orderItem?.id; // 嘗試從 ItemParticipantForm 獲取商品 ID
+                     console.log(`商品旅客資料表單 (${itemId || '未知'}) 驗證失敗`);
+                     isFormValid = false;
+                     // 滾動到對應的旅客區塊並展開
+                     scrollToSection(`travelers-${itemId}`);
+                     // ElMessage.error(`請檢查商品 "${formInstance.orderItem?.name || '未知商品'}" 的旅客資料。`);
+                     break; // 通常找到第一個錯誤就停止後續旅客表單的驗證
+                 }
+            } else if (relatedItem && getItemParticipantCount(relatedRelatedItem) > 0) {
+                 // 如果這個商品需要旅客資料，但無法獲取 ItemParticipantForm 引用或其 validateAll 方法
+                 console.error(`無法獲取 ItemParticipantForm 引用或其 validateAll 方法 (${relatedItem.id})。旅客驗證失敗。`);
+                 isFormValid = false; // 旅客驗證是必須的
+                 // 可選：滾動到對應區塊提示用戶
+                 scrollToSection(`travelers-${relatedItem.id}`);
+                 // ElMessage.error(`無法驗證商品 "${relatedItem.name}" 的旅客資料。請檢查。`);
+                 break; // 停止驗證
+            }
+             // 如果商品不需要旅客資料 (getItemParticipantCount <= 0)，則跳過此 ItemParticipantForm 的驗證
+        }
+
+         // 如果旅客驗證失敗，停止後續驗證和提交
+        if (!isFormValid) {
+             isSubmitting.value = false;
+             return;
+        }
+        console.log("所有商品旅客資料表單驗證通過");
+
+
+         // 3. 電子發票表單驗證 (EInvoiceForm 暴露了 validate 方法)
+         // 檢查 einvoiceFormRef 引用是否存在且暴露了 validate 方法
+         // 並且只有當電子發票區塊不是禁用狀態時才進行驗證
+         const isEinvoiceSectionDisabled = computed(() => !isPaymentMethodSelected.value); // 定義電子發票區塊的禁用狀態
+         if (!isEinvoiceSectionDisabled.value) { // 如果電子發票區塊未禁用
+             if (einvoiceFormRef.value && einvoiceFormRef.value.validate) {
+                console.log("觸發電子發票表單驗證...");
+                const valid = await einvoiceFormRef.value.validate();
+                if (!valid) {
+                    console.log("電子發票表單驗證失敗");
+                    isFormValid = false;
+                    // 滾動到發票區塊並展開
+                    scrollToSection('einvoice');
+                    // ElMessage.error("請檢查電子發票資料。");
+                }
+             } else {
+                  // 如果電子發票區塊未禁用，但無法獲取引用或其 validate 方法
+                  console.error("無法獲取 EInvoiceForm 引用或其 validate 方法。電子發票驗證失敗。");
+                  isFormValid = false; // 發票驗證是必須的 (當未禁用時)
+                  // 可選：滾動到發票區塊提示用戶
+                  scrollToSection('einvoice');
+                  // ElMessage.error("無法驗證電子發票資料。請檢查。");
+             }
+         } else {
+             // 如果電子發票區塊是禁用狀態，則視為驗證通過
+             console.log("電子發票區塊已禁用，跳過驗證。");
+         }
+
+
+         // 如果電子發票驗證失敗，停止後續驗證和提交
+        if (!isFormValid) {
+             isSubmitting.value = false;
+             return;
+        }
+        console.log("電子發票表單驗證通過");
+
+
+         // 4. 付款方式/信用卡表單驗證 (PaymentOptions 暴露 validate 方法，或直接檢查狀態)
+         // 檢查 paymentOptionsRef 引用是否存在且暴露 validate 方法
+         // 或者直接檢查 isCreditCardFormValid 狀態 (如果選擇了信用卡)
+         // 這裡使用檢查 isCreditCardFormValid 狀態的方式，因為 PaymentOptions 主要通過這個狀態匯報信用卡驗證結果
+         if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
+             // 如果選擇了信用卡支付方式，直接檢查 isCreditCardFormValid 狀態
+             if (!isCreditCardFormValid.value) {
+                 console.log("信用卡表單驗證失敗 (狀態無效)");
+                 isFormValid = false;
+                 // 滾動到付款區塊並展開
+                 scrollToSection('payment');
+                 // ElMessage.error("請檢查信用卡資料。");
+             } else {
+                  console.log("信用卡表單驗證通過 (狀態有效)");
+             }
+         } else {
+              // 如果沒有選擇信用卡支付，或者選擇了非信用卡支付方式，則付款方式驗證視為通過
+              console.log("未選擇信用卡支付，或選擇非信用卡支付，付款方式驗證視為通過");
+         }
+
+        // 如果付款方式驗證失敗，停止後續提交
+        if (!isFormValid) {
+             isSubmitting.value = false;
+             return;
+        }
+        console.log("付款方式/信用卡表單驗證通過");
+
+
+        // --- 執行嚴謹驗證後的最終判斷 ---
+        // 如果所有子表單驗證都通過 (isFormValid 仍然是 true)
+        if (!isFormValid) {
+             // 這個判斷其實在每個驗證步驟後都做了 return，這裡作為一個最終的雙重檢查
+             console.error("總體表單驗證失敗，停止提交。");
+             // 可以在這裡添加一個總體的錯誤提示
+             // ElMessage.error("請檢查所有必填欄位和格式是否正確。");
+             isSubmitting.value = false;
+             return;
+        }
+
+        console.log("所有表單嚴謹驗證通過。準備提交數據...");
+
+        // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
+        // 1. 準備訂購人資訊
+        const preparedOrdererInfo = {
+            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrdererInfoDto 一致
+            name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
+            mobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
+            email: formData.ordererInfo.email || null,
+            // 添加 ParticipantForm 中收集的更多訂購人資訊
+             documentType: formData.ordererInfo.documentType, // 添加證件類型
+             idNumber: formData.ordererInfo.documentNumber, // 添加證件號碼
+             nationality: formData.ordererInfo.country, // 添加國籍
+             // 如果 ParticipantForm 有性別欄位且需要傳送
+             // gender: formData.ordererInfo.gender,
+        };
+
+        // 2. 準備旅客列表
+        // 遍歷 formData.participantsByItem 中的每個商品對應的旅客陣列
+        const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
+            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrderParticipantDto 一致
+            // 映射 ItemParticipantForm 的數據到後端 DTO
+             let backendDocumentType = null;
+             switch (paxData.documentType) {
+                 case 'ID_CARD_TW': backendDocumentType = 0; break;
+                 case 'PASSPORT': backendDocumentType = 1; break;
+                 case 'ARC': backendDocumentType = 2; break;
+                 case 'ENTRY_PERMIT': backendDocumentType = 3; break;
+                 default: backendDocumentType = null; // 處理未知類型
+             }
+             let backendGender = null;
+             switch (paxData.gender) {
+                 case 'male': backendGender = 0; break;
+                 case 'female': backendGender = 1; break;
+                 case 'other': backendGender = 2; break;
+                 default: backendGender = null; // 處理未知性別
+             }
+
+            return {
+                 // 這些欄位需要根據後端 OrderParticipantDto 的實際定義來映射
+                 // favoriteTravelerId: paxData.selectedFrequentTraveler || null, // 如果後端 DTO 需要這個
+                 // memberIdAsParticipant: paxData.memberIdAsParticipant || null, // 如果旅客本身就是會員，這裡需要會員 ID
+                 name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(), // 中文姓名
+                 birthDate: paxData.birthDate, // "YYYY-MM-DD"
+                 idNumber: paxData.idNumber, // 主要證件號碼 (身分證或居留證等)
+                 gender: backendGender, // 性別 Enum 值
+                 // 假設 ItemParticipantForm 收集了電話和 email
+                 phone: paxData.phoneNumber || '', // 電話
+                 email: paxData.email || '', // Email
+                 documentType: backendDocumentType, // 證件類型 Enum 值
+                 // documentNumber: paxData.idNumber, // 如果後端 DTO 需要證件號碼欄位，通常和 idNumber 相同
+                 passportSurname: paxData.lastNameEn || '', // 護照英文姓
+                 passportGivenName: paxData.firstNameEn || '', // 護照英文名
+                 passportExpireDate: paxData.passportExpiryDate || null, // 護照效期 "YYYY-MM-DD"
+                 nationality: paxData.country, // 國籍 (ISO 3166-1 Alpha-2 Code, e.g., 'TW')
+                 note: paxData.remarks || '' // 備註
+            };
+        });
+
+
+        // 3. 準備發票請求資訊
+        let backendInvoiceOption = 0; // 預設個人
+        switch (formData.eInvoiceInfo.type) {
+            case 'personal': backendInvoiceOption = 0; break;
+            case 'company': backendInvoiceOption = 1; break;
+            // case 'donation': backendInvoiceOption = 2; break;
+            default: backendInvoiceOption = 0; // 處理未知類型
+        }
+
+        const preparedInvoiceRequestInfo = {
+            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrderInvoiceRequestDto 一致
+            invoiceOption: backendInvoiceOption,
+            invoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // 使用 EInvoiceForm 中的 deliveryEmail 或訂購人 email
+            invoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
+            invoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
+            invoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // 如果有這個欄位
+            invoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // 如果有這個欄位
+        };
+
+        // 4. 準備選擇的付款方式
+         let backendSelectedPaymentMethod = 0; // 預設一個值
+         switch (formData.paymentMethod) {
+             // 確保這裡的 case 值與 PaymentOptions.vue 中定義的 value 對應
+             // 確保後端 Enum 值正確
+             case 'NewebPay_CreditCard': backendSelectedPaymentMethod = 0; break;
+             case 'ECPay_CreditCard': backendSelectedPaymentMethod = 0; break; // 如果後端不區分具體信用卡金流，可以都映射到信用卡 Enum
+             case 'BankTransfer': backendSelectedPaymentMethod = 1; break;
+             case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 假設後端 2 是 LINE Pay 或其他
+             default:
+                 console.warn("未知的支付方式:", formData.paymentMethod);
+                 backendSelectedPaymentMethod = 2; // 處理未知情況
+                 break;
+         }
+
+
+        // 組合最終 API Payload
+        const orderPayload = {
+            // memberId: formData.memberId, // 通常由後端處理
+            totalAmount: totalAmount.value,
+            orderNotes: formData.note,
+            ordererInfo: preparedOrdererInfo,
+            participants: preparedParticipants, // 扁平化的旅客陣列
+            invoiceRequestInfo: preparedInvoiceRequestInfo,
+            selectedPaymentMethod: backendSelectedPaymentMethod,
+            // orderDetails: [], // 商品明細通常不由前端在創建訂單時傳送，後端應根據購物車商品創建
+        };
+
+        console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
+
+        // --- 調用 API 提交訂單 ---
+        const response = await api.createOrder(orderPayload);
         console.log('訂單創建成功:', response);
 
-        // 處理成功響應
-        createdOrderId.value = response.data?.orderId; // 假設後端返回訂單 ID
+        createdOrderId.value = response.data?.orderId;
         submitSuccess.value = true;
 
-        // **重要：訂單成功後的操作**
-        // 1. 清空購物車中已結帳的商品 (調用 store action)
+        // 清空購物車中已結帳的商品
         const submittedItemIds = selectedOrderItems.value.map(item => item.id);
-        cartStore.removeItemsByIds(submittedItemIds); // 清除購物車
+        cartStore.removeItemsByIds(submittedItemIds);
 
-        // 2. 跳轉到訂單完成頁面，並帶上訂單 ID
+        // 跳轉到訂單完成頁面
         router.push({ path: '/order-complete', query: { orderId: createdOrderId.value } });
 
     } catch (err) {
         console.error('訂單提交失敗:', err);
         submitError.value = err.response?.data?.message || err.message || '發生未知錯誤，請稍後再試。';
-        // 可以在這裡顯示更友好的錯誤提示給用戶，例如使用 Element Plus 的 Message
+        // 顯示錯誤提示 (例如使用 ElMessage)
         // ElMessage.error(`訂單提交失敗: ${submitError.value}`);
+
     } finally {
         isSubmitting.value = false; // 結束提交狀態
     }
 };
 
+// 在組件更新之前清理 ItemParticipantForm 的 refs
+// 這是因為 v-for 中的元素可能會被移除，舊的 ref 引用需要清理
+onBeforeUpdate(() => {
+  // 清空 refs 物件
+  itemTravelerFormRefs.value = {};
+});
+
 
 // --- Watchers (監聽器) ---
 
 // 監聽從 Store 獲取的 selectedOrderItems 變化，自動初始化/更新旅客資料區塊
-watch(selectedOrderItems, (newItems, oldItems) => {
-    // 只有當商品列表實際變化時才處理 (避免不必要的重置)
-    // 簡單比較 JSON 字串判斷是否有實質變化 (可能不是最高效，但適用於此場景)
-    if (JSON.stringify(newItems) === JSON.stringify(oldItems)) {
-        return;
-    }
+watch(selectedOrderItems, (newItems) => {
+    // 這裡的邏輯負責根據新的商品列表，初始化或更新 formData.participantsByItem 的結構
+    // 它會保留現有數據，並為新增的旅客創建預設數據
     console.log("監聽到 selectedOrderItems 變化，更新旅客表單結構和 Collapse 狀態");
 
-    const newParticipantsByItem = {};
-    const currentActiveNamesSet = new Set(activeCollapseNames.value);
-    const requiredTravelerSections = new Set(); // 儲存這次更新後 *需要* 的旅客區塊名稱
+    const newParticipantsByItem = {}; // 用於構建新的旅客數據結構
+    const currentActiveNamesSet = new Set(activeCollapseNames.value); // 用於維護展開狀態
+    const requiredTravelerSections = new Set(); // 記錄本次更新後需要保留展開的旅客區塊 section-name
+    const newItemIdsWithTravelers = new Set(); // 記錄本次更新後需要旅客資料的商品 ID
 
     newItems.forEach(item => {
         const expectedCount = getItemParticipantCount(item);
         const sectionName = `travelers-${item.id}`;
 
-        // 如果預期旅客數為 0，則不需要為此商品創建旅客資料區塊
+        // 如果商品不需要旅客，確保在新的結構中存在對應的 key 但值為空陣列
+        // 同時移除其展開狀態
         if (expectedCount === 0) {
-             newParticipantsByItem[item.id] = []; // 確保 key 存在但值為空陣列
-             newOpenedSections.delete(sectionName); // 如果之前展開了，關閉它
-             return; // 處理下一個商品
+             newParticipantsByItem[item.id] = [];
+             currentActiveNamesSet.delete(sectionName);
+             // 確保移除 itemTravelerValidity 中對應的狀態
+             delete itemTravelerValidity[item.id];
+             return;
         }
 
-        // 如果需要旅客資料
-        requiredTravelerSections.add(sectionName); // 標記這個旅客區塊是需要的
-        const existingPaxs = formData.participantsByItem[item.id] || [];
-        const currentPaxs = []; // 當前商品的旅客資料陣列
+        // 如果需要旅客資料，標記這個旅客區塊是需要的，並確保其展開狀態被保留
+        requiredTravelerSections.add(sectionName);
+        currentActiveNamesSet.add(sectionName); // 預設保留展開或展開新的需要旅客的區塊
+        newItemIdsWithTravelers.add(item.id); // 記錄需要旅客的商品 ID
 
+        // 從現有數據中獲取或創建新的旅客物件
+        const existingPaxs = formData.participantsByItem[item.id] || [];
+        const currentPaxs = [];
         for (let i = 0; i < expectedCount; i++) {
-            // 如果現有資料夠用，則沿用；否則，創建新的預設旅客物件
             currentPaxs.push(existingPaxs[i] || {
-                country: formData.ordererInfo.country || 'TW', // 可以預設為訂購人國籍
-                firstNameZh: '', lastNameZh: '',
-                firstNameEn: '', lastNameEn: '',
-                gender: null, // 性別預設未知
-                birthDate: null, // 生日預設空
-                documentType: formData.ordererInfo.documentType || 'ID_CARD_TW', // 預設同訂購人
-                documentNumber: ''
-                // ... 其他需要的預設欄位
+                 // 使用更完整的預設值，與 ItemParticipantForm 的數據結構一致
+                 id: `pax-${item.id}-${i}-${Date.now()}`, // 為新創建的旅客提供一個臨時 ID
+                 selectedFrequentTraveler: null,
+                 country: formData.ordererInfo.country || 'TW',
+                 firstNameZh: '', lastNameZh: '',
+                 firstNameEn: '', lastNameEn: '',
+                 gender: null,
+                 birthDate: null,
+                 idNumber: '',
+                 passportNumber: '',
+                 passportExpiryDate: null,
+                 remarks: '',
+                 // 添加電話和 Email 預設值
+                 phoneNumber: '',
+                 email: '',
+                 countryCode: '+886',
+                 documentType: 'ID_CARD_TW',
+                 // 可以考慮是否自動填充訂購人資訊到第一個旅客
+                 // ...(i === 0 && isOrdererBasicInfoFilled.value ? { ...formData.ordererInfo } : {})
             });
         }
         newParticipantsByItem[item.id] = currentPaxs;
 
-        // **將需要展開的區塊名稱加入 Set (Set 會自動處理重複)**
-        currentActiveNamesSet.add(sectionName); // 預設展開需要的旅客區塊
-    });
-
-
-    // 清理不再需要的旅客區塊的展開狀態
-    // 遍歷 *當前* 展開的區塊名稱 (從修改前的 activeCollapseNames 獲取)
-    const previousActiveNames = activeCollapseNames.value || [];
-    previousActiveNames.forEach(name => {
-        // 只處理旅客區塊的名稱
-        if (name.startsWith('travelers-')) {
-            // 如果這個區塊在這次更新中不再是必需的，則從 Set 中移除
-            if (!requiredTravelerSections.has(name)) {
-                currentActiveNamesSet.delete(name);
-            }
+        // 初始化或保留 ItemParticipantForm 的驗證狀態為 false (待驗證)
+        // 如果之前已經有這個商品的驗證狀態，保留它
+        if (itemTravelerValidity[item.id] === undefined) {
+             itemTravelerValidity[item.id] = false; // 預設為未通過驗證
         }
     });
 
-
-    formData.participantsByItem = newParticipantsByItem;    // 更新旅客資料結構
-    // **將最終的 Set 轉換回陣列，並更新綁定到 v-model 的 ref**
-    activeCollapseNames.value = Array.from(currentActiveNamesSet);
-
-}, { deep: true }); // 使用 deep watch 來監聽數組內部元素的變化
-
-// 監聽付款方式變化，自動展開電子發票區塊
-watch(() => formData.paymentMethod, (newValue) => {
-    if (newValue) { // 只要選擇了任何付款方式
-        if (!activeCollapseNames.value.includes('einvoice')) {
-          console.log("付款方式已選，自動展開電子發票區塊。");
-          activeCollapseNames.value.push('einvoice');
-        }
+    // 清理不再需要旅客的商品在 formData 和 activeCollapseNames 中的狀態
+    for (const itemId in formData.participantsByItem) {
+         if (!newItemIdsWithTravelers.has(itemId)) { // 檢查新的需要旅客的商品 ID 集合中是否包含這個 key
+             delete formData.participantsByItem[itemId]; // 從 formData 中移除數據
+             const sectionName = `travelers-${itemId}`;
+             currentActiveNamesSet.delete(sectionName); // 從展開狀態中移除
+             // 確保移除 itemTravelerValidity 中對應的狀態
+             delete itemTravelerValidity[itemId];
+         }
     }
 
+    // 將構建好的新旅客數據結構賦予給 formData.participantsByItem (確保響應性)
+    // 使用 Object.assign 或一個新的對象來替換整個 property 是確保響應性的方法
+    Object.assign(formData.participantsByItem, newParticipantsByItem);
+    // 如果 newParticipantsByItem 的 key 少於原來的，需要手動刪除舊的 key (已在上面處理)
+
+
+    // 更新綁定到 v-model 的 AccordionSection 展開狀態
+    activeCollapseNames.value = Array.from(currentActiveNamesSet);
+
+}, { immediate: true, deep: true }); // immediate 在組件掛載時立即執行一次，deep 監聽陣列內部變化
+
+
+// 監聽付款方式變化，自動展開/收起電子發票區塊 (使用通用滾動方法)
+watch(() => formData.paymentMethod, (newValue) => {
+    const einvoiceSectionName = 'einvoice';
+    if (newValue) { // 只要選擇了任何付款方式
+        // 自動展開電子發票區塊
+        if (!activeCollapseNames.value.includes(einvoiceSectionName)) {
+           nextTick(() => {
+               activeCollapseNames.value.push(einvoiceSectionName);
+           });
+        }
+         // 可選：滾動到發票區塊
+         // scrollToSection(einvoiceSectionName);
+    } else {
+        // 如果取消選擇付款方式，收起發票區塊
+        const index = activeCollapseNames.value.indexOf(einvoiceSectionName);
+        if (index > -1) {
+             activeCollapseNames.value.splice(index, 1);
+        }
+         // 可選：清除發票區塊的數據 (如果取消支付方式意味著發票信息也無效)
+         // formData.eInvoiceInfo = { type: 'personal', taxId: '', companyTitle: '', deliveryEmail: '' };
+    }
 });
+
+// 監聽 isCreditCardFormValid 變化 (從 PaymentOptions 通過事件傳遞)
+// 當信用卡表單無效時，可以考慮提供一些視覺回饋，例如滾動到付款區塊或發出警告
+// watch(isCreditCardFormValid, (isValid) => {
+//      if (!isValid && formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
+//           console.warn("信用卡表單無效");
+//           // 可選：滾動到付款區塊
+//           // scrollToSection('payment');
+//           // 可選：顯示警告
+//           // ElMessage.warning("請檢查信用卡資料。");
+//      }
+// });
 
 
 // --- 生命週期鉤子 ---
@@ -585,32 +897,33 @@ onMounted(() => {
 <style scoped>
   /* 整體頁面容器 */
   .order-form-page {
-    /* background-color: #f5f7fa; */ /* 可選：設定頁面背景色 */
-    padding-bottom: 40px; /* 頁面底部留白 */
+    /* 使用 Element Plus 背景色變數 */
+    /* background-color: var(--el-fill-color-extra-light); */
+    padding-bottom: 40px;
   }
 
   /* 狀態容器 (載入、錯誤、空) */
   .status-container {
-     max-width: 800px;
-     margin: 40px auto;
-     padding: 30px; /* 增加內邊距 */
-     background-color: #fff;
-     border-radius: 8px;
-     box-shadow: var(--el-box-shadow-light, 0 2px 12px 0 rgba(0,0,0,0.1));
-     text-align: center;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: var(--el-fill-color-blank);
+      border-radius: var(--el-border-radius-base);
+      box-shadow: var(--el-box-shadow-light);
+      text-align: center;
   }
   .status-actions {
-    margin-top: 25px; /* 加大按鈕與提示信息的間距 */
-    display: flex; /* 按鈕並排 */
-    justify-content: center; /* 按鈕居中 */
-    gap: 15px; /* 按鈕間距 */
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
   }
 
   /* 主要佈局容器 */
   .order-layout-container {
     display: flex;
-    flex-wrap: wrap; /* 在小螢幕時允許換行 */
-    gap: 30px; /* 左右列之間的間距 */
+    flex-wrap: wrap;
+    gap: 30px;
     align-items: flex-start;
     max-width: 1200px;
     margin: 20px auto;
@@ -620,70 +933,72 @@ onMounted(() => {
   /* 左側欄 */
   .left-column {
     flex: 2;
-    min-width: 400px; /* 保持最小寬度 */
+    min-width: 400px; /* 確保在較寬螢幕下有足夠寬度 */
     display: flex;
     flex-direction: column;
-    /* gap: 24px; */ /* <-- 移除 gap，改用 margin 控制間距 */
+    /* 使用 margin-bottom 控制 AccordionSection 和 note-section 之間的間距 */
+    /* gap: 24px; */
   }
 
   /* 右側欄 */
   .right-column {
     flex: 1;
-    min-width: 300px;
+    min-width: 300px; /* 確保在較寬螢幕下有足夠寬度 */
     position: sticky;
-    top: 160px; /* Sticky 定位的起始位置 */
-    /* height: calc(100vh - 100px); */ /* 移除固定高度，讓它自適應內容 */
-    /* overflow-y: auto; */ /* 移除內部滾動，讓頁面滾動 */
+    top: 160px; /* 調整 sticky 的起始位置，考慮到頂部導航或 Header */
   }
-  /* 如果右欄內容可能超長，可以考慮給 CostSummary 內部加滾動，而不是整個右欄 */
 
 
-  /* --- el-collapse 基本樣式 --- */
+  /* --- el-collapse 基本樣式 (使用 Element Plus 變數) --- */
   .order-collapse {
-    border-top: none;  /* 移除 el-collapse 可能的頂部邊框 */
-    border-bottom: none; /* 移除 el-collapse 可能的底部邊框 */
-    /* --el-collapse-header-height: 58px; */ /* 可選：調整標題高度 */
-    /* --el-collapse-border-color: transparent; */ /* 可選：完全移除邊框顏色 */
+    border-top: none;
+    border-bottom: none;
   }
-  /* 移除 el-collapse item 之間的預設邊框（如果有的話）*/
-  .order-collapse :deep(.el-collapse-item__header) {
-      /* border-bottom: none; */ /* 通常展開時會有，保持即可 */
-  }
-   .order-collapse :deep(.el-collapse-item__wrap) {
-      border-bottom: none; /* 移除內容區域的下邊框 */
-  }
+   .order-collapse :deep(.el-collapse-item__header) {
+       /* 可選：自訂 header 樣式 */
+       /* border-bottom: 1px solid var(--el-border-color-light); */
+       /* background-color: var(--el-fill-color-light); */
+       font-weight: var(--el-font-weight-primary);
+   }
+    .order-collapse :deep(.el-collapse-item__wrap) {
+      border-bottom: none;
+   }
+    .order-collapse :deep(.el-collapse-item__content) {
+       padding-bottom: 15px; /* 調整內容底部內邊距 */
+       /* background-color: var(--el-fill-color-extra-light); */ /* 可選：內容區域背景色 */
+   }
 
 
-  /* 通用的 Section 卡片樣式 */
-  /* 這個樣式現在應用在 AccordionSection 元件上，或直接應用在 el-collapse-item 外層(如果不用AccordionSection) */
+  /* 通用的 Section 卡片樣式 (使用 Element Plus 變數) */
+  /* 這個樣式應用在 AccordionSection 外層 div */
   .section-card {
-     background-color: #ffffff;
-     border: 2px solid var(--el-border-color-light, #e4e7ed);
-     border-radius: 10px;
-     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* 陰影效果 */
-     overflow: hidden; /* 確保內容不超出圓角 */
-     margin-bottom: 25px; /* <--- 新增：控制區塊之間的垂直間距 */
+      background-color: var(--el-fill-color-blank);
+      border: 1px solid var(--el-border-color-light); /* 使用細一點的邊框 */
+      border-radius: var(--el-border-radius-base);
+      box-shadow: var(--el-box-shadow); /* 使用稍重一點的陰影 */
+      overflow: hidden;
+      margin-bottom: 25px; /* 控制區塊之間的垂直間距 */
+      /* 注意：AccordionSection 內部也可能需要 padding */
   }
   /* 移除左欄最後一個卡片的下邊距 */
-  .left-column > *:last-child { /* 選中左欄的最後一個直接子元素 */
-     margin-bottom: 0;
+  .left-column > *:last-child {
+      margin-bottom: 0;
   }
 
   /* 備註區塊特定樣式 */
   .note-section {
-     padding: 20px; /* 為備註區塊添加內邊距 */
-     /* margin-bottom 已由 .section-card 控制 */
+      padding: 20px;
   }
   .note-section h3 {
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.1em;
-    color: var(--el-text-color-primary, #303133);
+    color: var(--el-text-color-primary);
+    font-weight: var(--el-font-weight-primary);
   }
-  /* el-input textarea 會自帶 Element Plus 樣式 */
 
 
-  /* 響應式調整 (保持不變) */
+  /* 響應式調整 */
   @media (max-width: 992px) {
     .order-layout-container {
       flex-direction: column;
@@ -700,12 +1015,13 @@ onMounted(() => {
       height: auto;
       overflow-y: visible;
     }
-    /* 在小螢幕，最後一個卡片也要有下邊距，除非它是頁面最後元素 */
+     /* 在小螢幕，左側最後一個卡片下方應該有間距 */
      .left-column > *:last-child {
-         margin-bottom: 25px; /* 在堆疊時恢復間距 */
+          margin-bottom: 25px;
      }
-     .order-layout-container > *:last-child {
-        margin-bottom: 0; /* 確保整個佈局的最後元素下方無間距 */
+      /* 確保整個佈局容器的最後一個元素下方沒有間距 */
+      .order-layout-container > *:last-child {
+        margin-bottom: 0;
      }
   }
 

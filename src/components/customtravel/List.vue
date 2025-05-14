@@ -5,6 +5,7 @@
     </div>
     
     <div class="container">
+      <DeleteDialog ref="deleteDialog"/>
       <div class="travel-list">
         <div
           class="travel-card"
@@ -24,9 +25,9 @@
               <!-- <el-icon ><Edit /></el-icon> -->
             </div>
           </div>
-          <div class="action-area">
-            <el-icon @click="editTravel(item)"><Edit /></el-icon>
-            <el-icon @click="deleteTravel(index)"><Delete /></el-icon>
+          <div class="action-area">            
+            <el-button color="#626aef" @click="editTravel(item)" :icon="Edit" circle />
+            <el-button type="danger"  @click="deleteTravel(index)" :icon="Delete" circle />
           </div>
         </div>
       </div>
@@ -38,22 +39,20 @@
   import { Edit, Delete } from '@element-plus/icons-vue'
   import { useRouter } from 'vue-router'
   import { useTravelStore } from '@/stores/customtravelStore'
+  import DeleteDialog from '@/components/customtravel/DeleteDialog.vue'
+  import { ElMessage } from 'element-plus'
 
   const router = useRouter()
   const list = ref([])
   const travelStore = useTravelStore()
+  const deleteDialog = ref(null)
   
   onMounted(() => {
-    const user = JSON.parse(localStorage.getItem('user'))
-  if (!user?.userId) {
-    router.push('/login')
-    return
-  }
-
   const stored = localStorage.getItem('list')
   if (stored) {
-    const all = JSON.parse(stored)
-    list.value = all.filter(x => x.userId === user.userId)
+    list.value = JSON.parse(stored)
+    // const all = JSON.parse(stored)
+    // list.value = all.filter(x => x.memberId === member.memberId)
     } 
 })
 
@@ -67,11 +66,27 @@
     router.push({ name: 'CustomtravelContent', params: { id: item.id } })
   }
   
-  const deleteTravel = (index) => {
-    const id = list.value[index].id
-    localStorage.removeItem(`activities_${id}`)
-    list.value.splice(index, 1)
-    localStorage.setItem('list', JSON.stringify(list.value))
+  const deleteTravel = async(index) => {
+    try{
+      await deleteDialog.value.open({
+        title:'確認刪除',
+        message:'確定要刪除這筆行程嗎?',
+      })
+
+      const id = list.value[index].id
+      localStorage.removeItem(`activities_${id}`)
+      localStorage.removeItem('dailyActivities')
+      localStorage.removeItem('travelForm')
+
+      travelStore.clearAll?.()
+      list.value.splice(index, 1)
+      localStorage.setItem('list', JSON.stringify(list.value))
+
+      ElMessage.success('刪除成功')
+    }
+    catch{
+      ElMessage.info('取消刪除')
+    }
   }
   </script>
   
@@ -130,6 +145,10 @@
     gap: 10px;
     margin-bottom: 10px;
   }
+  .action-area .el-button {
+  margin: 0;
+  padding: 4px 8px;
+}
   
   .action-area {
     width: 60px;
@@ -138,8 +157,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 20px;
   }
   
+  .el-button{
+  font-size: 18px;
+  height: 36px;
+  padding: 6px 12px;
+}
   </style>
   

@@ -25,7 +25,7 @@
 <script setup>
 // --- 狀態管理 (Pinia) ---
 import { storeToRefs } from 'pinia'; // 導入 Pinia 的輔助函數，用於將 store 中的 state 轉為 ref，保持響應性
-import { useCartStore } from '@/stores/cart'; // 導入購物車相關的 Pinia store
+import { useCartStore } from '@/stores/ShoppingCart'; // 導入購物車相關的 Pinia store
 import { useRouter } from 'vue-router'; // 導入 Vue Router，用於導航
 
 // --- 組件導入 ---

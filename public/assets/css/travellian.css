@@ -1894,5 +1894,36 @@ body {
   display: flex;
   margin-left: auto;
 }
+.cvc-tooltip-popper.el-popper.is-light {
+  background: #ffffff !important;
+  color: var(--el-text-color-primary, #303133) !important;
+  border: 1px solid var(--el-border-color-lighter, #ebeef5) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+  padding: 12px 15px !important;
+}
+
+.cvc-tooltip-popper.el-popper.is-light .el-popper__arrow::before {
+  background: #ffffff !important;
+  border-color: var(--el-border-color-lighter, #ebeef5) !important;
+}
+
+.cvc-tooltip-popper .cvc-tooltip-content-wrapper {
+  text-align: center;
+}
+
+.cvc-tooltip-popper .cvc-tooltip-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.cvc-tooltip-popper .cvc-tooltip-text {
+ color: var(--el-text-color-primary, #303133) !important;
+ font-size: 14px !important;
+ line-height: 1.5 !important;
+ margin: 0;
+}
 
 /*# sourceMappingURL=travellian.css.map */
