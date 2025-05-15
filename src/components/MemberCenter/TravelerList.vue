@@ -26,7 +26,7 @@
       >
     <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
     <p><strong>生日：</strong>{{ formatDate(t.birthDate) }}</p>
-    <span>{{ expandedTravelerId === t.id ? '關閉▲' : '編輯▼' }}</span>
+    <span>{{ expandedTravelerId === t.id ? '關閉 ▲' : '編輯 ▼' }}</span>
   </div>
 
   <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-3">
@@ -44,7 +44,7 @@
     <div class="col">
       <label>生日 <span class="text-red-500">*</span></label><br />
       <el-date-picker
-      v-model="t.birthDate"
+      v-model="t.birthDate" :disabled-date="limitBirthdayRange"
       type="date"
       placeholder="請選擇出生日期"
       format="YYYY-MM-DD"
@@ -58,7 +58,7 @@
     <div class="flex gap-6">
       <div class="col">
       <label>身分證字號(旅遊保險辦理使用) <span class="text-red-500">*</span></label><br />
-      <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號"  />
+      <el-input v-model="t.idNumber" :class="{ 'border border-red-500': fieldErrors.idNumber }" maxlength="10" placeholder="請輸入身分證字號" style="width: 240px"  />
     </div>
 
     <div class="col">
@@ -73,11 +73,12 @@
     <div class="flex gap-6">
        <div class="col">
       <label>聯絡手機(行程相關資訊聯繫)</label><br />
-      <el-input v-model="t.phone" style="width: 240px" placeholder="請輸入手機號碼" />
+      <el-input v-model="t.phone"  :class="{ 'border border-red-500': fieldErrors.phone }"
+  maxlength="10" placeholder="請輸入手機號碼" style="width: 240px" />
       </div>
       <div class="col">
       <label>信箱</label><br />
-      <el-input v-model="t.email" style="width: 240px" placeholder="請輸入聯絡信箱" />
+      <el-input v-model="t.email" style="width: 240px"  placeholder="請輸入聯絡信箱"  />
       </div>
     </div>
      <div class="flex gap-6">
@@ -108,13 +109,15 @@
       <div class="col">
       <label>護照到期日</label><br />
        <el-date-picker
-      v-model="t.passportExpireDate"
-      type="date"
-      placeholder="請選擇護照到期日"
-      format="YYYY-MM-DD"
-      value-format="YYYY-MM-DD"
-      style="width: 240px"
-    />
+  v-model="t.passportExpireDate"
+  type="date"
+  placeholder="請選擇護照到期日"
+  format="YYYY-MM-DD"
+  value-format="YYYY-MM-DD"
+  :disabled-date="limitPassportDate"
+  style="width: 240px"
+/>
+
       </div>
       </div>
       
@@ -146,9 +149,25 @@ export default {
     this.fetchTravelers() // ✅ 一進頁面就載入會員的常用旅客
   },
   methods: {
+    resetFieldErrors() {
+  this.fieldErrors = {}
+},
     toggleAccordion(id) {
       this.expandedTravelerId = this.expandedTravelerId === id ? null : id
     },
+    limitBirthdayRange(date) {
+  const today = new Date()
+  const hundredYearsAgo = new Date()
+  hundredYearsAgo.setFullYear(today.getFullYear() - 100)
+  return date < hundredYearsAgo || date > today
+},
+limitPassportDate(date) {
+    const today = new Date()
+    const sixMonthsLater = new Date()
+    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
+    // date 必須 ≥ 六個月後
+    return date < sixMonthsLater
+  },
     async fetchTravelers() {
       const memberId = localStorage.getItem('memberId') 
       console.log('🔍 抓到登入者ID：', memberId)
@@ -172,13 +191,37 @@ async saveTraveler(t) {
   }
 
   //  初始化錯誤欄位
-  this.fieldErrors = {}
+  this.resetFieldErrors()
 
   //  欄位驗證
+  // if (!t.chineseName) this.fieldErrors.chineseName = true
+  // if (!t.idNumber) this.fieldErrors.idNumber = true
+  // if (!t.birthDate) this.fieldErrors.birthDate = true
   if (!t.chineseName) this.fieldErrors.chineseName = true
-  if (!t.idNumber) this.fieldErrors.idNumber = true
-  if (!t.birthDate) this.fieldErrors.birthDate = true
 
+// 身分證格式
+const idNumberRegex = /^[A-Z][1289]\d{8}$/
+if (!idNumberRegex.test(t.idNumber)) this.fieldErrors.idNumber = true
+
+// 手機格式
+const phoneRegex = /^09\d{8}$/
+if (t.phone && !phoneRegex.test(t.phone)) this.fieldErrors.phone = true
+
+// Email 格式
+const emailRegex = /^[\w.-]+@([\w-]+\.)+[a-zA-Z]{2,}$/
+if (t.email && !emailRegex.test(t.email)) this.fieldErrors.email = true
+
+// 護照到期日要未來
+if (t.passportExpireDate && new Date(t.passportExpireDate) <= new Date()) {
+  this.fieldErrors.passportExpireDate = true
+}
+
+// 生日要是100年內
+const hundredYearsAgo = new Date()
+hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100)
+if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthDate) > new Date()) {
+  this.fieldErrors.birthDate = true
+}
   //  若有錯誤就終止送出
   if (Object.keys(this.fieldErrors).length > 0) {
     ElMessage.error('請完整填寫所有必填欄位')
@@ -226,9 +269,11 @@ async saveTraveler(t) {
     handleAdd() {
       const isEditing = this.travelers.some(t => !t.favoriteTravelerId)
       if (isEditing) {
-        alert('請先完成目前旅客的儲存，再新增新旅客')
+        ElMessage.warning('請先完成目前旅客的儲存，再新增新旅客')
         return
       }
+
+      this.resetFieldErrors()
 
        const newTraveler = {
     id: Date.now(),

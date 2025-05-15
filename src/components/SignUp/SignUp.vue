@@ -43,7 +43,7 @@ const submit = async () => {
     })
 
     ElMessage({
-      message: '註冊成功，將自動跳轉回登入頁面',
+      message: '註冊成功！將自動跳轉回登入頁面',
       type: 'success',
       duration: 2000 
     })
