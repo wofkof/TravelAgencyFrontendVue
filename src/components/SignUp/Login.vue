@@ -185,14 +185,14 @@ async function handleLogin() {
     localStorage.setItem("memberName", memberName);
 
       ElMessage({
-      message: '登入成功！3秒後將自動跳轉至首頁',
+      message: '登入成功！倒數後將自動跳轉至首頁',
       type: 'success',
-      duration: 3000
+      duration: 2000
     });
 
     setTimeout(() => {
       window.location.href = "/";
-    }, 3000);
+    }, 2000);
 
   } catch (error) {
     if (error.response && error.response.status === 401) {

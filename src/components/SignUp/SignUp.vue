@@ -43,9 +43,9 @@ const submit = async () => {
     })
 
     ElMessage({
-      message: '註冊成功，3秒後將自動跳轉回登入頁面',
+      message: '註冊成功，將自動跳轉回登入頁面',
       type: 'success',
-      duration: 3000 
+      duration: 2000 
     })
     // 清空欄位再切換畫面
     name.value = ''
@@ -53,10 +53,10 @@ const submit = async () => {
     email.value = ''
     password.value = ''
     confirmPassword.value = ''
-    // 延遲3秒再切換回登入頁
+    // 延遲2秒再切換回登入頁
     setTimeout(() => {
       emit('switch-to-login')
-    }, 3000)
+    }, 2000)
 
   } catch (error) {
     const resErrors = error.response?.data?.errors || {}
