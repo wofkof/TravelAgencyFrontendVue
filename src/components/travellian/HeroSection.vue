@@ -9,13 +9,13 @@
   <form class="search" @submit.prevent="handleSearch">
     <div class="search__wrapper">
       <div class="search__group">
-        <label for="destination" class="search__lbl">目的地</label>
+        <label for="destination" class="search__lbl">關鍵字</label>
         <input
           type="text"
           id="destination"
           v-model="search.destination"
           class="search__input"
-          placeholder="請輸入目的地..."
+          placeholder="請輸入關鍵字..."
         />
       </div>
       <div class="search__group">
@@ -25,7 +25,7 @@
         </select>
       </div>
       <div class="search__group">
-        <label for="checkin" class="search__lbl">出發日</label>
+        <label for="checkin" class="search__lbl">最早出發日</label>
         <input
           type="date"
           id="checkin"
@@ -34,7 +34,7 @@
         />
       </div>
       <div class="search__group">
-        <label for="checkout" class="search__lbl">結束日</label>
+        <label for="checkout" class="search__lbl">最晚出發日</label>
         <input
           type="date"
           id="checkout"
@@ -42,33 +42,70 @@
           class="search__input"
         />
       </div>
-      <router-link to="/SearchResult" class="search__btn">
+      <button type="submit" class="search__btn">
         <span class="l-search-btn-wrapper" data-text="Book">
           立即<br />預訂
         </span>
-      </router-link>
+      </button>
     </div>
   </form>
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
 import { reactive } from "vue";
+import { useSearchResultStore } from "@/stores/useSearchResultStore";
 
-// 搜尋表單的資料綁定
+const router = useRouter();
+const searchResultStore = useSearchResultStore();
+
 const search = reactive({
   destination: "",
   person: 1,
-  checkin: "",
-  checkout: "",
+  checkin: null,
+  checkout: null
 });
 
-// 處理搜尋提交
-const handleSearch = () => {
-  console.log("Search Data:", search);
-  alert(
-    `Searching trips to ${search.destination} for ${search.person} person(s)!`
-  );
+const handleSearch = async () => {
+  const payload = {
+    destination: search.destination,
+    peopleCount: search.person,
+    startDate: search.checkin,
+    endDate: search.checkout
+  };
+
+  try {
+    const response = await fetch("https://localhost:7265/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error("查詢失敗：" + response.status);
+    }
+
+    const data = await response.json();
+
+    console.log("搜尋結果：", data);
+
+    // ✅ 存入 pinia（正確做法）
+    searchResultStore.searchInput = payload;
+    searchResultStore.searchResult = data;
+
+    // ✅ 導向搜尋結果頁，❌ 不要帶 query
+    router.push("/SearchResult");
+
+  } catch (err) {
+    console.error(err);
+    alert("搜尋失敗，請稍後再試");
+  }
 };
+
+
+
 </script>
 
 <style>
@@ -89,3 +126,4 @@ const handleSearch = () => {
   }
 }
 </style>
+
