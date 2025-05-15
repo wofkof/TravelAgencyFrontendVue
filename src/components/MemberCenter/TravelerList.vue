@@ -32,12 +32,12 @@
   <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-3">
     <div class="flex gap-6">
       <div class="col">
-      <label>中文姓名</label><br />
+      <label>姓名</label><br />
       <el-input v-model="t.chineseName" style="width: 240px" placeholder="請輸入姓名" />
     </div>
 
     <div class="col">
-      <label>出生年月日</label><br />
+      <label>生日</label><br />
        <el-date-picker
       v-model="t.birthDate"
       type="date"
@@ -49,7 +49,7 @@
     </div>
   
     </div>
-    <div class="flex gap-4">
+    <div class="flex gap-6">
       <div class="col">
       <label>身分證字號(旅遊保險辦理使用)</label><br />
       <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號" />
@@ -63,26 +63,18 @@
         <el-option label="其他" value="其他" />
       </el-select>
     </div>
-
-      <div class="col">
+    </div>
+    <div class="flex gap-6">
+       <div class="col">
       <label>聯絡手機(行程相關資訊聯繫)</label><br />
       <el-input v-model="t.phone" style="width: 240px" placeholder="請輸入手機號碼" />
       </div>
-    </div>
-    
-      <div class="flex gap-6">
-        <div class="col">
-      <label>護照英文姓(Surname)</label><br />
-      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
-      </div>
-
       <div class="col">
-      <label>護照英文名(Givenname)</label><br />
-      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
+      <label>信箱</label><br />
+      <el-input v-model="t.email" style="width: 240px" placeholder="請輸入聯絡信箱" />
       </div>
-      </div>
-      
-      <div class="flex gap-6">
+    </div>
+     <div class="flex gap-6">
         <div class="col">
       <label>證件類別</label><br />
       <el-select v-model="t.documentType" placeholder="請選取證件" style="width: 240px">
@@ -97,6 +89,28 @@
       <el-input v-model="t.documentNumber" style="width: 240px" placeholder="請輸入證件號碼" />
       </div>
       </div>
+      <div class="flex gap-4">
+        <div class="col">
+      <label>護照英文姓(Surname)</label><br />
+      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
+      </div>
+
+      <div class="col">
+      <label>護照英文名(Givenname)</label><br />
+      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
+      </div>
+      <div class="col">
+      <label>護照到期日</label><br />
+       <el-date-picker
+      v-model="t.passportExpireDate"
+      type="date"
+      placeholder="請選擇護照到期日"
+      format="YYYY-MM-DD"
+      value-format="YYYY-MM-DD"
+      style="width: 240px"
+    />
+      </div>
+      </div>
       
     <div class="mt-3 flex justify-end">
       <el-button @click="saveTraveler(t)" type="primary">儲存</el-button>
@@ -108,99 +122,8 @@
 
 </template>
 
-<!-- <script>
-import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
-
-export default {
-  data() {
-    return {
-      travelers: [],
-      showForm: false,
-      selectedTraveler: {},
-      isEditing: false,
-      isReadonly: false,
-      expandedTravelerId: null
-    }
-  },
-  methods: {
-    toggleAccordion(id) {
-      this.expandedTravelerId = this.expandedTravelerId === id ? null : id
-    },
-    saveTraveler(t) {
-  console.log('儲存資料:', t)
-  this.expandedTravelerId = null
-},
-    handleAdd() {
-  const newTraveler = {
-    id: Date.now(),
-    chineseName: '',
-    birthDate: '',
-    idNumber: '',
-    gender: '',
-    phone: '',
-    passportSurname: '',
-    passportGivenname: '',
-    documentType: '',
-    documentNumber: ''
-  }
-
-  this.travelers.push(newTraveler)
-  this.expandedTravelerId = newTraveler.id
-}
-,
-    editTraveler(traveler) {
-      this.selectedTraveler = { ...traveler }
-      this.isEditing = true
-      this.isReadonly = false
-      this.showForm = true
-    },
-    viewTraveler(traveler) {
-      this.selectedTraveler = { ...traveler }
-      this.isEditing = false
-      this.isReadonly = true
-      this.showForm = true
-    },
-    deleteTraveler(id) {
-      if (confirm('確定要刪除這位旅客嗎？')) {
-        this.travelers = this.travelers.filter(t => t.id !== id)
-      }
-    },
-    
-    handleSave(traveler) {
-      const existing = this.travelers.findIndex(t => t.id === traveler.id)
-      if (existing > -1) {
-        this.travelers.splice(existing, 1, traveler)
-      } else {
-        this.travelers.push(traveler)
-      }
-      this.showForm = false
-    },
-    closeModal() {
-      this.showForm = false
-      this.isEditing = false
-      this.isReadonly = false
-    }
-  }
-}
-</script> -->
 <script>
-import axios from 'axios' // ✅ 加入 axios 串接 API
-import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
-
+import axios from 'axios'
 export default {
   data() {
     return {
@@ -220,7 +143,8 @@ export default {
       this.expandedTravelerId = this.expandedTravelerId === id ? null : id
     },
     async fetchTravelers() {
-      const memberId = localStorage.getItem('memberId') // ✅ 從 localStorage 取出會員編號
+      const memberId = localStorage.getItem('memberId') 
+      console.log('🔍 抓到登入者ID：', memberId)
       try {
         const res = await axios.get(`https://localhost:7265/api/FavoriteTraveler/${memberId}`)
         this.travelers = res.data.map(t => ({
@@ -233,38 +157,59 @@ export default {
       }
     },
     async saveTraveler(t) {
-      const memberId = localStorage.getItem('memberId') // ✅ 套用登入會員 ID
+  console.log('✅ 儲存觸發了', t)
+  const memberId = localStorage.getItem('memberId')
+  if (!memberId) {
+    alert('請先登入會員')
+    return
+  }
 
-      const payload = {
-        favoriteTravelerId: t.favoriteTravelerId,
-        memberId: Number(memberId),
-        name: t.chineseName,
-        phone: t.phone,
-        idNumber: t.idNumber,
-        birthDate: t.birthDate,
-        gender: t.gender,
-        email: 'placeholder@email.com', // ⚠ 後續可改為從前端填寫
-        documentType: t.documentType,
-        documentNumber: t.documentNumber,
-        passportSurname: t.passportSurname,
-        passportGivenName: t.passportGivenname,
-        passportExpireDate: null,
-        nationality: '',
-        note: ''
-      }
+  // ⭐️ Enum 對應轉換（前端選擇是字串，後端要 enum）
+  const genderMap = {
+    男: 0,
+    女: 1,
+    其他: 2
+  }
 
-      try {
-        if (!t.favoriteTravelerId) {
-          await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
-        } else {
-          await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
-        }
-        await this.fetchTravelers()
-        this.expandedTravelerId = null
-      } catch (err) {
-        console.error('儲存失敗', err)
-      }
-    },
+  const documentTypeMap = {
+    護照: 0,
+    居留證: 1,
+    台胞證: 2
+  }
+
+  const payload = {
+    favoriteTravelerId: t.favoriteTravelerId,
+    memberId: Number(memberId),
+    name: t.chineseName,
+    phone: t.phone,
+    idNumber: t.idNumber,
+    birthDate: t.birthDate,
+    gender: genderMap[t.gender] ?? null, // ✅ 後端是 enum，不能傳字串
+    email: t.email,
+    documentType: documentTypeMap[t.documentType] ?? null,
+    documentNumber: t.documentNumber,
+    passportSurname: t.passportSurname,
+    passportGivenName: t.passportGivenname,
+    passportExpireDate: t.passportExpireDate,
+    nationality: '',
+    note: ''
+  }
+
+  console.log('📦 要送出的資料:', payload)
+
+  try {
+    if (!t.favoriteTravelerId) {
+      await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
+    } else {
+      await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
+    }
+    await this.fetchTravelers()
+    this.expandedTravelerId = null
+  } catch (err) {
+    console.error('❌ 儲存失敗', err.response?.data || err)
+  }
+}
+,
     handleAdd() {
       const isEditing = this.travelers.some(t => !t.favoriteTravelerId) // ✅ 防止新增多筆未儲存
       if (isEditing) {
@@ -274,7 +219,7 @@ export default {
 
        const newTraveler = {
     id: Date.now(), // ✅ 前端暫存用的 id，不傳到後端
-    favoriteTravelerId: null, // ✅ 這樣 saveTraveler() 才知道是新增
+    favoriteTravelerId: null,
     chineseName: '',
     birthDate: '',
     idNumber: '',
