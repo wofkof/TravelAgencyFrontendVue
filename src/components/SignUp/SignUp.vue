@@ -162,7 +162,7 @@ const sendVerificationCode = async () => {
             <div class="flex flex-col gap-6">
               <div class="grid gap-2">
                 <Label for="name">姓名</Label>
-                <Input id="name" v-model="name" placeholder="請輸入姓名" required />
+                <Input id="name" v-model="name" placeholder="請輸入姓名" required autocomplete="off" />
                 <span v-if="errors.Name" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Name" :key="i">{{ msg }}<br /></template>
 </span>
@@ -171,7 +171,7 @@ const sendVerificationCode = async () => {
 
               <div class="grid gap-2">
                 <Label for="phone">聯絡手機</Label>
-                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required  maxlength="10" />
+                <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required autocomplete="off" maxlength="10" />
                 <span v-if="errors.Phone" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Phone" :key="i">{{ msg }}<br /></template>
 </span>
@@ -188,7 +188,7 @@ const sendVerificationCode = async () => {
  <div class="grid gap-2">
   <Label for="email">聯絡信箱</Label>
   <div class="flex gap-2">
-    <Input id="email" v-model="email" placeholder="travellian@example.com" required class="flex-1" />
+    <Input id="email" v-model="email" placeholder="travellian@example.com" required autocomplete="off" class="flex-1" />
     <Button type="button" :disabled="countdown > 0" @click="sendVerificationCode">
       {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
     </Button>
@@ -200,7 +200,7 @@ const sendVerificationCode = async () => {
  <!-- 驗證碼欄位&重新發送鈕 -->
   <div class="grid gap-2">
   <Label for="email-code">Email 驗證碼</Label>
-  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" required />
+  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" required autocomplete="off" />
   <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
   </span>

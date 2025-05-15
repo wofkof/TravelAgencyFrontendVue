@@ -22,7 +22,7 @@
                   id="account"
                   v-model="form.account"
                   placeholder="請輸入手機號碼或Email"
-                  required
+                  required autocomplete="off"
                 />
               </div>
               <div class="grid gap-2 relative">

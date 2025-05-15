@@ -32,6 +32,7 @@
                     placeholder="travellian@example.com"
                     class="border rounded px-3 py-2 text-sm"
                     required
+                    autocomplete="off"
                   />
                   <span v-if="touched && !isValidEmail" class="text-red-500 text-xs">
                     請輸入有效的 Email
@@ -87,9 +88,9 @@
     }
 
      ElMessage({
-        message: '密碼重設連結已寄出，請於10分鐘內完成密碼設定。5秒後將自動跳轉回登入頁面。',
+        message: '密碼重設連結已寄出，請於10分鐘內完成密碼設定。將自動跳轉回登入頁面。',
         type: 'success',
-        duration: 5000
+        duration: 3000
       })
       setTimeout(() => {
         form.account = ''
