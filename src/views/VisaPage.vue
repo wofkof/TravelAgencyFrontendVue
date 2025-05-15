@@ -19,15 +19,16 @@
             <el-menu :default-openeds="['1', '3']">
               <el-sub-menu index="1">
                 <template #title>
-                  <el-icon><message /></el-icon>亞洲簽證
+                  <el-icon><message /></el-icon>護照申辦
                 </template>
                 <el-menu-item-group>
-                  <template #title>台灣</template>
-                  <el-menu-item index="1-1">台灣 1</el-menu-item>
-                  <el-menu-item index="1-2">台灣 2</el-menu-item>
+                  <template #title>新辦/更換</template>
+                  <el-menu-item index="1-1">14歲以上</el-menu-item>
+                  <el-menu-item index="1-2">14歲以下</el-menu-item>
                 </el-menu-item-group>
-                <el-menu-item-group title="台灣">
-                  <el-menu-item index="1-3">台灣 3</el-menu-item>
+                <el-menu-item-group title="國外遺失">
+                  <el-menu-item index="1-3">14歲以上</el-menu-item>
+                   <el-menu-item index="1-3">14歲以下</el-menu-item>
                 </el-menu-item-group>
                 <el-sub-menu index="1-4">
                   <template #title>台灣</template>
@@ -36,20 +37,50 @@
               </el-sub-menu>
               <el-sub-menu index="3">
                 <template #title>
-                  <el-icon><setting /></el-icon>歐洲簽證
+                  <el-icon><setting /></el-icon>各國簽證
                 </template>
-                <el-menu-item-group>
-                  <template #title>歐洲 1</template>
-                  <el-menu-item index="3-1">歐洲 1</el-menu-item>
-                  <el-menu-item index="3-2">歐洲 2</el-menu-item>
+                <!-- <el-menu-item-group>
+                  <template #title>港澳大陸</template>
+                  <el-menu-item index="3-1">中國</el-menu-item>
+                  <el-menu-item index="3-2">香港</el-menu-item>
+                   <el-menu-item index="3-2">蒙古</el-menu-item>
                 </el-menu-item-group>
-                <el-menu-item-group title="歐洲 2">
-                  <el-menu-item index="3-3">歐洲 3</el-menu-item>
-                </el-menu-item-group>
+                <el-menu-item index="3-3">汶萊</el-menu-item>
+                <el-menu-item-group title="東南亞">
+                </el-menu-item-group> -->
                 <el-sub-menu index="3-4">
-                  <template #title>歐洲 4</template>
-                  <el-menu-item index="3-4-1">歐洲 4-1</el-menu-item>
+                  <template #title>港澳大陸</template>
+                  <el-menu-item index="3-4-1">中國</el-menu-item>
+                  <el-menu-item index="3-4-1">香港</el-menu-item>
+                  <el-menu-item index="3-4-1">蒙古</el-menu-item>
                 </el-sub-menu>
+                <el-sub-menu index="3-4">
+                  <template #title>東南亞</template>
+                  <el-menu-item index="3-4-1">汶萊</el-menu-item>
+                  <el-menu-item index="3-4-1">菲律賓</el-menu-item>
+                  <el-menu-item index="3-4-1">泰國</el-menu-item>
+                  <el-menu-item index="3-4-1">越南</el-menu-item>
+                </el-sub-menu>
+                <el-sub-menu index="3-4">
+                  <template #title>印度周邊</template>
+                  <el-menu-item index="3-4-1">印度周邊</el-menu-item>
+                </el-sub-menu>
+                <el-sub-menu index="3-4">
+                  <template #title>美加</template>
+                  <el-menu-item index="3-4-1">加拿大</el-menu-item>
+                  <el-menu-item index="3-4-1">美國</el-menu-item>
+                </el-sub-menu>
+                 <el-sub-menu index="3-4">
+                  <template #title>中南美洲</template>
+                  <el-menu-item index="3-4-1">巴西聯邦共和國</el-menu-item>
+                </el-sub-menu>
+                 <el-sub-menu index="3-4">
+                  <template #title>西亞</template>
+                  <el-menu-item index="3-4-1">土耳其共和國</el-menu-item>
+                  <el-menu-item index="3-4-1">阿拉伯聯合大公國</el-menu-item>
+                </el-sub-menu>
+
+
               </el-sub-menu>
             </el-menu>
           </el-scrollbar>
