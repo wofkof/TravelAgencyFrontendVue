@@ -32,18 +32,24 @@
   <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-3">
     <div class="flex gap-6">
       <div class="col">
-      <label>姓名</label><br />
-      <el-input v-model="t.chineseName" style="width: 240px" placeholder="請輸入姓名" />
+      <label>姓名 <span class="text-red-500">*</span></label><br />
+      <el-input
+      v-model="t.chineseName"
+      :class="{ 'border border-red-500': fieldErrors.chineseName }"
+      style="width: 240px"
+      placeholder="請輸入姓名"
+    />
     </div>
 
     <div class="col">
-      <label>生日</label><br />
-       <el-date-picker
+      <label>生日 <span class="text-red-500">*</span></label><br />
+      <el-date-picker
       v-model="t.birthDate"
       type="date"
       placeholder="請選擇出生日期"
       format="YYYY-MM-DD"
       value-format="YYYY-MM-DD"
+      :class="{ 'border border-red-500': fieldErrors.birthDate }"
       style="width: 240px"
     />
     </div>
@@ -51,8 +57,8 @@
     </div>
     <div class="flex gap-6">
       <div class="col">
-      <label>身分證字號(旅遊保險辦理使用)</label><br />
-      <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號" />
+      <label>身分證字號(旅遊保險辦理使用) <span class="text-red-500">*</span></label><br />
+      <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號"  />
     </div>
 
     <div class="col">
@@ -132,7 +138,8 @@ export default {
       selectedTraveler: {},
       isEditing: false,
       isReadonly: false,
-      expandedTravelerId: null
+      expandedTravelerId: null,
+      fieldErrors: {}
     }
   },
   mounted() {
@@ -156,46 +163,49 @@ export default {
         console.error('載入旅客資料失敗', err)
       }
     },
-    async saveTraveler(t) {
-  console.log('✅ 儲存觸發了', t)
+async saveTraveler(t) {
+  console.log(' 儲存觸發了', t)
   const memberId = localStorage.getItem('memberId')
   if (!memberId) {
-    alert('請先登入會員')
+    ElMessage.error('請先登入會員')
     return
   }
 
-  // ⭐️ Enum 對應轉換（前端選擇是字串，後端要 enum）
-  const genderMap = {
-    男: 0,
-    女: 1,
-    其他: 2
+  //  初始化錯誤欄位
+  this.fieldErrors = {}
+
+  //  欄位驗證
+  if (!t.chineseName) this.fieldErrors.chineseName = true
+  if (!t.idNumber) this.fieldErrors.idNumber = true
+  if (!t.birthDate) this.fieldErrors.birthDate = true
+
+  //  若有錯誤就終止送出
+  if (Object.keys(this.fieldErrors).length > 0) {
+    ElMessage.error('請完整填寫所有必填欄位')
+    return
   }
 
-  const documentTypeMap = {
-    護照: 0,
-    居留證: 1,
-    台胞證: 2
-  }
+  //  建立 gender/documentType 對應
+  const genderMap = { 男: 0, 女: 1, 其他: 2 }
+  const documentTypeMap = { 護照: 0, 居留證: 1, 台胞證: 2 }
 
   const payload = {
     favoriteTravelerId: t.favoriteTravelerId,
     memberId: Number(memberId),
     name: t.chineseName,
-    phone: t.phone,
+    phone: t.phone || null,
     idNumber: t.idNumber,
     birthDate: t.birthDate,
-    gender: genderMap[t.gender] ?? null, // ✅ 後端是 enum，不能傳字串
-    email: t.email,
+    gender: genderMap[t.gender] ?? null,
+    email: t.email?.trim() || null,
     documentType: documentTypeMap[t.documentType] ?? null,
     documentNumber: t.documentNumber,
     passportSurname: t.passportSurname,
     passportGivenName: t.passportGivenname,
-    passportExpireDate: t.passportExpireDate,
+    passportExpireDate:t.passportExpireDate || null,
     nationality: '',
     note: ''
   }
-
-  console.log('📦 要送出的資料:', payload)
 
   try {
     if (!t.favoriteTravelerId) {
@@ -203,36 +213,37 @@ export default {
     } else {
       await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
     }
+
+    ElMessage.success('儲存成功')
     await this.fetchTravelers()
     this.expandedTravelerId = null
   } catch (err) {
-    console.error('❌ 儲存失敗', err.response?.data || err)
+    console.error(' 儲存失敗', err.response?.data || err)
+    ElMessage.error('儲存失敗')
   }
 }
 ,
     handleAdd() {
-      const isEditing = this.travelers.some(t => !t.favoriteTravelerId) // ✅ 防止新增多筆未儲存
+      const isEditing = this.travelers.some(t => !t.favoriteTravelerId)
       if (isEditing) {
         alert('請先完成目前旅客的儲存，再新增新旅客')
         return
       }
 
        const newTraveler = {
-    id: Date.now(), // ✅ 前端暫存用的 id，不傳到後端
+    id: Date.now(),
     favoriteTravelerId: null,
     chineseName: '',
     birthDate: '',
     idNumber: '',
     gender: '',
     phone: '',
+    email:'',
     passportSurname: '',
     passportGivenname: '',
     documentType: '',
     documentNumber: '',
-    //email: '',
-    //passportExpireDate: '',
-    //nationality: '',
-    //note: ''
+    passportExpireDate: '',
   }
 
   this.travelers.push(newTraveler)
@@ -241,7 +252,7 @@ export default {
     async deleteTraveler(id) {
       const traveler = this.travelers.find(t => t.id === id)
       if (!traveler || !traveler.favoriteTravelerId) {
-        this.travelers = this.travelers.filter(t => t.id !== id) // ✅ 尚未儲存者直接從前端刪除
+        this.travelers = this.travelers.filter(t => t.id !== id)
         return
       }
 
@@ -261,7 +272,7 @@ export default {
     },
     formatDate(dateStr) {
   if (!dateStr) return ''
-  return dateStr.split('T')[0] // ✅ 僅取出日期部分
+  return dateStr.split('T')[0]
 }
 
   }
