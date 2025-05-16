@@ -20,8 +20,8 @@
           </div>
           <div class="text-lg font-bold my-2">
               <p>行程 {{detail.number}}</p>
-              <p>可賣：   席次：</p>
-              <p>去程：</p>
+              <p>可賣：{{detail.availableSeats}}   席次：{{detail.totalSeats}}</p>
+              <p>去程：{{ detail.departureDate }}</p>
               <p>回程：</p>
           </div>
           
@@ -86,7 +86,13 @@
       title: '',
       description: '',
       cover: '',
-      number: 0
+      detailId: 0,
+      number: 0,
+      adultPrice: 0,
+      groupTravelId: 0,
+      departureDate: "",
+      availableSeats: 0,
+      totalSeats: 0
     },
   ]);
 
