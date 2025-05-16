@@ -19,7 +19,7 @@
             <img :src="detail.cover" alt="" class="h-56 w-max" >
           </div>
           <div class="text-lg font-bold my-2">
-              <p>行程</p>
+              <p>行程 {{detail.number}}</p>
               <p>可賣：   席次：</p>
               <p>去程：</p>
               <p>回程：</p>
@@ -80,12 +80,15 @@
     import normalButton from "@/components/official/normalButton.vue";
 
 
-    const detail = ref({
+    const detail = ref([
+    {
       projectId: 0,
       title: '',
       description: '',
       cover: '',
-    });
+      number: 0
+    },
+  ]);
 
 const route = useRoute();
 
@@ -94,7 +97,7 @@ onMounted(async () => {
 
   try {
     const res = await axios.get(`https://localhost:7265/detail/${id}`);
-    detail.value = res.data;
+    detail.value = Array.isArray(res.data) ? res.data[0] : res.data;
   } catch (err) {
     console.error("取得行程詳情失敗", err);
   }

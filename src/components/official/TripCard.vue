@@ -4,7 +4,11 @@
       <img src="/src/assets/images/logo.png" alt="" class="row-span-4 row-start-1">
       <div class="relative bg-slate-100 rounded-b-md">
         <p class="absolute left-0 m-2">標題</p>
-        <FavoriteIcon class="absolute bottom-2 right-2" />
+        <div class="absolute bottom-2 right-2 ">
+          <FavoriteIcon class="m-1" />
+          <span>收藏</span>
+        </div>
+        
       </div>
     </div>
   </div>
