@@ -43,9 +43,9 @@ function generateCaptcha() {
   let a = 0
   let b = 0
   do {
-    a = Math.floor(Math.random() * 17) + 1
-    b = Math.floor(Math.random() * 17) + 1
-  } while (a + b > 18 || a === 0 || b === 0)
+    a = Math.floor(Math.random() * 9) + 1
+    b = Math.floor(Math.random() * 9) + 1
+  } while (a + b > 18)
 
   num1.value = a
   num2.value = b

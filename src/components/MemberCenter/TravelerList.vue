@@ -39,6 +39,7 @@
       style="width: 240px"
       placeholder="請輸入姓名"
     />
+    <p v-if="fieldErrors.chineseName" class="text-red-500 text-sm mt-1">{{ fieldErrors.chineseName }}</p>
     </div>
 
     <div class="col">
@@ -52,13 +53,28 @@
       :class="{ 'border border-red-500': fieldErrors.birthDate }"
       style="width: 240px"
     />
-    </div>
-  
-    </div>
-    <div class="flex gap-6">
+    </div> 
+    </div>   
+    <div class="flex gap-4">
       <div class="col">
-      <label>身分證字號(旅遊保險辦理使用) <span class="text-red-500">*</span></label><br />
+  <label>國籍 <span class="text-red-500">*</span></label><br />
+  <el-select v-model="t.country" placeholder="請選擇國籍" style="width: 240px">
+    <el-option label="台灣" value="TW" />
+    <el-option label="日本" value="JP" />
+    <el-option label="美國" value="US" />
+    <el-option label="韓國" value="KR" />
+    <el-option label="其他" value="OTHER" />
+  </el-select>
+</div>
+
+      <div class="col">
+      <label>
+        身分證字號(旅遊保險辦理使用)
+        <span class="text-red-500" v-if="t.country === 'TW'">*</span>
+      </label>
+      <br />
       <el-input v-model="t.idNumber" :class="{ 'border border-red-500': fieldErrors.idNumber }" maxlength="10" placeholder="請輸入身分證字號" style="width: 240px"  />
+      <p v-if="fieldErrors.idNumber" class="text-red-500 text-sm mt-1">{{ fieldErrors.idNumber }}</p>
     </div>
 
     <div class="col">
@@ -176,7 +192,8 @@ limitPassportDate(date) {
         this.travelers = res.data.map(t => ({
           ...t,
           id: t.favoriteTravelerId, // ✅ 用於畫面顯示與編輯切換
-          chineseName: t.name
+          chineseName: t.name,
+          country: t.nationality || 'TW'
         }))
       } catch (err) {
         console.error('載入旅客資料失敗', err)
@@ -192,16 +209,17 @@ async saveTraveler(t) {
 
   //  初始化錯誤欄位
   this.resetFieldErrors()
+  if (!t.chineseName) this.fieldErrors.chineseName = '此欄位為必填'
 
-  //  欄位驗證
-  // if (!t.chineseName) this.fieldErrors.chineseName = true
-  // if (!t.idNumber) this.fieldErrors.idNumber = true
-  // if (!t.birthDate) this.fieldErrors.birthDate = true
-  if (!t.chineseName) this.fieldErrors.chineseName = true
-
-// 身分證格式
+// 身分證格式驗證（僅限台灣）
 const idNumberRegex = /^[A-Z][1289]\d{8}$/
-if (!idNumberRegex.test(t.idNumber)) this.fieldErrors.idNumber = true
+if (t.country === 'TW') {
+  if (!t.idNumber) {
+    this.fieldErrors.idNumber = '此欄位為必填'
+  } else if (!idNumberRegex.test(t.idNumber)) {
+    this.fieldErrors.idNumber = '身分證格式錯誤'
+  }
+} 
 
 // 手機格式
 const phoneRegex = /^09\d{8}$/
@@ -222,12 +240,12 @@ hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100)
 if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthDate) > new Date()) {
   this.fieldErrors.birthDate = true
 }
-  //  若有錯誤就終止送出
-  if (Object.keys(this.fieldErrors).length > 0) {
-    ElMessage.error('請完整填寫所有必填欄位')
-    return
-  }
-
+// 彙整錯誤訊息（僅統計有字串錯誤內容的欄位）
+const errorMessages = Object.values(this.fieldErrors).filter(err => typeof err === 'string' && err !== '')
+if (errorMessages.length > 0) {
+  ElMessage.error(errorMessages[0]) // 顯示第一個錯誤
+  return
+}
   //  建立 gender/documentType 對應
   const genderMap = { 男: 0, 女: 1, 其他: 2 }
   const documentTypeMap = { 護照: 0, 居留證: 1, 台胞證: 2 }
@@ -246,8 +264,9 @@ if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthD
     passportSurname: t.passportSurname,
     passportGivenName: t.passportGivenname,
     passportExpireDate:t.passportExpireDate || null,
-    nationality: '',
-    note: ''
+    note: '',
+    nationality: t.country || '',
+
   }
 
   try {
@@ -289,6 +308,7 @@ if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthD
     documentType: '',
     documentNumber: '',
     passportExpireDate: '',
+    country: 'TW',
   }
 
   this.travelers.push(newTraveler)
