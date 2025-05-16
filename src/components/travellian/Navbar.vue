@@ -200,6 +200,8 @@ import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter } from 'vue-router'
 import LoginSignupSwitch from '@/components/tools/LoginSignupSwitch.vue';
+import { ElMessage } from 'element-plus'
+
 
 const router = useRouter()
 const route = useRoute();
@@ -235,6 +237,7 @@ function handleLogout() {
   //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
+  ElMessage.success('您已成功登出');
   router.push("/");
 }
 
