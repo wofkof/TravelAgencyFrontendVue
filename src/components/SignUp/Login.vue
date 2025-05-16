@@ -22,7 +22,7 @@
                   id="account"
                   v-model="form.account"
                   placeholder="請輸入手機號碼或Email"
-                  required
+                  required autocomplete="off"
                 />
               </div>
               <div class="grid gap-2 relative">
@@ -185,14 +185,14 @@ async function handleLogin() {
     localStorage.setItem("memberName", memberName);
 
       ElMessage({
-      message: '登入成功！3秒後將自動跳轉至首頁',
+      message: '登入成功！將自動跳轉至首頁',
       type: 'success',
-      duration: 3000
+      duration: 2000
     });
 
     setTimeout(() => {
       window.location.href = "/";
-    }, 3000);
+    }, 2000);
 
   } catch (error) {
     if (error.response && error.response.status === 401) {
