@@ -102,16 +102,6 @@
       "
     >
       <CartPreviewIcon />
-     <!-- 未登入 -->
-      <!-- <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
-        <el-button plain @click="showLogin = true" style="white-space: nowrap">
-          登入
-        </el-button>
-        <el-button type="primary" @click="showSignUp = true" style="white-space: nowrap">
-          註冊
-        </el-button>
-      </template> -->
-
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
             <LoginSignupSwitch
@@ -134,7 +124,7 @@
             @mouseleave="closeMenu"
           >
             <button
-              class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+              class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
               @click="toggleMenu"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-600" viewBox="0 0 640 512" fill="currentColor">
