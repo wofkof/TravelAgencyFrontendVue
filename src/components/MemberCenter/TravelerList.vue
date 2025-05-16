@@ -73,13 +73,13 @@
         <span class="text-red-500" v-if="t.country === 'TW'">*</span>
       </label>
       <br />
-      <el-input v-model="t.idNumber" :class="{ 'border border-red-500': fieldErrors.idNumber }" maxlength="10" placeholder="請輸入身分證字號" style="width: 240px"  />
+      <el-input v-model="t.idNumber" :class="{ 'border border-red-500': fieldErrors.idNumber }"   @blur="t.gender = detectGenderFromId(t.idNumber)" maxlength="10" placeholder="請輸入身分證字號" style="width: 240px"  />
       <p v-if="fieldErrors.idNumber" class="text-red-500 text-sm mt-1">{{ fieldErrors.idNumber }}</p>
     </div>
 
     <div class="col">
       <label>性別</label><br />
-      <el-select v-model="t.gender" placeholder="請選取性別" style="width: 240px">
+      <el-select v-model="t.gender" placeholder="請選取性別" style="width: 240px" :disabled="t.country === 'TW'">
         <el-option label="男性" value="男" />
         <el-option label="女性" value="女" />
         <el-option label="其他" value="其他" />
@@ -165,6 +165,17 @@ export default {
     this.fetchTravelers() // ✅ 一進頁面就載入會員的常用旅客
   },
   methods: {
+    //透過身分證判斷該旅客性別
+    detectGenderFromId(idNumber) {
+  if (!idNumber || idNumber.length < 2) return null
+
+  const genderCode = idNumber[1] // 第二碼（index = 1）
+  if (genderCode === '1' || genderCode === '8') return '男'
+  if (genderCode === '2' || genderCode === '9') return '女'
+
+  return '其他'
+}
+,
     resetFieldErrors() {
   this.fieldErrors = {}
 },
