@@ -9,11 +9,11 @@
   <form class="search" @submit.prevent="handleSearch">
     <div class="search__wrapper">
       <div class="search__group">
-        <label for="destination" class="search__lbl">關鍵字</label>
+        <label for="keyword" class="search__lbl">關鍵字</label>
         <input
           type="text"
-          id="destination"
-          v-model="search.destination"
+          id="keyword"
+          v-model="search.keyword"
           class="search__input"
           placeholder="請輸入關鍵字..."
         />
@@ -60,28 +60,22 @@ const router = useRouter();
 const searchResultStore = useSearchResultStore();
 
 const search = reactive({
-  destination: "",
+  keyword: "",
   person: 1,
   checkin: null,
   checkout: null
 });
 
 const handleSearch = async () => {
-  const payload = {
-    destination: search.destination,
+  const query = new URLSearchParams({
+    destination: search.keyword,
     peopleCount: search.person,
-    startDate: search.checkin,
-    endDate: search.checkout
-  };
+    startDate: search.checkin ?? '',
+    endDate: search.checkout ?? ''
+  }).toString();
 
   try {
-    const response = await fetch("https://localhost:7265/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(`https://localhost:7265/search?${query}`);
 
     if (!response.ok) {
       throw new Error("查詢失敗：" + response.status);
@@ -89,18 +83,21 @@ const handleSearch = async () => {
 
     const data = await response.json();
 
-    console.log("搜尋結果：", data);
-
-    // ✅ 存入 pinia（正確做法）
-    searchResultStore.searchInput = payload;
+    // 存入 Pinia
+    searchResultStore.searchInput = {
+      destination: search.keyword,
+      peopleCount: search.person,
+      startDate: search.checkin,
+      endDate: search.checkout
+    };
     searchResultStore.searchResult = data;
 
-    // ✅ 導向搜尋結果頁，❌ 不要帶 query
+    // 導向搜尋結果頁
     router.push("/SearchResult");
 
   } catch (err) {
     console.error(err);
-    alert("搜尋失敗，請稍後再試");
+    alert("請輸入正確關鍵字");
   }
 };
 

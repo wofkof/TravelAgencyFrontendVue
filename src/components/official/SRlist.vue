@@ -2,12 +2,14 @@
   <div v-if="results.length > 0">
     <router-link
       v-for="item in results"
-      :key="item.id"
-      :to="{ name: 'DetailPage', params: { id: item.id } }"
+      :key="item.projectId"
+      :to="{ name: 'DetailPage', params: { id: item.projectId } }"
       class="block"
     >
       <div class="shadow-lg rounded-lg p-4 mb-4 grid grid-cols-3 gap-4 h-auto">
-        <div class="shadow-lg w-full h-52">img</div>
+        <div class="shadow-lg w-full h-52">
+          <img src="" alt="">
+        </div>
         <div class="col-span-2 bg-slate-300 w-full relative p-4">
           <div class="text-start">
             <p class="text-2xl font-bold">{{ item.title }}</p>
