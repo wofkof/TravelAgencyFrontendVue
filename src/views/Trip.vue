@@ -6,15 +6,18 @@
       <!-- 行程資訊大矩形 -->
   
       <!-- 標題區塊 -->
-      <div class="bg-yellow-100 rounded-lg p-4 text-center mb-4 text-gray-800 font-semibold text-lg">
+      <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-lg">
         {{ detail.title }}
       </div>
   
-      <div class="flex gap-4">
+      <div class="flex h-96">
         <!-- 二等分區塊 -->
+         
   
-        <div class="w-1/2 bg-green-100 rounded-lg p-4 text-center relative">
-          {{ detail.description }}
+        <div class="w-1/2 p-4 text-left relative">
+          <div class="w-1/2 absolute top-0 left-0 rounded-md">
+          <img :src="detail.cover" alt="" class="h-56 w-max" >
+          </div>
           <normalButton class="absolute bottom-5 right-8 shadow"/>
         </div>
   
@@ -27,7 +30,7 @@
     </div>
   
     <div class="bg-white rounded-xl p-4 shadow mb-6">
-    行程描述
+    {{ detail.description }}
   </div>
   
   <!-- 行程手風琴區塊 -->
@@ -57,10 +60,11 @@
     import normalButton from "@/components/official/normalButton.vue";
 
     const detail = ref({
-  projectId: 0,
-  title: '',
-  description: ''
-});
+      projectId: 0,
+      title: '',
+      description: '',
+      cover: '',
+    });
 
 const route = useRoute();
 
