@@ -100,6 +100,7 @@ declare module 'vue' {
     List: typeof import('./components/customtravel/List.vue')['default']
     Login: typeof import('./components/SignUp/Login.vue')['default']
     LoginSignupSwitch: typeof import('./components/tools/LoginSignupSwitch.vue')['default']
+    MathCaptcha: typeof import('./components/SignUp/MathCaptcha.vue')['default']
     MemberSidebar: typeof import('./components/MemberCenter/MemberSidebar.vue')['default']
     MessageBox: typeof import('./components/chatroom/MessageBox.vue')['default']
     MessageRenderer: typeof import('./components/chatroom/MessageRenderer.vue')['default']
