@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white p-6 rounded-lg shadow-md">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">常用旅客清單</h2>
+      <h2 class="text-xl font-semibold">常用旅客清單(上限20位)</h2>
       <button
         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded disabled:opacity-50"
         @click="handleAdd"
@@ -47,7 +47,7 @@
       <el-date-picker
       v-model="t.birthDate" :disabled-date="limitBirthdayRange"
       type="date"
-      placeholder="請選擇出生日期"
+      placeholder="請選擇出生年月日"
       format="YYYY-MM-DD"
       value-format="YYYY-MM-DD"
       :class="{ 'border border-red-500': fieldErrors.birthDate }"
@@ -86,7 +86,7 @@
       </el-select>
     </div>
     </div>
-    <div class="flex gap-6">
+    <!-- <div class="flex gap-6">
        <div class="col">
       <label>聯絡手機(行程相關資訊聯繫)</label><br />
       <el-input v-model="t.phone"  :class="{ 'border border-red-500': fieldErrors.phone }"
@@ -96,8 +96,8 @@
       <label>信箱</label><br />
       <el-input v-model="t.email" style="width: 240px"  placeholder="請輸入聯絡信箱"  />
       </div>
-    </div>
-     <div class="flex gap-6">
+    </div> -->
+     <!-- <div class="flex gap-6">
         <div class="col">
       <label>證件類別</label><br />
       <el-select v-model="t.documentType" placeholder="請選取證件" style="width: 240px">
@@ -106,37 +106,38 @@
         <el-option label="台胞證" value="台胞證" />
       </el-select>
       </div>
-
-      <div class="col">
-      <label>證件號碼</label><br />
-      <el-input v-model="t.documentNumber" style="width: 240px" placeholder="請輸入證件號碼" />
-      </div>
-      </div>
-      <div class="flex gap-4">
+      </div> -->
+      <p>-----護照資訊 (國際旅遊適用)-----</p>
+      <div class="flex gap-6">
         <div class="col">
-      <label>護照英文姓(Surname)</label><br />
-      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
+      <label>英文姓(同護照)</label><br />
+      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:WANG" />
       </div>
 
       <div class="col">
-      <label>護照英文名(Givenname)</label><br />
-      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
+      <label>英文名(同護照)</label><br />
+      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:DA-MING" />
       </div>
-      <div class="col">
-      <label>護照到期日</label><br />
+      </div>
+      <div class="flex gap-6">
+        <div class="col">
+      <label>護照號碼(選填)</label><br />
+      <el-input v-model="t.documentNumber" style="width: 240px" placeholder="請輸入護照號碼" />
+      </div>
+        <div class="col">
+      <label>護照效期到期日</label><br />
        <el-date-picker
-  v-model="t.passportExpireDate"
-  type="date"
-  placeholder="請選擇護照到期日"
-  format="YYYY-MM-DD"
-  value-format="YYYY-MM-DD"
-  :disabled-date="limitPassportDate"
-  style="width: 240px"
-/>
-
+          v-model="t.passportExpireDate"
+          type="date"
+          placeholder="請選擇護照到期日"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          :disabled-date="limitPassportDate"
+          style="width: 240px"
+        />        
       </div>
       </div>
-      
+            
     <div class="mt-3 flex justify-end">
       <el-button @click="saveTraveler(t)" type="primary">儲存</el-button>
        <el-button  @click="deleteTraveler(t.id)" type="danger" plain>刪除</el-button>
@@ -268,7 +269,7 @@ if (errorMessages.length > 0) {
     phone: t.phone || null,
     idNumber: t.idNumber,
     birthDate: t.birthDate,
-    gender: genderMap[t.gender] ?? null,
+    gender: t.country === 'TW' ? genderMap[t.gender] : t.gender ?? null,
     email: t.email?.trim() || null,
     documentType: documentTypeMap[t.documentType] ?? null,
     documentNumber: t.documentNumber,
@@ -297,6 +298,10 @@ if (errorMessages.length > 0) {
 }
 ,
     handleAdd() {
+      if (this.travelers.length >= 20) {
+    ElMessage.warning('最多只能新增 20 位常用旅客')
+    return
+  }
       const isEditing = this.travelers.some(t => !t.favoriteTravelerId)
       if (isEditing) {
         ElMessage.warning('請先完成目前旅客的儲存，再新增新旅客')
