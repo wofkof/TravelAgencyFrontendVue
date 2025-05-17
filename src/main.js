@@ -5,6 +5,7 @@ import ElementPlus from "element-plus";
 import zhCn from "element-plus/es/locale/lang/zh-cn"
 import "element-plus/dist/index.css";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import 'leaflet/dist/leaflet.css';
 
 import "@/assets/main.css";
 
