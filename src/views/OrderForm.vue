@@ -632,31 +632,36 @@ const submitOrder = async () => {
                  case 'PASSPORT': backendDocumentType = 1; break;
                  case 'ARC': backendDocumentType = 2; break;
                  case 'ENTRY_PERMIT': backendDocumentType = 3; break;
-                 default: backendDocumentType = null; // 處理未知類型
              }
              let backendGender = null;
              switch (paxData.gender) {
                  case 'male': backendGender = 0; break;
                  case 'female': backendGender = 1; break;
                  case 'other': backendGender = 2; break;
-                 default: backendGender = null; // 處理未知性別
              }
+             let backendIdNumber = null;
+             let backendDocumentNumber = null;
 
+             if (paxData.documentType === 'ID_CARD_TW') {
+                 backendIdNumber = paxData.idNumber || null;
+             } else { 
+                backendDocumentNumber = paxData.documentNumber || null; 
+             }
             return {
                  // 這些欄位需要根據後端 OrderParticipantDto 的實際定義來映射
                  // favoriteTravelerId: paxData.selectedFrequentTraveler || null, // 如果後端 DTO 需要這個
                  // memberIdAsParticipant: paxData.memberIdAsParticipant || null, // 如果旅客本身就是會員，這裡需要會員 ID
                  Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(), // 中文姓名
                  BirthDate: paxData.birthDate, // "YYYY-MM-DD"
-                 IdNumber: paxData.idNumber, // 主要證件號碼 (身分證或居留證等)
+                 IdNumber: backendIdNumber, // 臺灣身分證號碼
                  Gender: backendGender, // 性別 Enum 值
                  // 假設 ItemParticipantForm 收集了電話和 email
-                 Phone: paxData.phoneNumber || '', // 電話
-                 Email: paxData.email || '', // Email
+                 Phone: paxData.phoneNumber || null, // 電話
+                 Email: paxData.email || null, // Email
                  DocumentType: backendDocumentType, // 證件類型 Enum 值
-                 // documentNumber: paxData.idNumber, // 如果後端 DTO 需要證件號碼欄位，通常和 idNumber 相同
-                 PassportSurname: paxData.lastNameEn || '', // 護照英文姓
-                 PassportGivenName: paxData.firstNameEn || '', // 護照英文名
+                 DocumentNumber: backendDocumentNumber, // 護照號碼和其他證件號碼
+                 PassportSurname: paxData.lastNameEn || null, // 護照英文姓
+                 PassportGivenName: paxData.firstNameEn || null, // 護照英文名
                  PassportExpireDate: paxData.passportExpiryDate || null, // 護照效期 "YYYY-MM-DD"
                  Nationality: paxData.country, // 國籍 (ISO 3166-1 Alpha-2 Code, e.g., 'TW')
                  Note: paxData.remarks || '' // 備註
@@ -669,8 +674,6 @@ const submitOrder = async () => {
         switch (formData.eInvoiceInfo.type) {
             case 'personal': backendInvoiceOption = 0; break;
             case 'company': backendInvoiceOption = 1; break;
-            // case 'donation': backendInvoiceOption = 2; break;
-            default: backendInvoiceOption = 0; // 處理未知類型
         }
 
         const preparedInvoiceRequestInfo = {
@@ -690,12 +693,7 @@ const submitOrder = async () => {
              // 確保後端 Enum 值正確
              case 'NewebPay_CreditCard': backendSelectedPaymentMethod = 0; break;
              case 'ECPay_CreditCard': backendSelectedPaymentMethod = 0; break; // 如果後端不區分具體信用卡金流，可以都映射到信用卡 Enum
-             case 'BankTransfer': backendSelectedPaymentMethod = 1; break;
-             case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 假設後端 2 是 LINE Pay 或其他
-             default:
-                 console.warn("未知的支付方式:", formData.paymentMethod);
-                 backendSelectedPaymentMethod = 2; // 處理未知情況
-                 break;
+             case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 2 是 LINE Pay
          }
 
 
