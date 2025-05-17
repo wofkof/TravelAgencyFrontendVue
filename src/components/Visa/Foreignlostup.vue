@@ -1,6 +1,6 @@
 <template>
   <div class="visa-info-container">
-    <h3><el-icon><Document /></el-icon>蒙古簽證｜申辦項目</h3>
+    <h3><el-icon><Avatar /></el-icon>中華民國護照｜申辦項目|國外遺失(14歲以上)</h3>
     <el-card class="visa-info-card">
       <el-row :gutter="20" align="middle">
         <el-col :span="6">
