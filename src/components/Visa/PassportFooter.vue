@@ -1,11 +1,13 @@
 <template>
   <div class="visa-info-container">
     <h3><el-icon><Avatar /></el-icon>中華民國護照｜申辦項目</h3>
+
     <el-card class="visa-info-card">
       <el-row :gutter="20" align="middle">
         <el-col :span="6">
           <div class="item-title">新辦/更換(14歲以上)</div>
         </el-col>
+        
         <el-col :span="18">
           <el-row>
             <el-col :span="8">一般件：16個工作天</el-col>
