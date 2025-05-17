@@ -16,7 +16,7 @@
         />
         <div class="status-actions">
           <el-button type="primary" @click="loadOrderItems" :icon="RefreshRight">重試</el-button>
-          <router-link to="/cart">
+          <router-link to="/ShoppingCart">
             <el-button :icon="ShoppingCart">回到購物車</el-button>
           </router-link>
         </div>
@@ -24,7 +24,7 @@
 
       <div v-else-if="!selectedOrderItems || selectedOrderItems.length === 0" class="status-container empty-container">
          <el-empty description="購物車中沒有選擇任何商品">
-            <router-link to="/cart">
+            <router-link to="/ShoppingCart">
               <el-button type="primary" :icon="ShoppingCart">回到購物車選擇商品</el-button>
             </router-link>
          </el-empty>
@@ -151,7 +151,7 @@
 // --- 基本引入 ---
 import { ref, reactive, computed, onMounted, watch, nextTick, onBeforeUpdate } from 'vue'; // 引入所有必要的 Composition API
 import { useRouter } from 'vue-router'; // Vue Router
-import api from '@/utils/api'; // API Service
+import { createOrder } from '@/utils/orderapi'; // API Service
 import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
 
 // --- 引入 Element Plus 圖標 ---
@@ -162,18 +162,6 @@ import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
 // 引入國際化庫和語言包 (通常在 main.js 全局做一次)
 import countries from 'i18n-iso-countries';
 import zhLocale from '/zh-tw.json'; // 確認路徑正確
-
-
-// --- 註冊語言包 (最佳實踐是在 main.js 全局做一次) ---
-/*
-try {
-    countries.registerLocale(zhLocale);
-    console.log("i18n-iso-countries Chinese locale registered.");
-} catch (e) {
-    console.error("Failed to register i18n-iso-countries locale:", e);
-    // 根據需要處理錯誤，例如顯示提示或使用預設語言
-}
-*/
 
 // --- 引入子元件 ---
 // 確保這些子元件的路徑正確
@@ -460,7 +448,7 @@ const loadOrderItems = () => {
 // 提交訂單 - **重要：在提交前需要觸發所有子表單的驗證**
 const submitOrder = async () => {
     // 檢查按鈕是否已被禁用 (避免重複點擊)
-    if (isCheckoutDisabled.value || isSubmitting.value) {
+    if (isCheckoutButtonDisabled.value || isSubmitting.value) {
         console.warn("提交按鈕被禁用或正在提交中。");
         // ElMessage.warning("請檢查表單是否填寫完整或正在提交中。");
         return;
@@ -624,15 +612,13 @@ const submitOrder = async () => {
         // 1. 準備訂購人資訊
         const preparedOrdererInfo = {
             // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrdererInfoDto 一致
-            name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
-            mobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
-            email: formData.ordererInfo.email || null,
+            Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
+            MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
+            Email: formData.ordererInfo.email || null,
             // 添加 ParticipantForm 中收集的更多訂購人資訊
-             documentType: formData.ordererInfo.documentType, // 添加證件類型
-             idNumber: formData.ordererInfo.documentNumber, // 添加證件號碼
-             nationality: formData.ordererInfo.country, // 添加國籍
-             // 如果 ParticipantForm 有性別欄位且需要傳送
-             // gender: formData.ordererInfo.gender,
+            //  documentType: formData.ordererInfo.documentType, // 添加證件類型
+            //  idNumber: formData.ordererInfo.documentNumber, // 添加證件號碼
+            //  nationality: formData.ordererInfo.country, // 添加國籍
         };
 
         // 2. 準備旅客列表
@@ -660,20 +646,20 @@ const submitOrder = async () => {
                  // 這些欄位需要根據後端 OrderParticipantDto 的實際定義來映射
                  // favoriteTravelerId: paxData.selectedFrequentTraveler || null, // 如果後端 DTO 需要這個
                  // memberIdAsParticipant: paxData.memberIdAsParticipant || null, // 如果旅客本身就是會員，這裡需要會員 ID
-                 name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(), // 中文姓名
-                 birthDate: paxData.birthDate, // "YYYY-MM-DD"
-                 idNumber: paxData.idNumber, // 主要證件號碼 (身分證或居留證等)
-                 gender: backendGender, // 性別 Enum 值
+                 Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(), // 中文姓名
+                 BirthDate: paxData.birthDate, // "YYYY-MM-DD"
+                 IdNumber: paxData.idNumber, // 主要證件號碼 (身分證或居留證等)
+                 Gender: backendGender, // 性別 Enum 值
                  // 假設 ItemParticipantForm 收集了電話和 email
-                 phone: paxData.phoneNumber || '', // 電話
-                 email: paxData.email || '', // Email
-                 documentType: backendDocumentType, // 證件類型 Enum 值
+                 Phone: paxData.phoneNumber || '', // 電話
+                 Email: paxData.email || '', // Email
+                 DocumentType: backendDocumentType, // 證件類型 Enum 值
                  // documentNumber: paxData.idNumber, // 如果後端 DTO 需要證件號碼欄位，通常和 idNumber 相同
-                 passportSurname: paxData.lastNameEn || '', // 護照英文姓
-                 passportGivenName: paxData.firstNameEn || '', // 護照英文名
-                 passportExpireDate: paxData.passportExpiryDate || null, // 護照效期 "YYYY-MM-DD"
-                 nationality: paxData.country, // 國籍 (ISO 3166-1 Alpha-2 Code, e.g., 'TW')
-                 note: paxData.remarks || '' // 備註
+                 PassportSurname: paxData.lastNameEn || '', // 護照英文姓
+                 PassportGivenName: paxData.firstNameEn || '', // 護照英文名
+                 PassportExpireDate: paxData.passportExpiryDate || null, // 護照效期 "YYYY-MM-DD"
+                 Nationality: paxData.country, // 國籍 (ISO 3166-1 Alpha-2 Code, e.g., 'TW')
+                 Note: paxData.remarks || '' // 備註
             };
         });
 
@@ -689,12 +675,12 @@ const submitOrder = async () => {
 
         const preparedInvoiceRequestInfo = {
             // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrderInvoiceRequestDto 一致
-            invoiceOption: backendInvoiceOption,
-            invoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // 使用 EInvoiceForm 中的 deliveryEmail 或訂購人 email
-            invoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
-            invoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
-            invoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // 如果有這個欄位
-            invoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // 如果有這個欄位
+            InvoiceOption: backendInvoiceOption,
+            InvoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // 使用 EInvoiceForm 中的 deliveryEmail 或訂購人 email
+            InvoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
+            InvoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
+            InvoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // 如果有這個欄位
+            InvoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // 如果有這個欄位
         };
 
         // 4. 準備選擇的付款方式
@@ -728,7 +714,7 @@ const submitOrder = async () => {
         console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
 
         // --- 調用 API 提交訂單 ---
-        const response = await api.createOrder(orderPayload);
+        const response = await createOrder(orderPayload);
         console.log('訂單創建成功:', response);
 
         createdOrderId.value = response.data?.orderId;
