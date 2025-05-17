@@ -177,13 +177,6 @@ const sendVerificationCode = async () => {
 </span>
               </div>
 
-              <!-- <div class="grid gap-2">
-                <Label for="email">聯絡信箱</Label>
-                <Input id="email" v-model="email" placeholder="travellian@example.com" required />
-                <span v-if="errors.Email" class="text-red-500 text-sm">
-  <template v-for="(msg, i) in errors.Email" :key="i">{{ msg }}<br /></template>
-</span>
-              </div> -->
 <!-- 新增發送驗證碼鈕 -->
  <div class="grid gap-2">
   <Label for="email">聯絡信箱</Label>

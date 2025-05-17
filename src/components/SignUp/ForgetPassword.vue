@@ -24,19 +24,24 @@
               <div class="flex flex-col gap-6">
                 <!--  帳號欄 -->
                 <div class="grid gap-2">
-                  <label for="account" class="text-sm font-medium">信箱</label>
-                  <input
+                  <label for="account">信箱</label>
+                  <div class="flex gap-2">
+                    <input
                     id="account"
                     v-model="form.account"
                     type="text"
                     placeholder="travellian@example.com"
-                    class="border rounded px-3 py-2 text-sm"
+                    class="flex-1"
                     required
                     autocomplete="off"
                   />
                   <span v-if="touched && !isValidEmail" class="text-red-500 text-xs">
                     請輸入有效的 Email
                   </span>
+                  <Button type="button" :disabled="countdown > 0" @click="sendVerificationCode">
+                    {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
+                  </Button>
+                  </div>                
                 </div>
   
                 <!--  說明 -->
