@@ -145,11 +145,14 @@
             </button>
           <div
             v-if="isMenuOpen"
-            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
+            class="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50"
           >
             <ul class="divide-y divide-gray-100 text-sm text-gray-700">
               <li>
                 <router-link to="/member/orders" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl">📦 歷史訂單查詢</router-link>
+              </li>
+              <li>
+                <router-link to="/member/customtravel-status" class="block px-4 py-3 hover:bg-red-50 rounded-t-xl">🗺️ 客製化行程</router-link>
               </li>
               <li>
                 <router-link to="/member/favorite-travelers" class="block px-4 py-3 hover:bg-red-50">👥 常用旅客清單</router-link>
