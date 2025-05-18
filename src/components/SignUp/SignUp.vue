@@ -33,7 +33,7 @@ const submit = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/account/signup', {
+    await axios.post('https://localhost:7265/api/Account/signup', {
       name: name.value,
       phone: phone.value,
       email: email.value,
@@ -118,7 +118,7 @@ const sendVerificationCode = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/account/send-email-code', {
+    await axios.post('https://localhost:7265/api/Account/send-email-code', {
       email: email.value
     })
 
@@ -182,7 +182,7 @@ const sendVerificationCode = async () => {
   <Label for="email">聯絡信箱</Label>
   <div class="flex gap-2">
     <Input id="email" v-model="email" placeholder="travellian@example.com" required autocomplete="off" class="flex-1" />
-    <Button type="button" :disabled="countdown > 0" @click="sendVerificationCode">
+    <Button type="button"  class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold" :disabled="countdown > 0" @click="sendVerificationCode">
       {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
     </Button>
   </div>
@@ -193,7 +193,7 @@ const sendVerificationCode = async () => {
  <!-- 驗證碼欄位&重新發送鈕 -->
   <div class="grid gap-2">
   <Label for="email-code">Email 驗證碼</Label>
-  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" required autocomplete="off" />
+  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" maxlength="6" required autocomplete="off" />
   <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
   </span>
