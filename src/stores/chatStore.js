@@ -8,7 +8,8 @@ export const useChatStore = defineStore("chat", () => {
   const unreadCountMap = reactive({});
   const showChat = ref(false);
 
-  const memberId = 11110;
+  const rawId = localStorage.getItem("memberId");
+  const memberId = rawId ? Number(rawId) : null;
   const memberType = "Member";
 
   const setCurrentChatRoom = (chatRoomId) => {

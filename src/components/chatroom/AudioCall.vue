@@ -71,7 +71,7 @@ const enableVideo = ref(false); // 控制是否為視訊通話
 const isVideoEnabled = ref(true);
 let timer = null;
 let callStartTime = null;
-let ringtone = new Audio("/public/assets/sounds/incoming.mp3"); //來電音效
+let ringtone = new Audio("/assets/sounds/incoming.mp3"); //來電音效
 
 const chatStore = useChatStore();
 
