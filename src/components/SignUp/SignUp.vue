@@ -2,7 +2,6 @@
 const emit = defineEmits(['switch-to-login'])
 import { ElMessage } from 'element-plus'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,7 +32,7 @@ const submit = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/Account/signup', {
+    await api.post('/Account/signup', {
       name: name.value,
       phone: phone.value,
       email: email.value,
@@ -53,6 +52,7 @@ const submit = async () => {
     email.value = ''
     password.value = ''
     confirmPassword.value = ''
+    emailCode.value = ''
     // 延遲2秒再切換回登入頁
     setTimeout(() => {
       emit('switch-to-login')
@@ -94,7 +94,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-import { EyeIcon, EyeOffIcon } from 'lucide-vue-next'
+import api from '@/utils/api'
 
 // 控制密碼欄位的顯示或隱藏
 const showPassword = ref(false)
@@ -118,7 +118,7 @@ const sendVerificationCode = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/Account/send-email-code', {
+    await api.post('/Account/send-email-code', {
       email: email.value
     })
 

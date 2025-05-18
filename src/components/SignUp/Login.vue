@@ -122,6 +122,7 @@
 </template>
 
 <script setup>
+import api from '@/utils/api'
 import { reactive, computed, ref } from "vue";
 const form = reactive({
   account: "",
@@ -135,8 +136,6 @@ const isValidAccount = computed(() => {
 
 const rememberMe = ref(false);
 const touched = ref(false);
-
-import axios from "axios";
 import { ElMessage } from 'element-plus'
 import MathCaptcha from "./MathCaptcha.vue";
 const isCaptchaPassed = ref(false)
@@ -176,8 +175,8 @@ async function handleLogin() {
 
   try {
     // ✅ 呼叫後端登入 API
-    const response = await axios.post(
-      "https://localhost:7265/api/account/login",
+    const response = await api.post(
+      "/account/login",
       {
         account: form.account,
         password: form.password,
@@ -218,7 +217,6 @@ async function handleLogin() {
   }
 }
 
-import { EyeIcon, EyeOffIcon } from "lucide-vue-next"; // 加入圖示
 const showPassword = ref(false); // 密碼是否顯示
 function togglePassword() {
   showPassword.value = !showPassword.value;

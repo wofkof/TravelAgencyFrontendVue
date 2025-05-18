@@ -116,7 +116,7 @@
 
       <div class="col">
       <label>英文名(同護照)</label><br />
-      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:DA-MING" />
+      <el-input v-model="t.passportGivenName" style="width: 240px" placeholder="例:DA-MING" />
       </div>
       </div>
       <div class="flex gap-6">
@@ -149,7 +149,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/utils/api'
 export default {
   data() {
     return {
@@ -200,7 +200,7 @@ limitPassportDate(date) {
       const memberId = localStorage.getItem('memberId') 
       console.log('🔍 抓到登入者ID：', memberId)
       try {
-        const res = await axios.get(`https://localhost:7265/api/FavoriteTraveler/${memberId}`)
+        const res = await api.get(`/FavoriteTraveler/${memberId}`)
         this.travelers = res.data.map(t => ({
           ...t,
           id: t.favoriteTravelerId, // ✅ 用於畫面顯示與編輯切換
@@ -235,11 +235,14 @@ if (t.country === 'TW') {
 
 // 手機格式
 const phoneRegex = /^09\d{8}$/
-if (t.phone && !phoneRegex.test(t.phone)) this.fieldErrors.phone = true
+if (t.phone && !phoneRegex.test(t.phone)) {
+  this.fieldErrors.phone = '手機號碼格式錯誤'
+}
 
 // Email 格式
 const emailRegex = /^[\w.-]+@([\w-]+\.)+[a-zA-Z]{2,}$/
-if (t.email && !emailRegex.test(t.email)) this.fieldErrors.email = true
+if (t.email && !emailRegex.test(t.email)) {
+  this.fieldErrors.email = 'Email 格式錯誤'}
 
 // 護照到期日要未來
 if (t.passportExpireDate && new Date(t.passportExpireDate) <= new Date()) {
@@ -274,7 +277,7 @@ if (errorMessages.length > 0) {
     documentType: documentTypeMap[t.documentType] ?? null,
     documentNumber: t.documentNumber,
     passportSurname: t.passportSurname,
-    passportGivenName: t.passportGivenname,
+    passportGivenName: t.passportGivenName,
     passportExpireDate:t.passportExpireDate || null,
     note: '',
     nationality: t.country || '',
@@ -283,9 +286,9 @@ if (errorMessages.length > 0) {
 
   try {
     if (!t.favoriteTravelerId) {
-      await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
+      await api.post(`/FavoriteTraveler`, payload)
     } else {
-      await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
+      await api.put(`/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
     }
 
     ElMessage.success('儲存成功')
@@ -320,7 +323,7 @@ if (errorMessages.length > 0) {
     phone: '',
     email:'',
     passportSurname: '',
-    passportGivenname: '',
+    passportGivenName: '',
     documentType: '',
     documentNumber: '',
     passportExpireDate: '',
@@ -339,7 +342,7 @@ if (errorMessages.length > 0) {
 
       if (confirm('確定要刪除這位旅客嗎？')) {
         try {
-          await axios.delete(`https://localhost:7265/api/FavoriteTraveler/${traveler.favoriteTravelerId}`)
+          await api.delete(`/FavoriteTraveler/${traveler.favoriteTravelerId}`)
           await this.fetchTravelers()
         } catch (err) {
           console.error('刪除失敗', err)

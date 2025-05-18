@@ -126,7 +126,8 @@
 <script setup>
 import { reactive, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+import api from '@/utils/api'
+
 
 const emit = defineEmits(['switch-to-login'])
 const step = ref(1)
@@ -150,7 +151,7 @@ async function sendVerificationCode() {
 
   try {
     const email = form.account.trim()
-    await axios.post('https://localhost:7265/api/PasswordResets/request', {
+    await api.post('/PasswordResets/request', {
   email},
   {
     headers: {
@@ -196,7 +197,7 @@ if (step.value === 1) {
     step.value = 2
   } else if (step.value === 2) {
     try {
-      await axios.post('https://localhost:7265/api/PasswordResets/verify-code', {
+      await api.post('/PasswordResets/verify-code', {
         email,
         code: form.code
       })
@@ -216,7 +217,7 @@ if (step.value === 1) {
       return
     }
     try {
-      await axios.post('https://localhost:7265/api/PasswordResets/reset', {
+      await api.post('/PasswordResets/reset', {
         email,
         newPassword: form.newPassword
       })
