@@ -185,7 +185,8 @@ const endSession = () => {
   remoteConnectionId.value = null;
   incomingFromId.value = null;
   incomingOffer.value = null;
-  isVideoEnabled.value = true;
+  enableVideo.value = false;
+  isVideoEnabled.value = false;
   ringtone.pause();
   ringtone.currentTime = 0;
   stopTimer();
