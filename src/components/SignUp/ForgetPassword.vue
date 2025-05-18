@@ -6,14 +6,17 @@
       <div class="flex flex-col gap-3">
         <!-- 標題區塊 -->
         <div class="text-center">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">忘記密碼？</h2>
+          <h2 class="text-xl font-semibold text-gray-800 dark:text-white m-2">
+            {{ stepTitle }}
+          </h2>
+
         </div>
 
         <!-- 卡片本體 -->
         <Card>
           <CardContent class="grid p-0 md:grid-cols-2">
             <!--  圖片區塊 -->
-            <div class="relative hidden bg-muted md:block rounded-[20px]">
+            <div class="relative hidden bg-muted md:block rounded-[20px] min-h-[600px]">
               <img
                 src="/images/ForgetPasswordImage.jpg"
                 alt="Image"
@@ -57,7 +60,7 @@
                       maxlength="6"
                       placeholder="請輸入 6 碼驗證碼"
                     />
-
+                    
                   </div>
 
                   <!--  新密碼欄 -->
@@ -78,22 +81,38 @@
                   <p v-if="step === 1" class="text-sm text-muted-foreground">
                     說明：<br />請先輸入您註冊會員時的聯絡信箱，系統將寄送 6 碼驗證碼至您的信箱，請於10分鐘內於下一步輸入驗證碼以繼續重設密碼。<br /><br />                  
                   </p>
+                  <p v-if="step === 2" class="text-sm text-muted-foreground">
+                    說明：<br />
+                    我們已發送驗證碼至您填寫的信箱，請於 10 分鐘內輸入 6 碼驗證碼完成身份驗證。<br /><br />
+                    ※ 若未收到信件，請確認垃圾郵件匣或嘗試重新發送驗證碼。
+                  </p>
                   <p v-if="step === 3" class="text-sm text-muted-foreground">
                     說明：<br />
                     請設定長度6~12位數，且包含大、小寫英文的密碼，以提高帳戶安全性。<br /><br />
                     ※ 設定完成後，系統將自動導回登入畫面。
                   </p>
 
-
+ 
                   <!--  提交按鈕 -->
-                  <Button type="submit" class="w-full">
+                  <Button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
                     {{ step === 1 ? '下一步' : step === 2 ? '驗證驗證碼' : '重設密碼' }}
                   </Button>
-
+                  <div class="flex gap-2">
+                    <!-- 返回上一步 -->
+                     <Button
+                        v-if="step === 2"
+                        type="button"
+                        class="flex-1"
+                        @click="step = 1"
+                      >
+                      返回填寫信箱
+                    </Button>
                   <!--  返回登入 -->
-                  <Button type="button" class="w-full" @click="$emit('switch-to-login')">
+                  <Button type="button" class="flex-1" @click="$emit('switch-to-login')">
                     返回登入
                   </Button>
+                  </div>
+                 
                 </div>
               </div>
             </form>
@@ -153,7 +172,19 @@ async function sendVerificationCode() {
     ElMessage.error(message)
   }
 }
-
+//標題內容
+const stepTitle = computed(() => {
+  switch (step.value) {
+    case 1:
+      return '忘記密碼？'
+    case 2:
+      return '輸入驗證碼'
+    case 3:
+      return '重設新密碼'
+    default:
+      return '忘記密碼？'
+  }
+})
 async function handleSubmit() {
   const email = form.account.trim()
 if (step.value === 1) {
