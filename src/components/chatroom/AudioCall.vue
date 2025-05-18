@@ -3,14 +3,21 @@
   <Teleport to="body">
     <div v-if="visible" class="call-overlay">
       <div class="call-box">
-        <!-- 對方視訊 -->
-        <video
+        <div
           v-if="enableVideo"
-          id="remote-video"
-          autoplay
-          playsinline
-          class="remote-video"
-        />
+          ref="remoteDraggable"
+          class="draggable-remote"
+          @mousedown="startRemoteDrag"
+        >
+          <!-- 對方視訊 -->
+          <video
+            v-if="enableVideo"
+            id="remote-video"
+            autoplay
+            playsinline
+            class="remote-video"
+          />
+        </div>
         <!-- 我方視訊 -->
         <video
           v-if="enableVideo"
@@ -249,6 +256,48 @@ onMounted(() => {
 onUnmounted(() => {
   endSession();
 });
+
+const remoteDraggable = ref(null);
+let isRemoteDragging = false;
+let remoteOffset = { x: 0, y: 0 };
+
+const startRemoteDrag = (e) => {
+  const target = e.target;
+  // 避免拖拉 resize 的右下角時觸發拖曳
+  if (
+    target === remoteDraggable.value &&
+    e.offsetX < remoteDraggable.value.clientWidth - 20 &&
+    e.offsetY < remoteDraggable.value.clientHeight - 20
+  ) {
+    isRemoteDragging = true;
+    const el = remoteDraggable.value;
+    remoteOffset = {
+      x: e.clientX - el.getBoundingClientRect().left,
+      y: e.clientY - el.getBoundingClientRect().top,
+    };
+    document.addEventListener("mousemove", onRemoteDrag);
+    document.addEventListener("mouseup", stopRemoteDrag);
+  }
+};
+
+const onRemoteDrag = (e) => {
+  if (!isRemoteDragging) return;
+  const el = remoteDraggable.value;
+  el.style.left = `${e.clientX - remoteOffset.x}px`;
+  el.style.top = `${e.clientY - remoteOffset.y}px`;
+  el.style.right = "auto";
+  el.style.bottom = "auto";
+};
+
+const stopRemoteDrag = () => {
+  isRemoteDragging = false;
+  document.removeEventListener("mousemove", onRemoteDrag);
+  document.removeEventListener("mouseup", stopRemoteDrag);
+};
+
+onUnmounted(() => {
+  stopRemoteDrag();
+});
 </script>
 
 <style scoped>
@@ -292,12 +341,25 @@ onUnmounted(() => {
   justify-content: center;
 }
 
+.draggable-remote {
+  position: fixed;
+  top: 80px;
+  left: 80px;
+  width: 400px;
+  height: 300px;
+  background-color: black;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  resize: both;
+  z-index: 9999;
+  cursor: move;
+}
+
 video.remote-video {
   width: 100%;
-  max-height: 400px;
-  border-radius: 8px;
+  height: 100%;
   object-fit: cover;
-  background-color: black;
 }
 
 video.local-video {
