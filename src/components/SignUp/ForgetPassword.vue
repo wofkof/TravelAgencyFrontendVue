@@ -1,5 +1,5 @@
 <template>
-  <!-- 外層容器，垂直置中，固定背景色與最小高度 -->
+  <!-- 外層容器，垂直置中 -->
   <div class="flex justify-center items-center min-h-screen">
     <!-- 表單容器 -->
     <div class="w-full max-w-4xl p-6">
@@ -44,9 +44,7 @@
                         {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
                       </Button>
                     </div>
-                    <span v-if="touched && !isValidEmail" class="text-red-500 text-xs">
-                      請輸入有效的 Email
-                    </span>
+                    
                   </div>
 
                   <!--  驗證碼欄 -->
@@ -59,29 +57,33 @@
                       maxlength="6"
                       placeholder="請輸入 6 碼驗證碼"
                     />
+
                   </div>
 
                   <!--  新密碼欄 -->
                   <div v-if="step === 3" class="grid gap-2">
                     <label for="newPassword">新密碼</label>
-                    <input id="newPassword" v-model="form.newPassword" type="password" placeholder="輸入新密碼" />
-
+                    <input id="newPassword" maxlength="12" v-model="form.newPassword" type="password" placeholder="請輸入新密碼" />
                     <label for="confirmPassword">確認新密碼</label>
                     <input
                       id="confirmPassword"
                       v-model="form.confirmPassword"
                       type="password"
-                      placeholder="再次輸入新密碼"
+                      placeholder="請再次輸入新密碼"
                     />
-                    <span v-if="form.newPassword !== form.confirmPassword && form.confirmPassword"
-                      class="text-red-500 text-xs">密碼不一致</span>
+                    
                   </div>
 
                   <!--  說明文字 -->
-                  <p class="text-sm text-muted-foreground">
-                    說明：<br />請確認您輸入的為本人信箱，密碼重設連結將寄送至該信箱，請於有效時間內完成密碼重設定。<br />  <br />
-                    ※ 若您未曾申請密碼重設，請忽略此信件。
+                  <p v-if="step === 1" class="text-sm text-muted-foreground">
+                    說明：<br />請先輸入您註冊會員時的聯絡信箱，系統將寄送 6 碼驗證碼至您的信箱，請於10分鐘內於下一步輸入驗證碼以繼續重設密碼。<br /><br />                  
                   </p>
+                  <p v-if="step === 3" class="text-sm text-muted-foreground">
+                    說明：<br />
+                    請設定長度6~12位數，且包含大、小寫英文的密碼，以提高帳戶安全性。<br /><br />
+                    ※ 設定完成後，系統將自動導回登入畫面。
+                  </p>
+
 
                   <!--  提交按鈕 -->
                   <Button type="submit" class="w-full">
@@ -154,16 +156,16 @@ async function sendVerificationCode() {
 
 async function handleSubmit() {
   const email = form.account.trim()
-
-  if (step.value === 1) {
+if (step.value === 1) {
     if (!isValidEmail.value) {
+      ElMessage.error('請輸入Email信箱，以獲取驗證碼')
       touched.value = true
       return
     }
     step.value = 2
   } else if (step.value === 2) {
     try {
-      await axios.post('/api/PasswordResets/verify-code', {
+      await axios.post('https://localhost:7265/api/PasswordResets/verify-code', {
         email,
         code: form.code
       })
@@ -173,17 +175,24 @@ async function handleSubmit() {
       ElMessage.error(err.response?.data ?? '驗證失敗')
     }
   } else if (step.value === 3) {
-    if (!form.newPassword || form.newPassword !== form.confirmPassword) {
-      ElMessage.error('請確認密碼一致')
+   if (!form.newPassword || form.newPassword.length < 6) {
+      ElMessage.error('密碼長度至少需為 6 位數')
+      return
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      ElMessage.error('請確認兩次輸入的密碼一致')
       return
     }
     try {
-      await axios.post('/api/PasswordResets/reset', {
+      await axios.post('https://localhost:7265/api/PasswordResets/reset', {
         email,
         newPassword: form.newPassword
       })
       ElMessage.success('密碼已重設成功，請重新登入')
-      emit('switch-to-login')
+      setTimeout(() => {
+        emit('switch-to-login')
+      }, 1000)
     } catch (err) {
       ElMessage.error(err.response?.data ?? '重設失敗')
     }
