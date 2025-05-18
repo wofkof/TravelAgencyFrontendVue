@@ -50,10 +50,8 @@
                   </button>
                 </div>
               </div>
-              <!-- 加法驗證 -->
-              <div class="flex items-center gap-2 border rounded px-4 py-3 bg-gray-50"> 
-                <MathCaptcha v-model:isValid="isCaptchaPassed" />
-              </div>
+              <!-- 加法驗證 -->           
+                <MathCaptcha v-model:isValid="isCaptchaPassed" />              
               <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
