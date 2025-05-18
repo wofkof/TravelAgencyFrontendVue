@@ -25,14 +25,6 @@
             </el-card>
 
           </el-row>
-          
-
-          <!-- <el-row style="margin-top: 10px;">
-            <el-col :span="8">超速件：7個工作天</el-col>
-            <el-col :span="6">效期：10年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 2,850</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row> -->
 
           <el-row>
             <el-card class="item-info-card">
@@ -53,76 +45,6 @@
 
         </el-col>
 
-      </el-row>
-    </el-card>
-
-    <el-card class="visa-info-card">
-      <el-row :gutter="20" align="middle">
-        <el-col :span="6">
-          <div class="item-title">新辦/更換(14歲以下)</div>
-        </el-col>
-        <el-col :span="18">
-          <el-row>
-            <el-col :span="8">一般件：16個工作天</el-col>
-            <el-col :span="6">效期：5年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 1,400</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row>
-          <el-row style="margin-top: 10px;">
-            <el-col :span="8">超速件：7個工作天</el-col>
-            <el-col :span="6">效期：5年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 2,400</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row>
-        </el-col>
-      </el-row>
-    </el-card>
-
-    <el-card class="visa-info-card">
-      <el-row :gutter="20" align="middle">
-        <el-col :span="6">
-          <div class="item-title">國外遺失(14歲以上)</div>
-        </el-col>
-        <el-col :span="18">
-          <el-row>
-            <el-col :span="8">一般件：17個工作天</el-col>
-            <el-col :span="6">效期：5年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 2,000</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row>
-        </el-col>
-      </el-row>
-    </el-card>
-
-    <el-card class="visa-info-card">
-      <el-row :gutter="20" align="middle">
-        <el-col :span="6">
-          <div class="item-title">國外遺失(14歲以下)</div>
-        </el-col>
-        <el-col :span="18">
-          <el-row>
-            <el-col :span="8">一般件：17個工作天</el-col>
-            <el-col :span="6">效期：3年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 1,600</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row>
-        </el-col>
-      </el-row>
-    </el-card>
-
-    <el-card class="visa-info-card">
-      <el-row :gutter="20" align="middle">
-        <el-col :span="6">
-          <div class="item-title">國內遺失(14歲以上)</div>
-        </el-col>
-        <el-col :span="18">
-          <el-row>
-            <el-col :span="8">一般件：17個工作天</el-col>
-            <el-col :span="6">效期：5年</el-col>
-            <el-col :span="6" style="text-align: right;">TWD 2,000</el-col>
-            <el-col :span="2" style="text-align: right;"><el-icon><ArrowRight /></el-icon></el-col>
-          </el-row>
-        </el-col>
       </el-row>
     </el-card>
   </div>
