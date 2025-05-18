@@ -110,6 +110,7 @@ declare module 'vue' {
     Order: typeof import('./components/MemberCenter/Order.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']
+    PasswordInput: typeof import('./components/SignUp/PasswordInput.vue')['default']
     PaymentOptions: typeof import('./components/OrderForm/PaymentOptions.vue')['default']
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
     PopularTripforC: typeof import('./components/official/PopularTripforC.vue')['default']

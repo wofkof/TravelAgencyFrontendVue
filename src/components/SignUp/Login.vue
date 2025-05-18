@@ -25,31 +25,13 @@
                   required autocomplete="off"
                 />
               </div>
-              <div class="grid gap-2 relative">
-                <Label for="password">密碼</Label>
-                <div class="relative">
-                  <Input
-                    :type="showPassword ? 'text' : 'password'"
-                    id="password"
-                    v-model="form.password"
-                    placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
-                    required maxlength="12"
-                    class="pr-10"
-                  />
-                  <button
-                    type="button"
-                    @click="togglePassword"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-                    tabindex="-1"
-                    aria-label="切換密碼顯示"
-                  >
-                    <component
-                      :is="showPassword ? EyeIcon : EyeOffIcon"
-                      class="w-5 h-5"
-                    />
-                  </button>
-                </div>
-              </div>
+              <PasswordInput
+                v-model="form.password"
+                label="密碼"
+                id="password"
+                placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
+              />
+
               <!-- 加法驗證 -->           
                 <MathCaptcha v-model:isValid="isCaptchaPassed" />              
               <!-- 記住我 + 忘記密碼 -->
@@ -136,6 +118,7 @@ const rememberMe = ref(false);
 const touched = ref(false);
 import { ElMessage } from 'element-plus'
 import MathCaptcha from "./MathCaptcha.vue";
+import PasswordInput from "./PasswordInput.vue";
 const isCaptchaPassed = ref(false)
 
 async function handleLogin() {
@@ -215,8 +198,4 @@ async function handleLogin() {
   }
 }
 
-const showPassword = ref(false); // 密碼是否顯示
-function togglePassword() {
-  showPassword.value = !showPassword.value;
-}
 </script>

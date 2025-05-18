@@ -5,6 +5,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PasswordInput from "./PasswordInput.vue";
 
 const name = ref('')
 const phone = ref('')
@@ -96,17 +97,6 @@ onBeforeUnmount(() => {
 })
 import api from '@/utils/api'
 
-// 控制密碼欄位的顯示或隱藏
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-function togglePassword() {
-  showPassword.value = !showPassword.value
-}
-
-function toggleConfirmPassword() {
-  showConfirmPassword.value = !showConfirmPassword.value
-}
 //Email驗證倒數區
 const emailCode = ref('')
 const countdown = ref(0)
@@ -197,61 +187,25 @@ const sendVerificationCode = async () => {
   <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
   </span>
-  <div class="grid gap-2 relative">
-  <Label for="password">密碼</Label>
-  <div class="relative">
-    <Input
-      :type="showPassword ? 'text' : 'password'"
-      id="password"
-      v-model="password"
-      placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
-"
-      required  maxlength="12"
-      class="pr-10"
-    />
-    <button
-      type="button"
-      @click="togglePassword"
-      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-      tabindex="-1"
-      aria-label="切換密碼顯示"
-    >
-      <component :is="showPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
-    </button>
-  </div>
-  <span v-if="errors.Password" class="text-red-500 text-sm">
-    <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
-  </span>
+  <PasswordInput
+  id="password"
+  v-model="password"
+  label="密碼"
+  placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼"
+/>
+<span v-if="errors.Password" class="text-red-500 text-sm">
+  <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
+</span>
 </div>
-
-<div class="grid gap-2 relative">
-  <Label for="confirm-password">確認密碼</Label>
-  <div class="relative">
-    <Input
-      :type="showConfirmPassword ? 'text' : 'password'"
-      id="confirm-password"
-      v-model="confirmPassword"
-      placeholder="請再次輸入密碼"
-      required maxlength="12"
-      class="pr-10"
-    />
-    <button
-      type="button"
-      @click="toggleConfirmPassword"
-      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-      tabindex="-1"
-      aria-label="切換確認密碼顯示"
-    >
-      <component :is="showConfirmPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
-    </button>
-  </div>
-  <span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
-    <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
-  </span>
- 
-</div>
-
-</div>
+<PasswordInput
+  id="confirm-password"
+  v-model="confirmPassword"
+  label="確認密碼"
+  placeholder="請再次輸入密碼"
+/>
+<span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
+  <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
+</span>
 
 </div>
               <Button type="submit" class="w-full">

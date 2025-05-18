@@ -65,16 +65,19 @@
 
                   <!--  新密碼欄 -->
                   <div v-if="step === 3" class="grid gap-2">
-                    <label for="newPassword">新密碼</label>
-                    <input id="newPassword" maxlength="12" v-model="form.newPassword" type="password" placeholder="請輸入新密碼" />
-                    <label for="confirmPassword">確認新密碼</label>
-                    <input
+                      <PasswordInput
+                      id="newPassword"
+                      v-model="form.newPassword"
+                      label="新密碼"
+                      placeholder="請輸入新密碼"
+                    />
+                    <PasswordInput
                       id="confirmPassword"
                       v-model="form.confirmPassword"
-                      type="password"
+                      label="確認新密碼"
                       placeholder="請再次輸入新密碼"
                     />
-                    
+                 
                   </div>
 
                   <!--  說明文字 -->
@@ -127,6 +130,7 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
+import PasswordInput from "./PasswordInput.vue";
 
 
 const emit = defineEmits(['switch-to-login'])
