@@ -15,10 +15,6 @@ const orderApiClient = axios.create({
  * @returns {Promise} - Axios 的 Promise 物件，解析後為 API 的回應
  */
 const createOrder = (orderPayload) => {
-  // 假設您的後端創建訂單的 API 端點是 '/Orders' (相對於 baseURL)
-  // 請將 '/Orders' 替換成您後端實際處理訂單創建的端點路徑
-  // 例如：'/api/Order/Create', '/v1/orders' 等
-  // 確保 HTTP 方法是 POST (或其他後端要求的方法)
   console.log("在 orderApi.js 中準備提交到 /Orders 的 Payload:", orderPayload);
   return orderApiClient.post('/Order', orderPayload);
 };

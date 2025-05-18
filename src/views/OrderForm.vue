@@ -609,13 +609,42 @@ const submitOrder = async () => {
         console.log("所有表單嚴謹驗證通過。準備提交數據...");
 
         // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
+        // --- 準備要傳給後端的購物車項目 ---
+        const cartItemsForApi = [];
+        cartStore.selectedItems.forEach(item => {
+            if (item.options && item.options.length > 0) {
+                item.options.forEach(option => {
+                    if (option.quantity > 0) { // 只處理數量大於0的選項
+                        cartItemsForApi.push({
+                            productId: parseInt(item.productId), // GroupTravelId 或 CustomTravelId
+                            productType: item.productType, // "GroupTravel", "CustomTravel"
+                            optionType: option.type, // "成人", "兒童", "嬰兒"
+                            quantity: option.quantity,
+                            // Description 由後端生成
+                        });
+                    }
+                });
+            } else if (item.quantity > 0) { // 如果商品沒有 options，但有直接的 quantity
+                cartItemsForApi.push({
+                    productId: parseInt(item.productId),
+                    productType: item.productType,
+                    optionType: "Standard", // 或其他預設值，後端需要能處理這種情況的定價
+                    quantity: item.quantity,
+                });
+            }
+        });
+        if (cartItemsForApi.length === 0) {
+            ElMessage.error("購物車中沒有選擇任何有效的商品項目。");
+            isSubmitting.value = false;
+            return;
+        }        
+
         // 1. 準備訂購人資訊
         const preparedOrdererInfo = {
             // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrdererInfoDto 一致
             Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
             MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
             Email: formData.ordererInfo.email || null,
-            // 添加 ParticipantForm 中收集的更多訂購人資訊
             //  documentType: formData.ordererInfo.documentType, // 添加證件類型
             //  idNumber: formData.ordererInfo.documentNumber, // 添加證件號碼
             //  nationality: formData.ordererInfo.country, // 添加國籍
@@ -706,33 +735,50 @@ const submitOrder = async () => {
             participants: preparedParticipants, // 扁平化的旅客陣列
             invoiceRequestInfo: preparedInvoiceRequestInfo,
             selectedPaymentMethod: backendSelectedPaymentMethod,
-            // orderDetails: [], // 商品明細通常不由前端在創建訂單時傳送，後端應根據購物車商品創建
+            cartItems: cartItemsForApi // 從 Pinia Store 獲取的 cartItems
         };
 
         console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
 
-        // --- 調用 API 提交訂單 ---
-        const response = await createOrder(orderPayload);
-        console.log('訂單創建成功:', response);
+        // --- 3. 調用 API 提交訂單 ---
+        const apiResponse = await createOrder(orderPayload); // 將 API 調用放在這裡
+        console.log('createOrder API 調用成功，回應:', apiResponse);
 
-        createdOrderId.value = response.data?.orderId;
-        submitSuccess.value = true;
+        // 檢查 API 回應是否表示成功
+        // 這裡的判斷條件 (apiResponse.data && (apiResponse.data.orderId || apiResponse.data.value)) 需要根據你的後端實際回應調整
+        if (apiResponse && apiResponse.data && (apiResponse.data.orderId || apiResponse.data.value)) {
+            createdOrderId.value = apiResponse.data.orderId || apiResponse.data.value;
+            submitSuccess.value = true;
 
-        // 清空購物車中已結帳的商品
-        const submittedItemIds = selectedOrderItems.value.map(item => item.id);
-        cartStore.removeItemsByIds(submittedItemIds);
+            ElMessage.success("訂單提交成功！"); // 給用戶一個成功提示
 
-        // 跳轉到訂單完成頁面
-        router.push({ path: '/order-complete', query: { orderId: createdOrderId.value } });
+            const successfullySubmittedItemUuids = cartStore.selectedItems.map(i => i.id);
+            if (successfullySubmittedItemUuids.length > 0) {
+                cartStore.removeItemsByIds(successfullySubmittedItemUuids);
+            }
 
-    } catch (err) {
-        console.error('訂單提交失敗:', err);
-        submitError.value = err.response?.data?.message || err.message || '發生未知錯誤，請稍後再試。';
-        // 顯示錯誤提示 (例如使用 ElMessage)
-        // ElMessage.error(`訂單提交失敗: ${submitError.value}`);
-
+            router.push({ path: '/order-complete', query: { orderId: createdOrderId.value } });
+        } else {
+            // API 調用成功，但後端回應表示業務失敗或數據格式不對
+            console.error('訂單提交失敗 - API 回應無效或指示錯誤:', apiResponse);
+            submitError.value = apiResponse?.data?.message || '訂單提交失敗，請稍後再試或聯繫客服。 (回應異常)';
+            ElMessage.error(submitError.value);
+        }
+    } catch (err) { // 這個 catch 會捕獲：1. 表單驗證中的 await 拋錯 2. createOrder API 調用本身的錯誤 (網路、伺服器500等)
+        console.error("訂單提交過程中發生錯誤:", err);
+        if (err.response) { // Axios 錯誤結構
+            console.error("後端錯誤回應:", err.response.data);
+            submitError.value = err.response.data.message || err.response.data.title || '訂單提交失敗，伺服器返回錯誤。';
+        } else if (err.request) { // 請求已發出但沒有收到回應
+            console.error("請求已發出但無回應:", err.request);
+            submitError.value = '無法連接到伺服器，請檢查您的網路連線。';
+        } else { // 其他類型的錯誤 (例如，payload 準備過程中的 JS 錯誤)
+            console.error("JS錯誤或請求設置錯誤:", err.message);
+            submitError.value = err.message || '提交訂單時發生未知錯誤，請檢查控制台。';
+        }
+        ElMessage.error(`訂單提交失敗: ${submitError.value}`);
     } finally {
-        isSubmitting.value = false; // 結束提交狀態
+        isSubmitting.value = false;
     }
 };
 
@@ -857,17 +903,6 @@ watch(() => formData.paymentMethod, (newValue) => {
     }
 });
 
-// 監聽 isCreditCardFormValid 變化 (從 PaymentOptions 通過事件傳遞)
-// 當信用卡表單無效時，可以考慮提供一些視覺回饋，例如滾動到付款區塊或發出警告
-// watch(isCreditCardFormValid, (isValid) => {
-//      if (!isValid && formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
-//           console.warn("信用卡表單無效");
-//           // 可選：滾動到付款區塊
-//           // scrollToSection('payment');
-//           // 可選：顯示警告
-//           // ElMessage.warning("請檢查信用卡資料。");
-//      }
-// });
 
 
 // --- 生命週期鉤子 ---

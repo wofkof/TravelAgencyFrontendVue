@@ -1,29 +1,27 @@
 // src/stores/cart.js
 import { defineStore } from 'pinia'; // 從 pinia 導入 defineStore 方法
 import { ref, computed, watch } from 'vue'; // 從 vue 導入 ref (用於狀態) 和 computed (用於計算屬性/Getters)
+import { v4 as uuidv4 } from 'uuid';
 
 // 使用 setup 函數語法定義購物車 store
-export const useCartStore = defineStore('cart', () => {
-  // --- 狀態 (State) ---
-  // 核心狀態：一個包含購物車項目的陣列。
-  // 初始狀態可以是空陣列或預設項目。
-  // 持久化插件會在加載時使用 localStorage 中的數據覆蓋此狀態。
+export const useCartStore = defineStore('ShoppingCart', () => {
+
   const items = ref([
     // 原有商品範例 (稍作擴充，假設它是一個簡單行程，無特定航班/住宿細節)
     {
-      id: 'taipei-3d2n-tour-001',
-      productId: 'TPE-CITY-EXPLORER-001',
+      id: uuidv4(), //uuid
+      productId: '1',
+      productType: 'GroupTravel',
       destinationCountryCode: 'TW', // 保留
       name: '台北經典三天兩夜探索之旅',
       details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
       imageUrl: '/images/tours/taipei-101-skyline.jpg',
-      // --- 新增/修改的行程日期相關欄位 ---
       startDate: '2025/08/15', // 用於顯示開始日期
       startDayOfWeek: '五',    // 開始日的星期
       endDate: '2025/08/17',   // 假設是3天2夜，結束日期
       endDayOfWeek: '日',      // 結束日的星期
       totalDays: 3,            // 總天數
-      // --- 由於此範例較簡單，航班和詳細住宿可能不適用或簡化 ---
+
       flights: null, // 或留空，或提供一個通用描述
       accommodation: {
         description: '市中心舒適住宿', // 通用描述
@@ -44,23 +42,24 @@ export const useCartStore = defineStore('cart', () => {
 
     // 澎湖花火節 - 假設可以添加一些通用交通/住宿資訊
     {
-      id: 'penghu-fireworks-4d-002',
-      productId: 'PENGHU-FIREWORKS-FEST-002',
+      id: uuidv4(), //uuid
+      productId: '1',
+      productType: 'CustomTravel',
       country: 'TW', // 建議統一使用 destinationCountryCode
       destinationCountryCode: 'TW',
       name: '澎湖國際海上花火節璀璨四日遊',
       details: '限定出發！欣賞壯麗海上花火秀，暢玩吉貝島水上活動、七美雙心石滬，含來回機票、住宿及部分餐食。',
       imageUrl: '/images/tours/penghu-fireworks.jpg',
-      startDate: '2025/04/22',
+      startDate: '2025/06/22',
       startDayOfWeek: '二',
-      endDate: '2025/04/25', // 4天
+      endDate: '2025/06/25', // 4天
       endDayOfWeek: '五',
       totalDays: 4,
       flights: { // 可以是通用描述或實際航班的簡化
         outbound: {
           airline: '立榮郵輪', // 範例
           flightNumber: 'B78888', // 範例
-          date: '2025/04/22 (二)',
+          date: '2025/06/22 (二)',
           departureTime: '09:00',
           departureCity: '台北(松山)',
           arrivalTime: '10:00',
@@ -69,7 +68,7 @@ export const useCartStore = defineStore('cart', () => {
         return: {
           airline: '華信郵輪', // 範例
           flightNumber: 'AE333', // 範例
-          date: '2025/04/25 (五)',
+          date: '2025/06/25 (五)',
           departureTime: '17:00',
           departureCity: '澎湖(馬公)',
           arrivalTime: '18:00',
@@ -89,13 +88,13 @@ export const useCartStore = defineStore('cart', () => {
       category: '國內旅遊',
       selected: true,
       isFavorite: true,
-      departureDate: '2025/04/22',
+      departureDate: '2025/06/22',
     },
 
-    // --- 新增一個符合截圖風格的商品數據 ---
     {
-      id: 'hokkaido-lavender-5d-001', // 新ID
-      productId: 'JPN-HKD-LAVENDER-001', // 新 Product ID
+      id: uuidv4(),
+      productId: '3', // 新 Product ID
+      productType: 'GroupTravel',
       destinationCountryCode: 'JP', // 日本
       name: '夏日紫戀薰衣草北海道～小樽函館山、富良野薰衣草、洞爺湖花火會、三大蟹溫泉香五日', // 截圖標題
       details: '暢遊北海道夏季限定美景：富良野夢幻薰衣草花田、美瑛拼布之路、小樽運河浪漫風情、函館百萬夜景，入住溫泉飯店，品嚐三大蟹料理。', // 補充一些描述
@@ -143,60 +142,62 @@ export const useCartStore = defineStore('cart', () => {
       departureDate: '2025/06/16', // 與 startDate 保持一致
     },
 
-    // 日本東京迪士尼 (稍作擴充)
-    {
-      id: 'tokyo-disney-fuji-5d-003',
-      productId: 'JPN-TDF-MTFUJI-003',
-      country: 'JP', // 建議統一使用 destinationCountryCode
-      destinationCountryCode: 'JP',
-      name: '日本東京迪士尼樂園與富士山經典五日遊',
-      details: '夢幻迪士尼一日暢玩、遠眺富士山絕景、淺草觀音寺祈福、銀座時尚購物，含來回機票與精選酒店。',
-      imageUrl: '/images/tours/tokyo-disney-fuji.jpg',
-      startDate: '2025/06/20',
-      startDayOfWeek: '五',
-      endDate: '2025/06/24', // 5天
-      endDayOfWeek: '二',
-      totalDays: 5,
-      flights: { // 範例航班資訊
-        outbound: {
-          airline: '中華郵輪',
-          flightNumber: 'CI100',
-          date: '2025/06/20 (五)',
-          departureTime: '08:30',
-          departureCity: '台北(桃園)',
-          arrivalTime: '12:30',
-          arrivalCity: '東京(成田)'
-        },
-        return: {
-          airline: '中華郵輪',
-          flightNumber: 'CI101',
-          date: '2025/06/24 (二)',
-          departureTime: '18:00',
-          departureCity: '東京(成田)',
-          arrivalTime: '21:00',
-          arrivalCity: '台北(桃園)'
-        }
-      },
-      accommodation: {
-        description: '東京市區精選酒店或迪士尼好夥伴飯店',
-        roomType: '標準雙人房',
-        // occupancy 來自 options
-      },
-      options: [
-        { type: '成人', quantity: 1, price: 35000, unitLabel: '佔床' },
-        { type: '兒童', quantity: 1, price: 32000, unitLabel: '佔床' },
-        { type: '嬰兒', quantity: 1, price: 3000, unitLabel: '不佔床' }
-      ],
-      category: '國外旅遊',
-      selected: false,
-      isFavorite: true,
-      departureDate: '2025/06/20',
-    },
+    // // 日本東京迪士尼
+    // {
+    //   id: uuidv4(),
+    //   productId: '4',
+    //   productType: 'GroupTravel',
+    //   country: 'JP', // 建議統一使用 destinationCountryCode
+    //   destinationCountryCode: 'JP',
+    //   name: '日本東京迪士尼樂園與富士山經典五日遊',
+    //   details: '夢幻迪士尼一日暢玩、遠眺富士山絕景、淺草觀音寺祈福、銀座時尚購物，含來回機票與精選酒店。',
+    //   imageUrl: '/images/tours/tokyo-disney-fuji.jpg',
+    //   startDate: '2025/06/20',
+    //   startDayOfWeek: '五',
+    //   endDate: '2025/06/24', // 5天
+    //   endDayOfWeek: '二',
+    //   totalDays: 5,
+    //   flights: { // 範例航班資訊
+    //     outbound: {
+    //       airline: '中華郵輪',
+    //       flightNumber: 'CI100',
+    //       date: '2025/06/20 (五)',
+    //       departureTime: '08:30',
+    //       departureCity: '台北(桃園)',
+    //       arrivalTime: '12:30',
+    //       arrivalCity: '東京(成田)'
+    //     },
+    //     return: {
+    //       airline: '中華郵輪',
+    //       flightNumber: 'CI101',
+    //       date: '2025/06/24 (二)',
+    //       departureTime: '18:00',
+    //       departureCity: '東京(成田)',
+    //       arrivalTime: '21:00',
+    //       arrivalCity: '台北(桃園)'
+    //     }
+    //   },
+    //   accommodation: {
+    //     description: '東京市區精選酒店或迪士尼好夥伴飯店',
+    //     roomType: '標準雙人房',
+    //     // occupancy 來自 options
+    //   },
+    //   options: [
+    //     { type: '成人', quantity: 1, price: 35000, unitLabel: '佔床' },
+    //     { type: '兒童', quantity: 1, price: 32000, unitLabel: '佔床' },
+    //     { type: '嬰兒', quantity: 1, price: 3000, unitLabel: '不佔床' }
+    //   ],
+    //   category: '國外旅遊',
+    //   selected: false,
+    //   isFavorite: true,
+    //   departureDate: '2025/06/20',
+    // },
 
     // 花蓮太魯閣 (假設這是巴士團或火車團，無航班資訊)
     {
-      id: 'hualien-taroko-2d-004',
-      productId: 'HLN-TAROKO-GORGE-004',
+      id: uuidv4(),
+      productId: '5',
+      productType: 'GroupTravel',
       country: 'TW', // 建議統一使用 destinationCountryCode
       destinationCountryCode: 'TW',
       name: '花蓮太魯閣峽谷秘境二日遊',
@@ -370,14 +371,6 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   /**
-   * 根據商品 ID 從購物車中完全移除單個商品。
-   * @param {string} itemId - 要移除的商品 ID。
-   */
-  function removeFromCart(itemId) {
-    items.value = items.value.filter(i => i.id !== itemId);
-  }
-
-  /**
    * 移除所有當前被標記為選中的商品。
    * 此操作會檢查 `items` 陣列中的所有項目，可能移除已過期但被選中的商品。
    * 如果只想移除有效的選中商品，應先過濾 `activeItems`。
@@ -446,53 +439,63 @@ export const useCartStore = defineStore('cart', () => {
     const existingItemIndex = items.value.findIndex(item => item.productId === product.productId);
 
     if (existingItemIndex > -1) {
-      // 購物車中已存在相同 productId 的商品
       const existingItem = items.value[existingItemIndex];
-      if (existingItem.quantity !== undefined && product.quantity !== undefined) {
-        // 簡單數量：增加現有項目的數量
-        existingItem.quantity += (product.quantity || 1); // 如果傳入的 product 沒有 quantity，則默認加 1
-      } else if (existingItem.options && product.options) {
-        // 基於選項：需要根據業務規則實現複雜的合併邏輯。
-        console.warn("合併已存在商品的選項需要具體實作。");
-        // 範例：遍歷新商品的選項，更新現有商品中匹配選項的數量？
+      // 這裡的合併邏輯基於選項或簡單數量
+      if (existingItem.options && product.options) {
         product.options.forEach(newOpt => {
-            const existingOpt = existingItem.options.find(opt => opt.type === newOpt.type);
-            if(existingOpt) {
-                existingOpt.quantity += (newOpt.quantity || 0); // 合併數量
-            } else {
-                // 可選：如果現有商品沒有這個選項類型，是否要添加？
-                // existingItem.options.push({...newOpt}); // 深拷貝新選項
-            }
+          const existingOpt = existingItem.options.find(opt => opt.type === newOpt.type);
+          if (existingOpt) {
+            existingOpt.quantity += (newOpt.quantity || 0);
+          } else {
+            console.warn(`商品 ${existingItem.name} 中不存在選項 ${newOpt.type}，未添加/合併。`);
+          }
         });
-
+      } else if (existingItem.quantity !== undefined && product.quantity !== undefined) {
+        existingItem.quantity += (product.quantity || 1);
       } else {
-           // 類型不匹配 (例如：一個有選項，一個沒有)，合併邏輯未定義
-           console.warn("無法合併不同類型的項目 (選項 vs 簡單數量)。商品未有效添加/更新。", product);
+        console.warn("addItem: 無法合併不同結構的項目 (選項 vs 簡單數量) 或缺少必要欄位。商品未有效更新。", product);
       }
-       // 其他考慮：如果重新添加一個已過期的商品，是否應該使其變為有效？
-       // 或者添加操作只應更新數量，不應更改 departureDate 等？
-       // 如果商品已過期，重新添加可能需要重置其 selected 狀態？
-       // existingItem.selected = true; // 範例：更新或添加時重新選中
+      existingItem.selected = true;
 
     } else {
       // 購物車中未找到此商品，將其作為新項目添加
       // 確保傳入的 'product' 物件包含購物車項目所需的所有欄位
       const newItem = {
-        id: product.id || `${product.productId}-${Date.now()}`, // 如果需要，生成唯一 ID
-        productId: product.productId,
+        id: product.id || uuidv4(), // 使用 uuidv4() 生成唯一 ID，或使用傳入的 product.id
+        productId: product.productId, // 後端產品 ID
+        productType: product.productType,
         name: product.name || '未命名商品',
         details: product.details || '',
         imageUrl: product.imageUrl || null,
-        departureDate: product.departureDate || null,
-        options: product.options ? JSON.parse(JSON.stringify(product.options)) : undefined, // 深拷貝選項陣列
-        quantity: product.quantity,
-        pricePerUnit: product.pricePerUnit,
+        destinationCountryCode: product.destinationCountryCode,
+        startDate: product.startDate,
+        startDayOfWeek: product.startDayOfWeek,
+        endDate: product.endDate,
+        endDayOfWeek: product.endDayOfWeek,
+        totalDays: product.totalDays,
+        flights: product.flights ? JSON.parse(JSON.stringify(product.flights)) : null,
+        accommodation: product.accommodation ? JSON.parse(JSON.stringify(product.accommodation)) : null,
+
+        // 深拷貝選項，確保每個購物車項目的選項是獨立的
+        options: product.options ? JSON.parse(JSON.stringify(product.options)) : undefined,
+        quantity: product.quantity, // 用於沒有 options 的商品
+        pricePerUnit: product.pricePerUnit, // 用於沒有 options 的商品
         category: product.category || '',
         selected: true, // 新項目預設為選中
-        isFavorite: false, // 新項目預設為非收藏
+        isFavorite: false,
+        departureDate: product.departureDate, // 確保傳遞 departureDate
+        // 確保 product 物件中包含所有 cart item 所需的欄位
       };
       items.value.push(newItem);
     }
+  }
+
+  /**
+   * 根據商品 ID 從購物車中完全移除單個商品。
+   * @param {string} itemId - 要移除的商品 ID。
+   */
+  function removeFromCart(itemId) { // itemId 這裡會是 UUID
+    items.value = items.value.filter(i => i.id !== itemId);
   }
 
   /**
@@ -500,7 +503,7 @@ export const useCartStore = defineStore('cart', () => {
    * 用於 ReconfirmItems.vue 中清除過期商品。
    * @param {string[]} itemIdsToRemove - 要移除的商品 ID 陣列。
    */
-  function removeItemsByIds(itemIdsToRemove) {
+  function removeItemsByIds(itemIdsToRemove) { // itemIdsToRemove 應為 UUID 陣列
     if (!Array.isArray(itemIdsToRemove)) {
       console.error("removeItemsByIds 需要一個 ID 陣列作為參數。");
       return;
@@ -535,9 +538,7 @@ export const useCartStore = defineStore('cart', () => {
   // --- 匯出 Store 成員 ---
   // 將狀態、計算屬性 (Getters) 和方法 (Actions) 匯出，供組件使用
   return {
-    // State
     items, // 如果需要，可以直接訪問原始 items 陣列，但建議優先使用 Getters
-
     // Getters
     activeItems,        // 用於顯示主要購物車列表
     expiredItems,       // 用於顯示待確認區塊
@@ -557,14 +558,13 @@ export const useCartStore = defineStore('cart', () => {
     updateOptionQuantity,
     updateSimpleQuantity,
     addItem,
-    removeItemsByIds, // 確保匯出此方法
+    removeItemsByIds,
+    clearExpiredItems,
   };
 }, {
   // --- Pinia 持久化插件配置 ---
   persist: {
-    // 在 localStorage 中儲存購物車數據所使用的鍵名 (Key)。
     key: 'travel_agency_cart', // 建議使用專案特定的名稱
-    // 指定儲存媒介：localStorage 或 sessionStorage。
     storage: localStorage,
     // 可選：指定只持久化 store 狀態中的某些部分。
     // 如果省略，則 store 的整個狀態 (在此例中是 'items') 都會被持久化。
