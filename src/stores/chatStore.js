@@ -8,7 +8,8 @@ export const useChatStore = defineStore("chat", () => {
   const unreadCountMap = reactive({});
   const showChat = ref(false);
 
-  const memberId = 11110;
+  const rawId = localStorage.getItem("memberId");
+  const memberId = rawId ? Number(rawId) : null;
   const memberType = "Member";
 
   const setCurrentChatRoom = (chatRoomId) => {
@@ -57,6 +58,15 @@ export const useChatStore = defineStore("chat", () => {
     return memberType === "Member" ? room?.employeeId : room?.memberId;
   });
 
+  function reset() {
+    allChatRooms.value = [];
+    currentChatRoomId.value = null;
+    Object.keys(chatRooms).forEach((k) => delete chatRooms[k]);
+    Object.keys(unreadCountMap).forEach((k) => delete unreadCountMap[k]);
+    showChat.value = false;
+    this.memberId = null;
+  }
+
   return {
     chatRooms,
     allChatRooms,
@@ -72,5 +82,6 @@ export const useChatStore = defineStore("chat", () => {
     memberId,
     memberType,
     getTargetUserId,
+    reset,
   };
 });
