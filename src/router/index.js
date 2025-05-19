@@ -39,11 +39,11 @@ const routes = [
   },
   // 會員中心
   {
-  path: "/member/:section?",
-  name: "MemberCenter",
-  component: () => import("@/views/MemberCenterView.vue"),
+    path: "/member/:section?",
+    name: "MemberCenter",
+    component: () => import("@/views/MemberCenterView.vue"),
   },
-  
+
   {
     path: "/ShoppingCart", // 購物車頁面的路徑
     name: "ShoppingCart",
@@ -54,7 +54,7 @@ const routes = [
     name: "OrderForm",
     component: OrderForm, // 對應到 OrderForm 組件
     meta: { simpleNavbar: true }
-  },  
+  },
   {
     path: "/order-complete", // 訂單完成的路徑
     name: "Ordercomplete",
@@ -77,13 +77,15 @@ const routes = [
     component: CustomtravelContent,
   },
   { path: "/SearchResult", name: "SearchResult", component: SearchResult },
-  
+
   { path: "/Trip", name: "Trip", component: Trip },
+
 
   { path: '/detail/:projectId/:detailId/:groupId',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
 
+
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
-  
+
 ];
 const router = createRouter({
   history: createWebHistory(),

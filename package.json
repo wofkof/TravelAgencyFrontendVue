@@ -11,6 +11,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@microsoft/signalr": "^8.0.7",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vueuse/core": "^13.1.0",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
@@ -28,8 +29,7 @@
     "three": "^0.176.0",
     "vue": "^3.5.13",
     "vue-leaflet": "^0.1.0",
-    "vue-router": "^4.5.0",
-    "vue3-google-map": "^0.22.0"
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.2",

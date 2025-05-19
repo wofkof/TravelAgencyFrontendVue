@@ -145,6 +145,7 @@ const touched = ref(false);
 
 import axios from "axios";
 import { ElMessage } from 'element-plus'
+import api from "@/utils/api"
 
 async function handleLogin() {
   form.account = form.account.trim();
@@ -171,8 +172,8 @@ async function handleLogin() {
 
   try {
     // ✅ 呼叫後端登入 API
-    const response = await axios.post(
-      "https://localhost:7265/api/account/login",
+    const response = await api.post(
+      "/account/login",
       {
         account: form.account,
         password: form.password,
