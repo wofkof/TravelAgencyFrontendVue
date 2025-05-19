@@ -181,15 +181,15 @@ const isLoading = ref(true); // 載入狀態
 const error = ref(null); // 載入錯誤訊息
 const isSubmitting = ref(false); // 提交狀態
 const submitError = ref(null); // 提交錯誤訊息
-const submitSuccess = ref(false); // 提交成功狀態
-const createdOrderId = ref(null); // 創建的訂單 ID
+// const submitSuccess = ref(false); // 提交成功狀態
+// const createdOrderId = ref(null); // 創建的訂單 ID
 const selectedOrderItems = ref([]); // 從購物車 Store 加載的選中商品列表
 
 // 子組件表單的引用
 const ordererFormRef = ref(null); // ParticipantForm 實例引用
 const itemTravelerFormRefs = ref({}); // ItemParticipantForm 實例引用物件 (key: item.id, value: ItemParticipantForm 實例)
 const einvoiceFormRef = ref(null); // EInvoiceForm 實例引用
-const paymentOptionsRef = ref(null); // PaymentOptions 實例引用 (用於呼叫其 validate 方法，如果暴露)
+// const paymentOptionsRef = ref(null); // PaymentOptions 實例引用 (用於呼叫其 validate 方法，如果暴露)
 
 // ItemParticipantForm 的驗證狀態集合 (key: item.id, value: boolean)
 const itemTravelerValidity = reactive({});
@@ -200,7 +200,7 @@ const itemTravelerValidity = reactive({});
 const activeCollapseNames = ref(['items', 'ordererInfo', 'payment']); // 預設展開 商品、訂購人、付款方式 區塊
 
 // 獲取 PaymentOptions 所在 AccordionSection 的引用 (用於滾動，也可以用 data-section-name 查找)
-const paymentAccordionRef = ref(null); // 在模板中綁定到 PaymentOptions 所在 AccordionSection
+// const paymentAccordionRef = ref(null); // 在模板中綁定到 PaymentOptions 所在 AccordionSection
 
 
 // --- 表單數據模型 (使用 reactive) ---
@@ -223,9 +223,9 @@ const formData = reactive({
     type: 'personal', taxId: '', companyTitle: '', deliveryEmail: ''
   },
   // 信用卡詳細資料 (PaymentOptions 內部 CreditCardForm v-model 綁定)
-  creditCardDetails: {
-    cardHolderName: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvc: ''
-  }
+  // creditCardDetails: {
+  //   cardHolderName: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvc: ''
+  // }
 });
 
 // --- 計算屬性 (Computed Properties) ---
@@ -234,10 +234,10 @@ const formData = reactive({
 const isPaymentMethodSelected = computed(() => !!formData.paymentMethod);
 
 // 追蹤信用卡表單自身的驗證狀態 (從 PaymentOptions 通過事件傳遞上來)
-const isCreditCardFormValid = ref(false);
-const handleCreditCardFormValidityChange = (isValid) => {
-  isCreditCardFormValid.value = isValid;
-};
+// const isCreditCardFormValid = ref(false);
+// const handleCreditCardFormValidityChange = (isValid) => {
+//   isCreditCardFormValid.value = isValid;
+// };
 
 
 // 計算訂單商品總 "單位" 數量 (例如總票數)
@@ -351,12 +351,12 @@ const isCheckoutButtonDisabled = computed(() => {
         return true;
     }
      // 如果選擇了信用卡支付，則信用卡表單必須有效 (從 PaymentOptions 通過事件傳遞狀態)
-     if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
-       if (!isCreditCardFormValid.value) {
-         // console.log("禁用原因: 信用卡表單無效");
-         return true;
-       }
-     }
+    //  if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
+    //    if (!isCreditCardFormValid.value) {
+    //      // console.log("禁用原因: 信用卡表單無效");
+    //      return true;
+    //    }
+    //  }
 
     // 只有當以上所有簡易檢查都通過，按鈕才不被禁用 (但最終提交前仍需要呼叫所有子組件的 validate 方法來執行嚴謹驗證)
     // console.log("禁用狀態: false (通過簡易檢查)");
@@ -459,7 +459,6 @@ const submitOrder = async () => {
 
     console.log("開始訂單提交前嚴謹驗證...");
 
-    try {
         let isFormValid = true; // 總體表單驗證結果
 
         // --- **觸發所有子表單的嚴謹驗證** ---
@@ -568,24 +567,12 @@ const submitOrder = async () => {
 
 
          // 4. 付款方式/信用卡表單驗證 (PaymentOptions 暴露 validate 方法，或直接檢查狀態)
-         // 檢查 paymentOptionsRef 引用是否存在且暴露 validate 方法
-         // 或者直接檢查 isCreditCardFormValid 狀態 (如果選擇了信用卡)
-         // 這裡使用檢查 isCreditCardFormValid 狀態的方式，因為 PaymentOptions 主要通過這個狀態匯報信用卡驗證結果
-         if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
-             // 如果選擇了信用卡支付方式，直接檢查 isCreditCardFormValid 狀態
-             if (!isCreditCardFormValid.value) {
-                 console.log("信用卡表單驗證失敗 (狀態無效)");
-                 isFormValid = false;
-                 // 滾動到付款區塊並展開
-                 scrollToSection('payment');
-                 // ElMessage.error("請檢查信用卡資料。");
-             } else {
-                  console.log("信用卡表單驗證通過 (狀態有效)");
-             }
-         } else {
-              // 如果沒有選擇信用卡支付，或者選擇了非信用卡支付方式，則付款方式驗證視為通過
-              console.log("未選擇信用卡支付，或選擇非信用卡支付，付款方式驗證視為通過");
-         }
+        if (!formData.paymentMethod) {
+            console.log("付款方式未選擇");
+            isFormValid = false;
+            scrollToSection('payment');
+            ElMessage.error("請選擇付款方式。");
+        }
 
         // 如果付款方式驗證失敗，停止後續提交
         if (!isFormValid) {
@@ -598,10 +585,8 @@ const submitOrder = async () => {
         // --- 執行嚴謹驗證後的最終判斷 ---
         // 如果所有子表單驗證都通過 (isFormValid 仍然是 true)
         if (!isFormValid) {
-             // 這個判斷其實在每個驗證步驟後都做了 return，這裡作為一個最終的雙重檢查
              console.error("總體表單驗證失敗，停止提交。");
-             // 可以在這裡添加一個總體的錯誤提示
-             // ElMessage.error("請檢查所有必填欄位和格式是否正確。");
+             ElMessage.error("請檢查所有必填欄位和格式是否正確。");
              isSubmitting.value = false;
              return;
         }
@@ -720,9 +705,8 @@ const submitOrder = async () => {
          switch (formData.paymentMethod) {
              // 確保這裡的 case 值與 PaymentOptions.vue 中定義的 value 對應
              // 確保後端 Enum 值正確
-             case 'NewebPay_CreditCard': backendSelectedPaymentMethod = 0; break;
              case 'ECPay_CreditCard': backendSelectedPaymentMethod = 0; break; // 如果後端不區分具體信用卡金流，可以都映射到信用卡 Enum
-             case 'LINEPay': backendSelectedPaymentMethod = 2; break; // 2 是 LINE Pay
+             case 'LINEPay': backendSelectedPaymentMethod = 1; break; // 2 是 LINE Pay
          }
 
 
@@ -740,39 +724,78 @@ const submitOrder = async () => {
 
         console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
 
-        // --- 3. 調用 API 提交訂單 ---
-        const apiResponse = await createOrder(orderPayload); // 將 API 調用放在這裡
-        console.log('createOrder API 調用成功，回應:', apiResponse);
+    try {
+        // --- 第一步：呼叫後端 API 建立訂單 ---
+        const createOrderResponse = await createOrder(orderPayload);
+        console.log('createOrder API 成功，回應:', createOrderResponse);
 
-        // 檢查 API 回應是否表示成功
-        // 這裡的判斷條件 (apiResponse.data && (apiResponse.data.orderId || apiResponse.data.value)) 需要根據你的後端實際回應調整
-        if (apiResponse && apiResponse.data && (apiResponse.data.orderId || apiResponse.data.value)) {
-            createdOrderId.value = apiResponse.data.orderId || apiResponse.data.value;
-            submitSuccess.value = true;
+        if (createOrderResponse && createOrderResponse.data && createOrderResponse.data.orderId) {
+            const orderId = createOrderResponse.data.orderId;
+            ElMessage.success(`訂單 #${orderId} 已成功建立！正在準備前往付款...`);
 
-            ElMessage.success("訂單提交成功！"); // 給用戶一個成功提示
-
+            // 清理購物車中已提交的商品
             const successfullySubmittedItemUuids = cartStore.selectedItems.map(i => i.id);
             if (successfullySubmittedItemUuids.length > 0) {
                 cartStore.removeItemsByIds(successfullySubmittedItemUuids);
             }
 
-            router.push({ path: '/order-complete', query: { orderId: createdOrderId.value } });
+            // --- 第二步：根據選擇的支付方式，呼叫對應的後端支付準備 API ---
+            if (formData.paymentMethod === 'ECPay_CreditCard') {
+                console.log(`準備為訂單 ${orderId} 請求 ECPay 信用卡支付...`);
+                // 呼叫後端的 ECPayController.PrepareECPayPayment Action
+                // 假設您的 API服務 (例如 orderapi.js) 中有一個 prepareEcpayPayment(orderId) 的方法
+                try {
+                    // 這裡需要一個新的 API 函數來調用 /api/ECPay/Checkout/{orderId}
+                    // 假設它叫 initiateEcpayPayment(orderId)
+                    const ecpayResponse = await fetch(`/api/ECPay/Checkout/${orderId}`, { method: 'POST' });
+                    if (ecpayResponse.ok) {
+                        const htmlToSubmit = await ecpayResponse.text();
+                        console.log("收到 ECPay HTML 表單，準備提交...");
+
+                        const blob = new Blob([htmlToSubmit], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        window.location.replace(url); // 或 window.location.href = url;
+                        // 不需要再呼叫 URL.revokeObjectURL(url)，因為頁面已經跳轉了
+                        // 此時瀏覽器應該會自動提交表單並導向綠界
+
+                        // isSubmitting.value = false; // 這裡頁面已經跳轉，這個可能不會執行到
+                        return; // 結束 submitOrder 函數
+
+                    } else {
+                        const errorData = await ecpayResponse.json().catch(() => ({ message: '準備ECPay支付失敗，且無法解析錯誤回應。' }));
+                        console.error('準備 ECPay 支付失敗:', ecpayResponse.status, errorData);
+                        submitError.value = `準備ECPay支付失敗: ${errorData.message || ecpayResponse.statusText}`;
+                        ElMessage.error(submitError.value);
+                    }
+                } catch (ecpayErr) {
+                    console.error("請求 ECPay 支付準備時發生錯誤:", ecpayErr);
+                    submitError.value = `請求ECPay支付時發生網路或客戶端錯誤: ${ecpayErr.message}`;
+                    ElMessage.error(submitError.value);
+                }
+            } else if (formData.paymentMethod === 'LINEPay') {
+                console.log(`訂單 ${orderId} 選擇 LINE Pay，導向 LINE Pay 處理流程...`);
+                // router.push({ path: '/linepay-checkout', query: { orderId: orderId } });
+                // 或者呼叫後端的 LINE Pay 準備 API
+                ElMessage.info("LINE Pay 流程尚未實作。");
+            } else {
+                // 理論上不應該到這裡，因為前面已經檢查過 formData.paymentMethod
+                ElMessage.error("未知的支付方式，無法繼續。");
+            }
         } else {
-            // API 調用成功，但後端回應表示業務失敗或數據格式不對
-            console.error('訂單提交失敗 - API 回應無效或指示錯誤:', apiResponse);
-            submitError.value = apiResponse?.data?.message || '訂單提交失敗，請稍後再試或聯繫客服。 (回應異常)';
+            console.error('訂單建立失敗 - API 回應無效或指示錯誤:', createOrderResponse);
+            submitError.value = createOrderResponse?.data?.message || '訂單建立失敗，請稍後再試。 (回應異常)';
             ElMessage.error(submitError.value);
         }
-    } catch (err) { // 這個 catch 會捕獲：1. 表單驗證中的 await 拋錯 2. createOrder API 調用本身的錯誤 (網路、伺服器500等)
+    } catch (err) {
+        // ... (原有的錯誤處理邏輯) ...
         console.error("訂單提交過程中發生錯誤:", err);
-        if (err.response) { // Axios 錯誤結構
+        if (err.response) {
             console.error("後端錯誤回應:", err.response.data);
             submitError.value = err.response.data.message || err.response.data.title || '訂單提交失敗，伺服器返回錯誤。';
-        } else if (err.request) { // 請求已發出但沒有收到回應
+        } else if (err.request) {
             console.error("請求已發出但無回應:", err.request);
             submitError.value = '無法連接到伺服器，請檢查您的網路連線。';
-        } else { // 其他類型的錯誤 (例如，payload 準備過程中的 JS 錯誤)
+        } else {
             console.error("JS錯誤或請求設置錯誤:", err.message);
             submitError.value = err.message || '提交訂單時發生未知錯誤，請檢查控制台。';
         }
