@@ -151,7 +151,11 @@ declare module 'vue' {
     Turkiye: typeof import('./components/Visa/Turkiye.vue')['default']
     USA: typeof import('./components/Visa/USA.vue')['default']
     Vietnam: typeof import('./components/Visa/Vietnam.vue')['default']
+    VisaDatil: typeof import('./components/Visa/VisaDatil.vue')['default']
+    VisaDetail: typeof import('./components/Visa/VisaDetail.vue')['default']
+    VisaOrder: typeof import('./components/Visa/VisaOrder.vue')['default']
     VisaOrderdetails: typeof import('./components/Visa/VisaOrderdetails.vue')['default']
+    VisaOrderForm: typeof import('./components/Visa/VisaOrderForm.vue')['default']
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
     VueWorldMap: typeof import('./components/Visa/VueWorldMap.vue')['default']
   }

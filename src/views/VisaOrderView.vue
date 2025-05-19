@@ -1,7 +1,5 @@
-<!-- View/VisaOrderInformation.vue -->
-
 <template>
-  <visa-orderdetails>
+  <VisaOrder>
     <template #header>
       <h1>我的頁面標題</h1>
     </template>
@@ -12,16 +10,16 @@
     <template #footer>
       <p>&copy; 2023 我的應用程式</p>
     </template>
-   </visa-orderdetails>
+  </VisaOrder>
 </template>
 
 <script>
-import  VisaOrderdetails from '@/components/Visa/VisaOrderdetails.vue';
+import VisaOrder from '@/components/Visa/VisaOrder.vue';
 
 
-export default {
-  components: {
-   VisaOrderdetails,
-  },
-};
-</script> 
+// export default {
+//   components: {
+//     VisaOrderdetails,
+//   },
+// };
+</script>

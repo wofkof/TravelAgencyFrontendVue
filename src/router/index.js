@@ -15,7 +15,8 @@ import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
 import VisaPage from "@/views/VisaPage.vue";//富成
-import VisaOrderInformation from '@/views/VisaOrderInformation.vue';//富成
+import VisaOrderView from '@/views/VisaOrderView.vue';//富成
+import VisaDetailView from '@/views/VisaDetailView.vue';//富成
 import OrderComplete from "@/views/OrderComplete.vue";
 
 
@@ -85,11 +86,17 @@ const routes = [
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 
-   {
-    path: "/VisaOrderInformation",
-    name: "VisaOrderInformation",
-    component: VisaOrderInformation,
-  },//富成
+  {
+    path: '/visa/detail',
+    name: 'VisaDetailView',
+    component: VisaDetailView,
+  },
+
+  {
+    path: '/visa/order',
+    name: 'VisaOrderView',
+    component: VisaOrderView,
+  },
 
 ];
 const router = createRouter({
