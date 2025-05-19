@@ -29,7 +29,7 @@ export const useCartStore = defineStore('ShoppingCart', () => {
         // occupancy 資訊可以從 options 動態生成或在此處預設
       },
       options: [
-        { type: '成人', quantity: 1, price: 8200, unitLabel: '佔床' }, // unitLabel 可用於住宿人數描述
+        { type: '成人', quantity: 1, price: 10000, unitLabel: '佔床' }, // unitLabel 可用於住宿人數描述
         { type: '兒童', quantity: 0, price: 6500, unitLabel: '佔床' },
         { type: '嬰兒', quantity: 0, price: 1000, unitLabel: '不佔床' }
       ],
