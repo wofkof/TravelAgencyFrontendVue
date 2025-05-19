@@ -14,7 +14,7 @@
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" readonly/>
     </div>
-      <el-button type="primary" @click="goBack">返回</el-button>
+      <el-button color="#62b9ff" @click="goBack" plain  round>返回</el-button>
     </div>
 
     <el-tabs v-model="activeDay" type="border-card" class="tabs">
@@ -128,7 +128,7 @@ h1 {
   }
   
   .tabs{
-    background-color: #b5cff59f;
+    background-color: #f0f2f3;
     border-radius: 10px;
     height: 800px;
   }
@@ -142,11 +142,10 @@ h1 {
   .activity-card {
     width: 100%;
   max-width: 700px;
-    background-color: #6ab8e6;
+    background-color: #F9FAFB;
     border-radius: 10px;
     padding: 5px;
-    color: black;
-    font-weight: bold;
+    color: #263238;
     display: flex;
   align-items: stretch;
   margin-bottom: 16px;
@@ -193,7 +192,7 @@ h1 {
 
 ::v-deep(.el-timeline-item__timestamp) {
   font-size: 17px;
-  color: black;
+  color: #616161;
 }
 ::v-deep(.el-timeline-item__icon) {
   font-size: 16px;

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <DeleteDialog ref="deleteDialog"/>
+    <ConfirmDialog ref="confirmDialog"/>
     <Dialog ref="dialogRef" :onAdd="addContent" :onEdit="updateContent" />
     <h1>{{ form.title }}</h1>
     <div class="header">
@@ -12,8 +12,8 @@
         readonly
         style="max-width: 300px"
       />
-      <el-button type="primary" @click="goBack">返回</el-button>
-      <el-button type="success" @click="openCreateDialog">新增項目</el-button>
+      <el-button color="#74cc6c" @click="openCreateDialog" plain  round>新增項目</el-button>
+      <el-button color="#62b9ff" @click="goBack" plain  round>返回</el-button>
     </div>
 
     <el-tabs v-model="activeDay" type="border-card" class="tabs">
@@ -42,8 +42,8 @@
                 </div>
               </div>
               <div class="actions">
-                    <el-button color="#626aef"  @click="editItem(day - 1, activity.originalIndex)" :icon="Edit" circle></el-button>                    
-                    <el-button type="danger" @click="removeItem(day - 1, activity.originalIndex)" :icon="Delete" circle></el-button>
+                    <el-button color="#90CAF9"  @click="editItem(day - 1, activity.originalIndex)" :icon="Edit" circle></el-button>                    
+                    <el-button color="#f8c1c9" @click="removeItem(day - 1, activity.originalIndex)" :icon="Delete" circle></el-button>
                 </div>          
               </div>
             </el-timeline-item>
@@ -57,7 +57,7 @@
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" />
     </div>
-      <el-button type="success" @click="saveToServe">送出審核</el-button>
+      <el-button color="#50b895" @click="saveToServe" plain  round>送出審核</el-button>
     </div>
     
   </div>
@@ -68,7 +68,7 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LocationInformation, Edit, Delete } from '@element-plus/icons-vue'
 import Dialog from '@/components/customtravel/ContentDialog.vue'
-import DeleteDialog from '@/components/customtravel/DeleteDialog.vue'
+import ConfirmDialog from '@/components/customtravel/ConfirmDialog.vue'
 import api from '@/utils/api'
 import { useTravelStore } from '@/stores/customtravelStore'
 import { ElMessage } from 'element-plus'
@@ -78,7 +78,7 @@ const router = useRouter()
 const travelStore = useTravelStore()
 const activeDay = ref('1')
 const dialogRef = ref(null)
-const deleteDialog = ref(null)
+const confirmDialog = ref(null)
 const dailyActivities = ref([])
 const city = ref([])
 const district = ref([])
@@ -180,7 +180,7 @@ console.warn('找不到指定資料！', dayIndex, itemIndex)
     return
   }
   try{
-    await deleteDialog.value.open({
+    await confirmDialog.value.open({
       title:'確認刪除',
       message:'確定要刪除這筆行程內容嗎?',
     })
@@ -213,10 +213,6 @@ console.warn('找不到指定資料！', dayIndex, itemIndex)
   }
   const data = {
     category: raw.category,
-    // item: Array.isArray(raw.item) ? raw.item[0] : raw.item,
-    // city: Array.isArray(raw.city) ? raw.city[0] : raw.city,
-    // district: Array.isArray(raw.district) ? raw.district[0] : raw.district,
-    // time: Array.isArray(raw.time) ? raw.time[0] : raw.time,
     item: raw.item,
     city: raw.city,
     district: raw.district,
@@ -235,19 +231,25 @@ watch(dailyActivities, (newVal) => {
 }, { deep: true })
 
 const saveToServe = async() =>{ 
-  if (!memberId) {
-    ElMessage.warning('請先登入會員，才可送出審核!')
-    return
-  }
-  const payload = {
-    memberId: memberId,
-    note: form.title,
-    departureDate: form.daterange[0],
-    endDate: form.daterange[1],
-    days: Number(form.days),
-    totalAmount: Number(form.budget),
-    people: Number(travelStore.travelForm.people),
-    contents: dailyActivities.value.flatMap((dayList, dayIndex) =>
+  try{
+await confirmDialog.value.open({
+  title:'確認送出',
+  message:'確定要將這筆行程送出審核嗎?',
+})
+
+if (!memberId) {
+  ElMessage.warning('請先登入會員，才可送出審核!')
+  return
+}
+const payload = {
+  memberId: memberId,
+  note: form.title,
+  departureDate: form.daterange[0],
+  endDate: form.daterange[1],
+  days: Number(form.days),
+  totalAmount: Number(form.budget),
+  people: Number(travelStore.travelForm.people),
+  contents: dailyActivities.value.flatMap((dayList, dayIndex) =>
       dayList.map(item => ({
         day: dayIndex + 1,
         time: item.time,
@@ -257,26 +259,30 @@ const saveToServe = async() =>{
       }))
     )
   }
-
+  
   try {
     await api.post('/Content/Create', payload)
-
+    
     const list = JSON.parse(localStorage.getItem('list') || '[]')
-  const id = route.params.id
-  const updatedList = list.filter(item => item.id != id)
-  localStorage.setItem('list', JSON.stringify(updatedList))
-
-  localStorage.removeItem('travelForm')
-  localStorage.removeItem('dailyActivities')
-  localStorage.removeItem(`activities_${route.params.id}`)
+    const id = route.params.id
+    const updatedList = list.filter(item => item.id != id)
+    localStorage.setItem('list', JSON.stringify(updatedList))
+    
+    localStorage.removeItem('travelForm')
+    localStorage.removeItem('dailyActivities')
+    localStorage.removeItem(`activities_${route.params.id}`)
     travelStore.clearAll()
-
+    
     ElMessage.success('送出成功，訂單已送出審核')
     router.push('/member/customtravel-status')
   } catch (err) {
     ElMessage.error('發送失敗')
     console.error(err)
   }
+}
+catch{
+  ElMessage.info('取消送出')
+}
 }
 </script>
   
@@ -301,7 +307,7 @@ const saveToServe = async() =>{
   }
   
   .tabs{
-    background-color: #b5cff59f;
+    background-color: #f0f2f3;
     border-radius: 10px;
     height: 800px;
   }
@@ -315,11 +321,10 @@ const saveToServe = async() =>{
   .activity-card {
     width: 100%;
   max-width: 700px;
-    background-color: #6ab8e6;
+    background-color: #F9FAFB;
     border-radius: 10px;
     padding: 5px;
-    color: black;
-    font-weight: bold;
+    color: #263238;
     display: flex;
   align-items: stretch;
   margin-bottom: 16px;
@@ -389,7 +394,7 @@ const saveToServe = async() =>{
 
 ::v-deep(.el-timeline-item__timestamp) {
   font-size: 17px;
-  color: black;
+  color: #616161;
 }
 ::v-deep(.el-timeline-item__icon) {
   font-size: 16px;

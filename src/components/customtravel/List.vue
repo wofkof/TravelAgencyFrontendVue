@@ -1,11 +1,11 @@
 <template>
     <div class="header">
       <h1 class="title">自訂行程</h1>
-      <el-button class="create-btn" type="primary" @click="createNew">新增行程</el-button>
+      <el-button class="create-btn" color="#74cc6c" @click="createNew" plain  round>新增行程</el-button>
     </div>
     
     <div class="container">
-      <DeleteDialog ref="deleteDialog"/>
+      <ConfirmDialog ref="confirmDialog"/>
       <div class="travel-list">
         <div
           class="travel-card"
@@ -25,8 +25,8 @@
             </div>
           </div>
           <div class="action-area">            
-            <el-button color="#626aef" @click="editTravel(item)" :icon="Edit" circle />
-            <el-button type="danger"  @click="deleteTravel(index)" :icon="Delete" circle />
+            <el-button color="#90CAF9" @click="editTravel(item)" :icon="Edit" circle />
+            <el-button color="#f8c1c9"  @click="deleteTravel(index)" :icon="Delete" circle />
           </div>
         </div>
       </div>
@@ -38,13 +38,13 @@
   import { Edit, Delete } from '@element-plus/icons-vue'
   import { useRouter } from 'vue-router'
   import { useTravelStore } from '@/stores/customtravelStore'
-  import DeleteDialog from '@/components/customtravel/DeleteDialog.vue'
+  import ConfirmDialog from '@/components/customtravel/ConfirmDialog.vue'
   import { ElMessage } from 'element-plus'
 
   const router = useRouter()
   const list = ref([])
   const travelStore = useTravelStore()
-  const deleteDialog = ref(null)
+  const confirmDialog = ref(null)
   
   onMounted(() => {
   const stored = localStorage.getItem('list')
@@ -65,7 +65,7 @@
   
   const deleteTravel = async(index) => {
     try{
-      await deleteDialog.value.open({
+      await confirmDialog.value.open({
         title:'確認刪除',
         message:'確定要刪除這筆行程嗎?',
       })
@@ -90,8 +90,9 @@
   <style scoped>
   .container {
     padding: 30px;
-    background-color: #71b2d879;
+    background-color: #fcfcfc;
     border-radius: 20px;
+    box-shadow: 2px 2px 8px #ccc;
     max-width: 800px;
     height: 600px;
     margin: 0 auto;
@@ -134,7 +135,7 @@
   .info-area {
     flex: 1;
     padding: 15px;
-    background-color: #f1f8e9;
+    background-color: #F9FAFB;
   }
   
   .row {
@@ -150,7 +151,7 @@
   
   .action-area {
     width: 60px;
-    background-color: #d7eafc;
+    background-color: #c2bfbfa6;
     display: flex;
     flex-direction: column;
     align-items: center;
