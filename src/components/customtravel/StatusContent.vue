@@ -1,5 +1,6 @@
 <template>
    <div class="container">
+    <h1>{{ form.title }}</h1>
     <div class="header">
       <el-date-picker
         v-model="form.daterange"
@@ -53,10 +54,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/utils/api'
 import { LocationInformation } from '@element-plus/icons-vue'
 
 const form = ref({
+  title: '',
   daterange: [],
   days: '',
   budget: ''
@@ -64,7 +66,6 @@ const form = ref({
 
 const route = useRoute()
 const router = useRouter()
-// const customTravelId = route.params.id
 const { customTravelId } = defineProps({
   customTravelId: Number
 })
@@ -73,13 +74,14 @@ const dailyActivities = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`https://localhost:7265/api/Content?id=${customTravelId}`)
+    const res = await api.get(`/Content?id=${customTravelId}`)
     const raw = res.data
 const memberId = localStorage.getItem('memberId')
-    const travelRes = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
+    const travelRes = await api.get(`/List?memberId=${memberId}`)
     const travel = travelRes.data.find(t => t.customTravelId == customTravelId)
 
     if (travel) {
+      form.value.title = travel.note
       form.value.daterange = [travel.departureDate, travel.endDate]
       form.value.days = travel.days
       form.value.budget = travel.totalAmount
@@ -103,7 +105,6 @@ const memberId = localStorage.getItem('memberId')
 
 const emit = defineEmits(['go-back'])
 const goBack = () => {emit('go-back')}
-// const goBack = () => {router.push('/CustomtravelStatusList')}
 </script>
   
 <style scoped>
@@ -113,6 +114,12 @@ const goBack = () => {emit('go-back')}
     margin: 0 auto;
   }
   
+h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
   .header {
     display: flex;
     gap: 10px;

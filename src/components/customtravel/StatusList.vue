@@ -37,7 +37,7 @@
   import { View, ShoppingCart } from '@element-plus/icons-vue'
   import { useCartStore } from '@/stores/ShoppingCart'
   import { ElMessage } from 'element-plus'
-  import axios from 'axios'
+  import api from '@/utils/api'
 
   const travelList = ref([])
   const router = useRouter()
@@ -56,7 +56,7 @@
 onMounted(async () => {
   try {
     const memberId = localStorage.getItem('memberId')
-    const res = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
+    const res = await api.get(`/List?memberId=${memberId}`)
     travelList.value = res.data.map(item => ({
       customTravelId: item.customTravelId,
       title: item.note || '無標題',
@@ -75,7 +75,6 @@ onMounted(async () => {
 const emit = defineEmits(['view-detail'])
 const viewTravel = (id) =>{
   emit('view-detail', id)
-  // router.push({ name:'CustomtravelStatusContent',params:{id}})
 }
 
 const addToCart = (item) => {
@@ -95,6 +94,7 @@ const addToCart = (item) => {
     max-width: 800px;
     height: 600px;
     margin: 0 auto;
+    overflow-y: auto;
   }
   
   h1 {

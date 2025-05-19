@@ -22,7 +22,6 @@
               <el-date-picker v-model="item.daterange" type="daterange" start-placeholder="Start Date" end-placeholder="End Date" readonly />
               <el-input v-model="item.days" placeholder="Days" readonly style="width: 100px" />
               <span>天</span>
-              <!-- <el-icon ><Edit /></el-icon> -->
             </div>
           </div>
           <div class="action-area">            
@@ -51,8 +50,6 @@
   const stored = localStorage.getItem('list')
   if (stored) {
     list.value = JSON.parse(stored)
-    // const all = JSON.parse(stored)
-    // list.value = all.filter(x => x.memberId === member.memberId)
     } 
 })
 
@@ -98,6 +95,7 @@
     max-width: 800px;
     height: 600px;
     margin: 0 auto;
+    overflow-y: auto;
   }
   
   .header {

@@ -2,11 +2,11 @@
     <div class="container">
     <h1>建立自訂行程</h1>
     <div class="form">
-    <el-form :model="form" label-position="left" label-width="80px" style="max-width: 600px">
-      <el-form-item label="行程名稱">
+    <el-form :model="form" ref="formRef" :rules="rules" label-position="left" label-width="80px" style="max-width: 600px">
+      <el-form-item label="行程名稱" prop="title">
         <el-input v-model="form.title" />
       </el-form-item>    
-      <el-form-item label="日期">        
+      <el-form-item label="日期" prop="daterange">        
       <el-date-picker
         v-model="form.daterange"
         type="daterange"
@@ -20,7 +20,7 @@
       <el-form-item label="天數">
         <el-input v-model="form.days" readonly/>
       </el-form-item>
-      <el-form-item label="人數">
+      <el-form-item label="人數" prop="people">
         <el-input v-model="form.people" @input="NumberInput"  placeholder="請輸入人數(1-50)"/>
       </el-form-item>        
       <el-form-item>
@@ -42,6 +42,7 @@
 
   const router = useRouter()
   const travelStore = useTravelStore()
+  const formRef = ref(null)
   
   const form = reactive({
     title: '',  
@@ -70,7 +71,7 @@
 }
 
 function NumberInput(val) {
-  form.people = val.replace(/\D/g, '')  // 移除所有非數字
+  const cleanVal = val.replace(/\D/g, '')  // 移除所有非數字
 const num = parseInt(cleanVal, 10)
 
   if (!cleanVal) {
@@ -84,7 +85,31 @@ const num = parseInt(cleanVal, 10)
   }
 }
 
+const rules = {
+  title: [
+    { required: true, message: '請輸入行程名稱', trigger: 'blur' }
+  ],
+  daterange: [
+    { type: 'array', required: true, message: '請選擇日期區間', trigger: 'change' }
+  ],
+  people: [
+    { required: true, message: '請輸入人數', trigger: 'blur' },
+    { validator: (_, value, callback) => {
+        const num = parseInt(value, 10)
+        if (isNaN(num) || num < 1 || num > 50) {
+          callback(new Error('人數需為 1 到 50 之間的數字'))
+        } else {
+          callback()
+        }
+      }, trigger: 'blur'
+    }
+  ]
+}
+
   const onSubmit = () => {   
+    formRef.value.validate((valid) => {
+    if (!valid) return
+
     const id = Date.now()
     const newTravel = {
     id,
@@ -102,6 +127,7 @@ const num = parseInt(cleanVal, 10)
   travelStore.setDailyActivities(Array.from({ length: newTravel.days }, () => []))
 
   router.push({ name: 'CustomtravelContent', params: { id } })
+})
   }
 
   const goBack = () => {router.push('/CustomtravelList')}
@@ -112,7 +138,9 @@ const num = parseInt(cleanVal, 10)
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 30px;
+    justify-content: center;
+  box-sizing: border-box;
+  max-width: 100vw;          /* 防止寬度超出造成空白 */
   }
   
   h1 {
@@ -134,8 +162,9 @@ const num = parseInt(cleanVal, 10)
     font-size: 18px;
   }
 
-  .el-form-item{    
+  .el-form-item_label{    
     font-weight: bold;
+    text-align:right;
   }
 
   .backbtn{
