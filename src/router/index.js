@@ -14,9 +14,9 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
-import VisaPage from "@/views/VisaPage.vue";//富成
-import VisaOrderView from '@/views/VisaOrderView.vue';//富成
-import VisaDetailView from '@/views/VisaDetailView.vue';//富成
+import VisaPage from "@/views/VisaPage.vue";//富成,定義顯示是誰
+import VisaOrderView from '@/views/VisaOrderView.vue';//富成,定義顯示是誰
+import VisaDetailView from '@/views/VisaDetailView.vue';//富成,定義顯示是誰
 import OrderComplete from "@/views/OrderComplete.vue";
 
 
@@ -84,21 +84,27 @@ const routes = [
 
   { path: '/detail/:id', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
-  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
+  { 
+    path: "/VisaPage", //頁面的路徑URL
+    name: "VisaPage", // // 路由名稱
+    component: VisaPage, //對應到Views組件
+  }, //富成
 
   {
-    path: '/visa/detail',
-    name: 'VisaDetailView',
-    component: VisaDetailView,
-  },
+    path: '/visa/detail',//頁面的路徑URL
+    name: 'VisaDetailView',// // 路由名稱
+    component: VisaDetailView,//對應到Views組件
+  },//富成
 
   {
-    path: '/visa/order',
-    name: 'VisaOrderView',
-    component: VisaOrderView,
-  },
+    path: '/visa/order',//頁面的路徑URL
+    name: 'VisaOrderView',// // 路由名稱
+    component: VisaOrderView,//對應到Views組件
+  },//富成
 
 ];
+
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
