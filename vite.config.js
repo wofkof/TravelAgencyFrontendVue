@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
+import mkcert from "vite-plugin-mkcert";
 
 import Components from "unplugin-vue-components/vite";
 import AutoImport from "unplugin-auto-import/vite";
@@ -9,6 +10,7 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 export default defineConfig({
   plugins: [
     vue(),
+    mkcert(),
 
     Components({
       dirs: ["src/components"],
@@ -29,6 +31,8 @@ export default defineConfig({
     },
   },
   server: {
+    host: "0.0.0.0",
+    https: true,
     port: 3000,
     open: true,
     proxy: {

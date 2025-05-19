@@ -188,7 +188,7 @@ const handleClickOutside = (e: MouseEvent) => {
 
 // 封裝已讀
 const senderType = "Member";
-const senderId = 11110;
+const senderId = chatStore.memberId;
 
 const updateReadStatus = async (chatRoomId: number) => {
   const conn = getConnection();
@@ -196,13 +196,12 @@ const updateReadStatus = async (chatRoomId: number) => {
   await conn.invoke("NotifyRead", chatRoomId, senderId, senderType);
 };
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener("click", handleClickOutside);
   // @ts-ignore
   window.isScrolledToBottom = isScrolledToBottom;
-
-  if (!chatStore.currentChatRoomId) {
-    chatStore.setCurrentChatRoom(1);
+  if (chatStore.allChatRooms.length > 0) {
+    chatStore.setCurrentChatRoom(chatStore.allChatRooms[0].chatRoomId);
   }
 });
 
