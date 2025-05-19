@@ -26,33 +26,39 @@
       >
     <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
     <p><strong>生日：</strong>{{ formatDate(t.birthDate) }}</p>
-    <span>{{ expandedTravelerId === t.id ? '關閉▲' : '編輯▼' }}</span>
+    <span>{{ expandedTravelerId === t.id ? '關閉 ▲' : '編輯 ▼' }}</span>
   </div>
 
   <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-3">
     <div class="flex gap-6">
       <div class="col">
-      <label>中文姓名</label><br />
-      <el-input v-model="t.chineseName" style="width: 240px" placeholder="請輸入姓名" />
+      <label>姓名 <span class="text-red-500">*</span></label><br />
+      <el-input
+      v-model="t.chineseName"
+      :class="{ 'border border-red-500': fieldErrors.chineseName }"
+      style="width: 240px"
+      placeholder="請輸入姓名"
+    />
     </div>
 
     <div class="col">
-      <label>出生年月日</label><br />
-       <el-date-picker
-      v-model="t.birthDate"
+      <label>生日 <span class="text-red-500">*</span></label><br />
+      <el-date-picker
+      v-model="t.birthDate" :disabled-date="limitBirthdayRange"
       type="date"
       placeholder="請選擇出生日期"
       format="YYYY-MM-DD"
       value-format="YYYY-MM-DD"
+      :class="{ 'border border-red-500': fieldErrors.birthDate }"
       style="width: 240px"
     />
     </div>
   
     </div>
-    <div class="flex gap-4">
+    <div class="flex gap-6">
       <div class="col">
-      <label>身分證字號(旅遊保險辦理使用)</label><br />
-      <el-input v-model="t.idNumber" style="width: 240px" placeholder="請輸入身分證字號" />
+      <label>身分證字號(旅遊保險辦理使用) <span class="text-red-500">*</span></label><br />
+      <el-input v-model="t.idNumber" :class="{ 'border border-red-500': fieldErrors.idNumber }" maxlength="10" placeholder="請輸入身分證字號" style="width: 240px"  />
     </div>
 
     <div class="col">
@@ -63,26 +69,19 @@
         <el-option label="其他" value="其他" />
       </el-select>
     </div>
-
-      <div class="col">
+    </div>
+    <div class="flex gap-6">
+       <div class="col">
       <label>聯絡手機(行程相關資訊聯繫)</label><br />
-      <el-input v-model="t.phone" style="width: 240px" placeholder="請輸入手機號碼" />
+      <el-input v-model="t.phone"  :class="{ 'border border-red-500': fieldErrors.phone }"
+  maxlength="10" placeholder="請輸入手機號碼" style="width: 240px" />
+      </div>
+      <div class="col">
+      <label>信箱</label><br />
+      <el-input v-model="t.email" style="width: 240px"  placeholder="請輸入聯絡信箱"  />
       </div>
     </div>
-    
-      <div class="flex gap-6">
-        <div class="col">
-      <label>護照英文姓(Surname)</label><br />
-      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
-      </div>
-
-      <div class="col">
-      <label>護照英文名(Givenname)</label><br />
-      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
-      </div>
-      </div>
-      
-      <div class="flex gap-6">
+     <div class="flex gap-6">
         <div class="col">
       <label>證件類別</label><br />
       <el-select v-model="t.documentType" placeholder="請選取證件" style="width: 240px">
@@ -97,6 +96,30 @@
       <el-input v-model="t.documentNumber" style="width: 240px" placeholder="請輸入證件號碼" />
       </div>
       </div>
+      <div class="flex gap-4">
+        <div class="col">
+      <label>護照英文姓(Surname)</label><br />
+      <el-input v-model="t.passportSurname" style="width: 240px" placeholder="例:CHEN" />
+      </div>
+
+      <div class="col">
+      <label>護照英文名(Givenname)</label><br />
+      <el-input v-model="t.passportGivenname" style="width: 240px" placeholder="例:HUATING" />
+      </div>
+      <div class="col">
+      <label>護照到期日</label><br />
+       <el-date-picker
+  v-model="t.passportExpireDate"
+  type="date"
+  placeholder="請選擇護照到期日"
+  format="YYYY-MM-DD"
+  value-format="YYYY-MM-DD"
+  :disabled-date="limitPassportDate"
+  style="width: 240px"
+/>
+
+      </div>
+      </div>
       
     <div class="mt-3 flex justify-end">
       <el-button @click="saveTraveler(t)" type="primary">儲存</el-button>
@@ -108,99 +131,8 @@
 
 </template>
 
-<!-- <script>
-import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
-
-export default {
-  data() {
-    return {
-      travelers: [],
-      showForm: false,
-      selectedTraveler: {},
-      isEditing: false,
-      isReadonly: false,
-      expandedTravelerId: null
-    }
-  },
-  methods: {
-    toggleAccordion(id) {
-      this.expandedTravelerId = this.expandedTravelerId === id ? null : id
-    },
-    saveTraveler(t) {
-  console.log('儲存資料:', t)
-  this.expandedTravelerId = null
-},
-    handleAdd() {
-  const newTraveler = {
-    id: Date.now(),
-    chineseName: '',
-    birthDate: '',
-    idNumber: '',
-    gender: '',
-    phone: '',
-    passportSurname: '',
-    passportGivenname: '',
-    documentType: '',
-    documentNumber: ''
-  }
-
-  this.travelers.push(newTraveler)
-  this.expandedTravelerId = newTraveler.id
-}
-,
-    editTraveler(traveler) {
-      this.selectedTraveler = { ...traveler }
-      this.isEditing = true
-      this.isReadonly = false
-      this.showForm = true
-    },
-    viewTraveler(traveler) {
-      this.selectedTraveler = { ...traveler }
-      this.isEditing = false
-      this.isReadonly = true
-      this.showForm = true
-    },
-    deleteTraveler(id) {
-      if (confirm('確定要刪除這位旅客嗎？')) {
-        this.travelers = this.travelers.filter(t => t.id !== id)
-      }
-    },
-    
-    handleSave(traveler) {
-      const existing = this.travelers.findIndex(t => t.id === traveler.id)
-      if (existing > -1) {
-        this.travelers.splice(existing, 1, traveler)
-      } else {
-        this.travelers.push(traveler)
-      }
-      this.showForm = false
-    },
-    closeModal() {
-      this.showForm = false
-      this.isEditing = false
-      this.isReadonly = false
-    }
-  }
-}
-</script> -->
 <script>
-import axios from 'axios' // ✅ 加入 axios 串接 API
-import {
-  Check,
-  Delete,
-  Edit,
-  Message,
-  Search,
-  Star,
-} from '@element-plus/icons-vue'
-
+import axios from 'axios'
 export default {
   data() {
     return {
@@ -209,18 +141,36 @@ export default {
       selectedTraveler: {},
       isEditing: false,
       isReadonly: false,
-      expandedTravelerId: null
+      expandedTravelerId: null,
+      fieldErrors: {}
     }
   },
   mounted() {
     this.fetchTravelers() // ✅ 一進頁面就載入會員的常用旅客
   },
   methods: {
+    resetFieldErrors() {
+  this.fieldErrors = {}
+},
     toggleAccordion(id) {
       this.expandedTravelerId = this.expandedTravelerId === id ? null : id
     },
+    limitBirthdayRange(date) {
+  const today = new Date()
+  const hundredYearsAgo = new Date()
+  hundredYearsAgo.setFullYear(today.getFullYear() - 100)
+  return date < hundredYearsAgo || date > today
+},
+limitPassportDate(date) {
+    const today = new Date()
+    const sixMonthsLater = new Date()
+    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
+    // date 必須 ≥ 六個月後
+    return date < sixMonthsLater
+  },
     async fetchTravelers() {
-      const memberId = localStorage.getItem('memberId') // ✅ 從 localStorage 取出會員編號
+      const memberId = localStorage.getItem('memberId') 
+      console.log('🔍 抓到登入者ID：', memberId)
       try {
         const res = await axios.get(`https://localhost:7265/api/FavoriteTraveler/${memberId}`)
         this.travelers = res.data.map(t => ({
@@ -232,62 +182,113 @@ export default {
         console.error('載入旅客資料失敗', err)
       }
     },
-    async saveTraveler(t) {
-      const memberId = localStorage.getItem('memberId') // ✅ 套用登入會員 ID
+async saveTraveler(t) {
+  console.log(' 儲存觸發了', t)
+  const memberId = localStorage.getItem('memberId')
+  if (!memberId) {
+    ElMessage.error('請先登入會員')
+    return
+  }
 
-      const payload = {
-        favoriteTravelerId: t.favoriteTravelerId,
-        memberId: Number(memberId),
-        name: t.chineseName,
-        phone: t.phone,
-        idNumber: t.idNumber,
-        birthDate: t.birthDate,
-        gender: t.gender,
-        email: 'placeholder@email.com', // ⚠ 後續可改為從前端填寫
-        documentType: t.documentType,
-        documentNumber: t.documentNumber,
-        passportSurname: t.passportSurname,
-        passportGivenName: t.passportGivenname,
-        passportExpireDate: null,
-        nationality: '',
-        note: ''
-      }
+  //  初始化錯誤欄位
+  this.resetFieldErrors()
 
-      try {
-        if (!t.favoriteTravelerId) {
-          await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
-        } else {
-          await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
-        }
-        await this.fetchTravelers()
-        this.expandedTravelerId = null
-      } catch (err) {
-        console.error('儲存失敗', err)
-      }
-    },
+  //  欄位驗證
+  // if (!t.chineseName) this.fieldErrors.chineseName = true
+  // if (!t.idNumber) this.fieldErrors.idNumber = true
+  // if (!t.birthDate) this.fieldErrors.birthDate = true
+  if (!t.chineseName) this.fieldErrors.chineseName = true
+
+// 身分證格式
+const idNumberRegex = /^[A-Z][1289]\d{8}$/
+if (!idNumberRegex.test(t.idNumber)) this.fieldErrors.idNumber = true
+
+// 手機格式
+const phoneRegex = /^09\d{8}$/
+if (t.phone && !phoneRegex.test(t.phone)) this.fieldErrors.phone = true
+
+// Email 格式
+const emailRegex = /^[\w.-]+@([\w-]+\.)+[a-zA-Z]{2,}$/
+if (t.email && !emailRegex.test(t.email)) this.fieldErrors.email = true
+
+// 護照到期日要未來
+if (t.passportExpireDate && new Date(t.passportExpireDate) <= new Date()) {
+  this.fieldErrors.passportExpireDate = true
+}
+
+// 生日要是100年內
+const hundredYearsAgo = new Date()
+hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100)
+if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthDate) > new Date()) {
+  this.fieldErrors.birthDate = true
+}
+  //  若有錯誤就終止送出
+  if (Object.keys(this.fieldErrors).length > 0) {
+    ElMessage.error('請完整填寫所有必填欄位')
+    return
+  }
+
+  //  建立 gender/documentType 對應
+  const genderMap = { 男: 0, 女: 1, 其他: 2 }
+  const documentTypeMap = { 護照: 0, 居留證: 1, 台胞證: 2 }
+
+  const payload = {
+    favoriteTravelerId: t.favoriteTravelerId,
+    memberId: Number(memberId),
+    name: t.chineseName,
+    phone: t.phone || null,
+    idNumber: t.idNumber,
+    birthDate: t.birthDate,
+    gender: genderMap[t.gender] ?? null,
+    email: t.email?.trim() || null,
+    documentType: documentTypeMap[t.documentType] ?? null,
+    documentNumber: t.documentNumber,
+    passportSurname: t.passportSurname,
+    passportGivenName: t.passportGivenname,
+    passportExpireDate:t.passportExpireDate || null,
+    nationality: '',
+    note: ''
+  }
+
+  try {
+    if (!t.favoriteTravelerId) {
+      await axios.post(`https://localhost:7265/api/FavoriteTraveler`, payload)
+    } else {
+      await axios.put(`https://localhost:7265/api/FavoriteTraveler/${t.favoriteTravelerId}`, payload)
+    }
+
+    ElMessage.success('儲存成功')
+    await this.fetchTravelers()
+    this.expandedTravelerId = null
+  } catch (err) {
+    console.error(' 儲存失敗', err.response?.data || err)
+    ElMessage.error('儲存失敗')
+  }
+}
+,
     handleAdd() {
-      const isEditing = this.travelers.some(t => !t.favoriteTravelerId) // ✅ 防止新增多筆未儲存
+      const isEditing = this.travelers.some(t => !t.favoriteTravelerId)
       if (isEditing) {
-        alert('請先完成目前旅客的儲存，再新增新旅客')
+        ElMessage.warning('請先完成目前旅客的儲存，再新增新旅客')
         return
       }
 
+      this.resetFieldErrors()
+
        const newTraveler = {
-    id: Date.now(), // ✅ 前端暫存用的 id，不傳到後端
-    favoriteTravelerId: null, // ✅ 這樣 saveTraveler() 才知道是新增
+    id: Date.now(),
+    favoriteTravelerId: null,
     chineseName: '',
     birthDate: '',
     idNumber: '',
     gender: '',
     phone: '',
+    email:'',
     passportSurname: '',
     passportGivenname: '',
     documentType: '',
     documentNumber: '',
-    //email: '',
-    //passportExpireDate: '',
-    //nationality: '',
-    //note: ''
+    passportExpireDate: '',
   }
 
   this.travelers.push(newTraveler)
@@ -296,7 +297,7 @@ export default {
     async deleteTraveler(id) {
       const traveler = this.travelers.find(t => t.id === id)
       if (!traveler || !traveler.favoriteTravelerId) {
-        this.travelers = this.travelers.filter(t => t.id !== id) // ✅ 尚未儲存者直接從前端刪除
+        this.travelers = this.travelers.filter(t => t.id !== id)
         return
       }
 
@@ -316,7 +317,7 @@ export default {
     },
     formatDate(dateStr) {
   if (!dateStr) return ''
-  return dateStr.split('T')[0] // ✅ 僅取出日期部分
+  return dateStr.split('T')[0]
 }
 
   }

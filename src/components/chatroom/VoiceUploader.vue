@@ -15,7 +15,9 @@
 <script setup>
 import { sendAudioMessage } from "@/services/chatService";
 import { ref } from "vue";
+import { useChatStore } from "@/stores/chatStore";
 
+const chatStore = useChatStore();
 const isRecording = ref(false);
 let mediaRecorder;
 let chunks = [];
@@ -43,7 +45,12 @@ const startRecording = async () => {
       });
 
       try {
-        await sendAudioMessage(file, 11110, "Member", durationInSeconds);
+        await sendAudioMessage(
+          file,
+          chatStore.memberId,
+          "Member",
+          durationInSeconds
+        );
         ElMessage.success("錄音已傳送");
       } catch (err) {
         ElMessage.error("錄音失敗（錄音時間請超過一秒）");
