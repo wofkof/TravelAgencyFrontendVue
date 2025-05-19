@@ -13,6 +13,9 @@
 
 <script setup>
 import { sendImageMessage } from "@/services/chatService";
+import { useChatStore } from "@/stores/chatStore";
+
+const chatStore = useChatStore();
 
 const handleImageSelect = async (uploadFile) => {
   try {
@@ -25,7 +28,7 @@ const handleImageSelect = async (uploadFile) => {
       return;
     }
 
-    await sendImageMessage(file, 11110);
+    await sendImageMessage(file, chatStore.memberId);
     ElMessage.success("圖片已傳送");
   } catch (err) {
     ElMessage.error("圖片上傳失敗");
