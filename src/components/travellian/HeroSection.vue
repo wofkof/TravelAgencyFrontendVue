@@ -75,7 +75,7 @@ const handleSearch = async () => {
   }).toString();
 
   try {
-    const response = await fetch(`https://localhost:7265/search?${query}`);
+    const response = await fetch(`https://localhost:7265/api/OfficialSearch/search?${query}`);
 
     if (!response.ok) {
       throw new Error("查詢失敗：" + response.status);
