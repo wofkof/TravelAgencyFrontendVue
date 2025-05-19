@@ -1,66 +1,71 @@
 <template>
   <div class="visa-info-container">
-    <h3><el-icon><Avatar /></el-icon>中華民國護照｜申辦項目|新辦/更換(14歲以上)</h3>
+    <h3><el-icon>
+        <Avatar />
+      </el-icon>中華民國護照｜申辦項目|新辦/更換(14歲以上)</h3>
 
-    <el-card class="visa-info-card">
-      <el-row :gutter="2" align="middle">
+
+    <div class="VisaOrderdetails">
+      <el-card class="visa-info-card">
+       <el-row :gutter="2" align="middle">
         <el-col :span="5">
           <div class="item-title">新辦/更換(14歲以上)</div>
         </el-col>
-
         <el-col :span="18">
           <el-row>
             <el-card class="item-info-card">
               <el-col :span="16">一般件：16個工作天</el-col>
               <el-col :span="12">效期：10年</el-col>
-
               <el-col :span="30" style="text-align: right;" styl="text-align: left;">
-
                 <el-col :span="24" style="text-align: right;">TWD 1,700</el-col>
-
-                <el-button type="primary" size="large" @click="selectGeneral">選擇</el-button>
-
+                <el-button type="primary" size="large" @click="goToVisaOrderInformation">選擇</el-button>
               </el-col>
-              
             </el-card>
-
           </el-row>
 
           <el-row>
             <el-card class="item-info-card">
-              <el-col :span="16">超速件：7個工作天</el-col>
+              <el-col :span="16">超特急件：7個工作天</el-col>
               <el-col :span="12">效期：10年</el-col>
-
               <el-col :span="30" style="text-align: right;" styl="text-align: left;">
-
                 <el-col :span="24" style="text-align: right;">TWD 2,850</el-col>
-
-                <el-button type="primary" size="large" @click="selectGeneral">選擇</el-button>
-
+                <el-button type="primary" size="large" @click="goToVisaOrderInformation">選擇</el-button>
               </el-col>
-              
             </el-card>
-
           </el-row>
-
         </el-col>
-
-      </el-row>
-    </el-card>
+       </el-row>
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ArrowRight } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router';
+//從 vue-router 引入 useRouter hook。
+
+    const router = useRouter();
+// 在 setup 函數中調用 useRouter() 來獲取 router 實例。
+    const goToVisaOrderInformation = () => {
+      router.push({ name: 'VisaOrderInformation' });
+      // 使用 router.push() 方法進行導航，與 Vue 2 的 $router.push() 類似。
+      //  將 goToVisaOrderInformation 函數返回，使其可以在模板中被調用。(在 <script setup> 中不需要 return)
+    };
 </script>
+
+
 
 <style scoped>
 .visa-info-container {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* 讓每個卡片之間有點間距 */
-  padding: 30px; /* 讓內容不要太貼邊 */
-  background-color: #f9f9f9; /* 幫 Footer 加個淺灰色背景 */
+  gap: 10px;
+  /* 讓每個卡片之間有點間距 */
+  padding: 30px;
+  /* 讓內容不要太貼邊 */
+  background-color: #f9f9f9;
+  /* 幫 Footer 加個淺灰色背景 */
 }
 
 .visa-info-card {
@@ -69,13 +74,13 @@ import { ArrowRight } from '@element-plus/icons-vue';
 }
 
 .item-title {
-  font-weight: bold; /* 讓標題粗體一點 */
+  font-weight: bold;
+  /* 讓標題粗體一點 */
 }
 
 .item-info-card {
   /* 可以調整卡片的樣式，例如陰影 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width:450px;
+  width: 450px;
 }
 </style>
-

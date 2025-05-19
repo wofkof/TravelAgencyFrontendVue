@@ -59,6 +59,7 @@ declare module 'vue' {
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElEmpty: typeof import('element-plus/es')['ElEmpty']
+    ElFooter: typeof import('element-plus/es')['ElFooter']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElHeader: typeof import('element-plus/es')['ElHeader']
@@ -123,7 +124,6 @@ declare module 'vue' {
     Order: typeof import('./components/MemberCenter/Order.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']
-    PassportFooter: typeof import('./components/Visa/PassportFooter.vue')['default']
     PaymentOptions: typeof import('./components/OrderForm/PaymentOptions.vue')['default']
     Philippines: typeof import('./components/Visa/Philippines.vue')['default']
     PopularDestinations: typeof import('./components/travellian/PopularDestinations.vue')['default']
@@ -151,6 +151,7 @@ declare module 'vue' {
     Turkiye: typeof import('./components/Visa/Turkiye.vue')['default']
     USA: typeof import('./components/Visa/USA.vue')['default']
     Vietnam: typeof import('./components/Visa/Vietnam.vue')['default']
+    VisaOrderdetails: typeof import('./components/Visa/VisaOrderdetails.vue')['default']
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
     VueWorldMap: typeof import('./components/Visa/VueWorldMap.vue')['default']
   }

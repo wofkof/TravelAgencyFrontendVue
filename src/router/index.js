@@ -15,6 +15,7 @@ import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
 import VisaPage from "@/views/VisaPage.vue";//富成
+import VisaOrderInformation from '@/views/VisaOrderInformation.vue';//富成
 import OrderComplete from "@/views/OrderComplete.vue";
 
 
@@ -84,6 +85,12 @@ const routes = [
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 
+   {
+    path: "/VisaOrderInformation",
+    name: "VisaOrderInformation",
+    component: VisaOrderInformation,
+  },//富成
+
 ];
 const router = createRouter({
   history: createWebHistory(),
@@ -92,4 +99,6 @@ const router = createRouter({
     return { top: 0 };
   },
 });
-export default router;//富成
+
+
+export default router;//將 router 實例導出。富成
