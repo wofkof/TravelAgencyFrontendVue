@@ -35,6 +35,7 @@ defineProps({
   },
 });
 
+// 不抓資料庫的localhost
 const fullImageUrl = (path) => {
   const base = getApiBaseUrl();
   const uploadIndex = path.indexOf("/Uploads/");
@@ -44,7 +45,14 @@ const fullImageUrl = (path) => {
   return path;
 };
 
-const fullMediaUrl = (path) => getApiBaseUrl() + path;
+const fullMediaUrl = (path) => {
+  const base = getApiBaseUrl();
+  const uploadIndex = path.indexOf("/Uploads/");
+  if (uploadIndex >= 0) {
+    return base + path.slice(uploadIndex);
+  }
+  return path;
+};
 </script>
 
 <style scoped>
