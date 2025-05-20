@@ -22,7 +22,7 @@
 
 
              <el-main style="background-color: #f9fafc;">Main
-                
+             <VisaThankOrder />   
              </el-main>
              <!-- 主要內容元件，背景顏色為 #f9fafc (淺灰色) -->
 
@@ -47,4 +47,5 @@
  import VisaCarousel from '@/components/Visa/VisaCarousel.vue';
  import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
  import VisaBackTop from '@/components/Visa/VisaBackTop.vue';
+ import VisaThankOrder from '@/components/Visa/VisaThankOrder.vue';
  </script>

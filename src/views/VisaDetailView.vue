@@ -30,6 +30,7 @@
              <el-footer style="height: 40px; background-color: #67c23a;">Footer
                 <VisaQuantityDeparture />
                 <VisaDetail />
+                <!-- 範例按鈕 -->
                 <VisaBackTop />
              </el-footer>
             <!-- 頁尾元件，設定高度為 40 像素，背景顏色為 #67c23a (綠色) -->

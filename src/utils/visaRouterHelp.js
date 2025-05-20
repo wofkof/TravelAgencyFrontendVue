@@ -76,6 +76,14 @@ export default function useVisaRouter() {
         router.push({ name: 'VisaReceiptInformation' });
     };
 
+    const VisaCreditCard = () => {
+        router.push({ name: 'VisaCreditCard' });
+    };
+
+    const VisaThankOrder = () => {
+        router.push({ name: 'VisaThankOrder' });
+    };
+
   
     // 你可以在這裡添加更多與簽證相關的路由導航函數
 
