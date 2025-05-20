@@ -1,5 +1,6 @@
 <template>
    <div class="container">
+    <h1>{{ form.title }}</h1>
     <div class="header">
       <el-date-picker
         v-model="form.daterange"
@@ -13,7 +14,7 @@
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" readonly/>
     </div>
-      <el-button type="primary" @click="goBack">返回</el-button>
+      <el-button color="#62b9ff" @click="goBack" plain  round>返回</el-button>
     </div>
 
     <el-tabs v-model="activeDay" type="border-card" class="tabs">
@@ -53,10 +54,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/utils/api'
 import { LocationInformation } from '@element-plus/icons-vue'
 
 const form = ref({
+  title: '',
   daterange: [],
   days: '',
   budget: ''
@@ -64,7 +66,6 @@ const form = ref({
 
 const route = useRoute()
 const router = useRouter()
-// const customTravelId = route.params.id
 const { customTravelId } = defineProps({
   customTravelId: Number
 })
@@ -73,13 +74,14 @@ const dailyActivities = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`https://localhost:7265/api/Content?id=${customTravelId}`)
+    const res = await api.get(`/Content?id=${customTravelId}`)
     const raw = res.data
 const memberId = localStorage.getItem('memberId')
-    const travelRes = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
+    const travelRes = await api.get(`/List?memberId=${memberId}`)
     const travel = travelRes.data.find(t => t.customTravelId == customTravelId)
 
     if (travel) {
+      form.value.title = travel.note
       form.value.daterange = [travel.departureDate, travel.endDate]
       form.value.days = travel.days
       form.value.budget = travel.totalAmount
@@ -103,7 +105,6 @@ const memberId = localStorage.getItem('memberId')
 
 const emit = defineEmits(['go-back'])
 const goBack = () => {emit('go-back')}
-// const goBack = () => {router.push('/CustomtravelStatusList')}
 </script>
   
 <style scoped>
@@ -113,6 +114,12 @@ const goBack = () => {emit('go-back')}
     margin: 0 auto;
   }
   
+h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
   .header {
     display: flex;
     gap: 10px;
@@ -121,7 +128,7 @@ const goBack = () => {emit('go-back')}
   }
   
   .tabs{
-    background-color: #b5cff59f;
+    background-color: #f0f2f3;
     border-radius: 10px;
     height: 800px;
   }
@@ -135,11 +142,10 @@ const goBack = () => {emit('go-back')}
   .activity-card {
     width: 100%;
   max-width: 700px;
-    background-color: #6ab8e6;
+    background-color: #F9FAFB;
     border-radius: 10px;
     padding: 5px;
-    color: black;
-    font-weight: bold;
+    color: #263238;
     display: flex;
   align-items: stretch;
   margin-bottom: 16px;
@@ -186,7 +192,7 @@ const goBack = () => {emit('go-back')}
 
 ::v-deep(.el-timeline-item__timestamp) {
   font-size: 17px;
-  color: black;
+  color: #616161;
 }
 ::v-deep(.el-timeline-item__icon) {
   font-size: 16px;
