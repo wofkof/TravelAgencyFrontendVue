@@ -111,7 +111,6 @@
           註冊
         </el-button>
       </template> -->
-
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
           <LoginSignupSwitch
@@ -123,15 +122,19 @@
 
       <!-- 登入時 -->
       <template v-else>
-        <!-- 使用 flex 容器包覆兩個區塊 -->
-        <div class="logged-in-user-wrapper">
-          <div class="flex items-center space-x-4">
-            <!-- 歡迎訊息與下拉選單 -->
-            <div
-              class="relative"
-              ref="menuRef"
-              @mouseenter="openMenu"
-              @mouseleave="closeMenu"
+      <!-- 使用 flex 容器包覆兩個區塊 -->
+      <div class="logged-in-user-wrapper">
+        <div class="flex items-center space-x-4">
+      <!-- 歡迎訊息與下拉選單 -->
+          <div
+            class="relative"
+            ref="menuRef"
+            @mouseenter="openMenu"
+            @mouseleave="closeMenu"
+          >
+            <button
+              class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
+              @click="toggleMenu"
             >
               <button
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
@@ -265,12 +268,13 @@ import Login from "@/components/SignUp/Login.vue";
 import SignUp from "@/components/SignUp/SignUp.vue";
 import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
-import { useRouter } from "vue-router";
-import LoginSignupSwitch from "@/components/tools/LoginSignupSwitch.vue";
+import { useRouter } from 'vue-router'
+import LoginSignupSwitch from '@/components/tools/LoginSignupSwitch.vue';
+import { ElMessage } from 'element-plus'
 import { useChatStore } from "@/stores/chatStore";
 
+
 const router = useRouter();
-const route = useRoute();
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
@@ -304,6 +308,7 @@ function handleLogout() {
   //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
+  ElMessage.success('您已成功登出');
   router.push("/");
 }
 

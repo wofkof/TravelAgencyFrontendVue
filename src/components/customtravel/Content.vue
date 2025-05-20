@@ -1,7 +1,8 @@
 <template>
   <div class="container">
-    <DeleteDialog ref="deleteDialog"/>
+    <ConfirmDialog ref="confirmDialog"/>
     <Dialog ref="dialogRef" :onAdd="addContent" :onEdit="updateContent" />
+    <h1>{{ form.title }}</h1>
     <div class="header">
       <el-date-picker
         v-model="form.daterange"
@@ -11,8 +12,8 @@
         readonly
         style="max-width: 300px"
       />
-      <el-button type="primary" @click="goBack">返回</el-button>
-      <el-button type="success" @click="openCreateDialog">新增項目</el-button>
+      <el-button color="#74cc6c" @click="openCreateDialog" plain  round>新增項目</el-button>
+      <el-button color="#62b9ff" @click="goBack" plain  round>返回</el-button>
     </div>
 
     <el-tabs v-model="activeDay" type="border-card" class="tabs">
@@ -26,23 +27,23 @@
           <el-timeline style="width: 100%">
             <el-timeline-item
               placement="top"
-              v-for="(item, index) in dailyActivities[day - 1].slice().sort((a, b) => a.time.localeCompare(b.time))"
-              :key="index"
-              :timestamp="`${item.time} ${CategoryName(item.category)}`"
+              v-for="activity in sortedActivities(day)"
+              :key="activity.originalIndex"
+              :timestamp="`${activity.item.time} ${CategoryName(activity.item.category)}`"
               :icon="LocationInformation"
             >
               <div class="activity-card"> 
                 <div class="info-area">
                 <div class="row">
-                  <div class="item">{{ ItemName(item.category, item.item) }}</div>
+                  <div class="item">{{ ItemName(activity.item.category, activity.item.item) }}</div>
                 </div>
                 <div class="row">
-                  <div class="desc">{{ item.desc }}</div>
+                  <div class="desc">{{ activity.item.desc }}</div>
                 </div>
               </div>
               <div class="actions">
-                    <el-button color="#626aef"  @click="editItem(day - 1, index)" :icon="Edit" circle></el-button>                    
-                    <el-button type="danger" @click="removeItem(day - 1, index)" :icon="Delete" circle></el-button>
+                    <el-button color="#90CAF9"  @click="editItem(day - 1, activity.originalIndex)" :icon="Edit" circle></el-button>                    
+                    <el-button color="#f8c1c9" @click="removeItem(day - 1, activity.originalIndex)" :icon="Delete" circle></el-button>
                 </div>          
               </div>
             </el-timeline-item>
@@ -56,7 +57,7 @@
       <label>預算總金額</label>
       <el-input v-model="form.budget" placeholder="Money" style="width: 200px" />
     </div>
-      <el-button type="success" @click="saveToServe">送出審核</el-button>
+      <el-button color="#50b895" @click="saveToServe" plain  round>送出審核</el-button>
     </div>
     
   </div>
@@ -67,8 +68,8 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LocationInformation, Edit, Delete } from '@element-plus/icons-vue'
 import Dialog from '@/components/customtravel/ContentDialog.vue'
-import DeleteDialog from '@/components/customtravel/DeleteDialog.vue'
-import axios from 'axios'
+import ConfirmDialog from '@/components/customtravel/ConfirmDialog.vue'
+import api from '@/utils/api'
 import { useTravelStore } from '@/stores/customtravelStore'
 import { ElMessage } from 'element-plus'
 
@@ -77,7 +78,7 @@ const router = useRouter()
 const travelStore = useTravelStore()
 const activeDay = ref('1')
 const dialogRef = ref(null)
-const deleteDialog = ref(null)
+const confirmDialog = ref(null)
 const dailyActivities = ref([])
 const city = ref([])
 const district = ref([])
@@ -107,12 +108,12 @@ onMounted(async ()=>{
 
   try{
     const [cityRes, districtRes, attractionRes, restaurantRes, accommodationRes, transportRes] = await Promise.all([
-      axios.get('https://localhost:7265/api/City'),
-      axios.get('https://localhost:7265/api/District'),
-      axios.get('https://localhost:7265/api/Attraction'),
-      axios.get('https://localhost:7265/api/Restaurant'),
-      axios.get('https://localhost:7265/api/Accommodation'),
-      axios.get('https://localhost:7265/api/Transport'),
+      api.get('/City'),
+      api.get('/District'),
+      api.get('/Attraction'),
+      api.get('/Restaurant'),
+      api.get('/Accommodation'),
+      api.get('/Transport'),
     ])
 
     city.value = cityRes.data
@@ -141,6 +142,12 @@ onMounted(async ()=>{
 
 const goBack = () => router.push('/CustomtravelList')
 
+const sortedActivities = (day) => {
+  return dailyActivities.value[day - 1]
+    .map((item, index) => ({ item, originalIndex: index }))
+    .sort((a, b) => a.item.time.localeCompare(b.item.time))
+}
+
 const CategoryName = (id) => {
   switch (id) {
     case 0: return '🏡住宿'
@@ -167,8 +174,13 @@ const ItemName = (category, itemId) => {
 }
 
 const removeItem = async(dayIndex, itemIndex) => {
+  const raw = dailyActivities.value[dayIndex]?.[itemIndex]
+  if(!raw){
+console.warn('找不到指定資料！', dayIndex, itemIndex)
+    return
+  }
   try{
-    await deleteDialog.value.open({
+    await confirmDialog.value.open({
       title:'確認刪除',
       message:'確定要刪除這筆行程內容嗎?',
     })
@@ -194,13 +206,17 @@ const updateContent = ({ dayIndex, itemIndex, ...updated }) => {
 }
 
 const editItem = (dayIndex, itemIndex) => {
-  const raw = dailyActivities.value[dayIndex][itemIndex]
+  const raw = dailyActivities.value[dayIndex]?.[itemIndex]
+  if(!raw){
+console.warn('找不到指定資料！', dayIndex, itemIndex)
+    return
+  }
   const data = {
     category: raw.category,
-    item: Array.isArray(raw.item) ? raw.item[0] : raw.item,
-    city: Array.isArray(raw.city) ? raw.city[0] : raw.city,
-    district: Array.isArray(raw.district) ? raw.district[0] : raw.district,
-    time: Array.isArray(raw.time) ? raw.time[0] : raw.time,
+    item: raw.item,
+    city: raw.city,
+    district: raw.district,
+    time: raw.time,
     desc: raw.desc
   }
   dialogRef.value?.openEdit({ data, dayIndex, itemIndex })
@@ -215,19 +231,25 @@ watch(dailyActivities, (newVal) => {
 }, { deep: true })
 
 const saveToServe = async() =>{ 
-  if (!memberId) {
-    ElMessage.warning('請先登入會員，才可送出審核!')
-    return
-  }
-  const payload = {
-    memberId: memberId,
-    note: form.title,
-    departureDate: form.daterange[0],
-    endDate: form.daterange[1],
-    days: Number(form.days),
-    totalAmount: Number(form.budget),
-    people: Number(travelStore.travelForm.people),
-    contents: dailyActivities.value.flatMap((dayList, dayIndex) =>
+  try{
+await confirmDialog.value.open({
+  title:'確認送出',
+  message:'確定要將這筆行程送出審核嗎?',
+})
+
+if (!memberId) {
+  ElMessage.warning('請先登入會員，才可送出審核!')
+  return
+}
+const payload = {
+  memberId: memberId,
+  note: form.title,
+  departureDate: form.daterange[0],
+  endDate: form.daterange[1],
+  days: Number(form.days),
+  totalAmount: Number(form.budget),
+  people: Number(travelStore.travelForm.people),
+  contents: dailyActivities.value.flatMap((dayList, dayIndex) =>
       dayList.map(item => ({
         day: dayIndex + 1,
         time: item.time,
@@ -237,26 +259,30 @@ const saveToServe = async() =>{
       }))
     )
   }
-
+  
   try {
-    await axios.post('https://localhost:7265/api/Content/Create', payload)
-
+    await api.post('/Content/Create', payload)
+    
     const list = JSON.parse(localStorage.getItem('list') || '[]')
-  const id = route.params.id
-  const updatedList = list.filter(item => item.id != id)
-  localStorage.setItem('list', JSON.stringify(updatedList))
-
-  localStorage.removeItem('travelForm')
-  localStorage.removeItem('dailyActivities')
-  localStorage.removeItem(`activities_${route.params.id}`)
+    const id = route.params.id
+    const updatedList = list.filter(item => item.id != id)
+    localStorage.setItem('list', JSON.stringify(updatedList))
+    
+    localStorage.removeItem('travelForm')
+    localStorage.removeItem('dailyActivities')
+    localStorage.removeItem(`activities_${route.params.id}`)
     travelStore.clearAll()
-
+    
     ElMessage.success('送出成功，訂單已送出審核')
-    router.push('/CustomtravelList')
+    router.push('/member/customtravel-status')
   } catch (err) {
     ElMessage.error('發送失敗')
     console.error(err)
   }
+}
+catch{
+  ElMessage.info('取消送出')
+}
 }
 </script>
   
@@ -267,6 +293,12 @@ const saveToServe = async() =>{
     margin: 0 auto;
   }
   
+  h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
   .header {
     display: flex;
     gap: 10px;
@@ -275,7 +307,7 @@ const saveToServe = async() =>{
   }
   
   .tabs{
-    background-color: #b5cff59f;
+    background-color: #f0f2f3;
     border-radius: 10px;
     height: 800px;
   }
@@ -289,11 +321,10 @@ const saveToServe = async() =>{
   .activity-card {
     width: 100%;
   max-width: 700px;
-    background-color: #6ab8e6;
+    background-color: #F9FAFB;
     border-radius: 10px;
     padding: 5px;
-    color: black;
-    font-weight: bold;
+    color: #263238;
     display: flex;
   align-items: stretch;
   margin-bottom: 16px;
@@ -363,7 +394,7 @@ const saveToServe = async() =>{
 
 ::v-deep(.el-timeline-item__timestamp) {
   font-size: 17px;
-  color: black;
+  color: #616161;
 }
 ::v-deep(.el-timeline-item__icon) {
   font-size: 16px;

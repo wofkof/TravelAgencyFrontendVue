@@ -84,7 +84,9 @@ const routes = [
 
   { path: "/Trip", name: "Trip", component: Trip },
 
-  { path: '/detail/:id', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
+
+  { path: '/detail/:projectId/:detailId/:groupId',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
+
 
   { 
     path: "/VisaPage", //頁面的路徑URL
