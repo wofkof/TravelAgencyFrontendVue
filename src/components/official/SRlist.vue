@@ -2,19 +2,21 @@
   <div v-if="results.length > 0">
     <router-link
       v-for="item in results"
-      :key="item.id"
-      :to="{ name: 'DetailPage', params: { id: item.id } }"
+      :key="item.projectId"
+      :to="{ name: 'DetailPage', params: { projectId: item.projectId ,detailId :item.detailId ,groupId: item.groupTravelId} }"
       class="block"
     >
       <div class="shadow-lg rounded-lg p-4 mb-4 grid grid-cols-3 gap-4 h-auto">
-        <div class="shadow-lg w-full h-52">img</div>
-        <div class="col-span-2 bg-slate-300 w-full relative p-4">
+        <div class="shadow-lg w-full h-52">
+          <img :src="item.cover" alt="" class="h-full object-cover">
+        </div>
+        <div class="col-span-2 w-full relative p-4">
           <div class="text-start">
             <p class="text-2xl font-bold">{{ item.title }}</p>
             <p>{{ item.description }}</p>
           </div>
-          <div class="absolute bottom-4 right-7 w-20 text-center text-xl">
-            {{ item.price }}
+          <div class="flex absolute bottom-4 right-0 w-32 text-center text-xl text-red-500">
+           NT${{ item.price }}
           </div>
         </div>
       </div>

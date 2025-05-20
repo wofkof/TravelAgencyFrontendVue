@@ -80,7 +80,9 @@ const routes = [
 
   { path: "/Trip", name: "Trip", component: Trip },
 
-  { path: '/detail/:id', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
+
+  { path: '/detail/:projectId/:detailId/:groupId',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
+
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 

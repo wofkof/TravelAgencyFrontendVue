@@ -46,6 +46,5 @@ onMounted(() => {
   console.log('searchResult:', searchResultStore.searchResult);
 });
 
-// this.$router.push({ name: 'DetailPage', params: { id: item.id } });
 
 </script>
