@@ -1,4 +1,6 @@
 // src/utils/visaRouterHelp.js
+import VisaCompleteOrderView from '@/views/VisaCompleteOrderView.vue';
+import VisaPaymentView from '@/views/VisaPaymentView.vue';
 import { useRouter } from 'vue-router';
 
 export default function useVisaRouter() {
@@ -52,7 +54,7 @@ export default function useVisaRouter() {
         router.push({ name: 'VisaReceiptInformation' });
     };//填寫要放的components是誰    
 
-    
+
     const VisaOrderView = () => {
         router.push({ name: 'VisaOrderView' });
     };//填寫要放的components是誰
@@ -63,6 +65,8 @@ export default function useVisaRouter() {
     return {
         VisaOrderView,
         VisaDetailView,
+        VisaPaymentView,
+        VisaCompleteOrderView,
         //待做付款
         //待做完成訂單
 
