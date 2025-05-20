@@ -136,10 +136,7 @@
               class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
               @click="toggleMenu"
             >
-              <button
-                class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
-                @click="toggleMenu"
-              >
+              
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="w-5 h-5 text-indigo-600"
@@ -272,6 +269,8 @@ import { useRouter } from 'vue-router'
 import LoginSignupSwitch from '@/components/tools/LoginSignupSwitch.vue';
 import { ElMessage } from 'element-plus'
 import { useChatStore } from "@/stores/chatStore";
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 
 const router = useRouter();
