@@ -46,11 +46,12 @@
 
 <!-- 我將要引入的component有哪些,檔案位置 -->
 <script setup>
-import VisaDetail from '@/components/Visa/VisaDetail.vue';
-import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
 import VisaCarousel from '@/components/Visa/VisaCarousel.vue';
-import VisainDetail from '@/components/Visa/VisainDetail.vue';
+import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
+import VisaDetail from '@/components/Visa/VisaDetail.vue';
 import VisaOrderInformation from '@/components/Visa/VisaOrderInformation.vue';
 import VisaQuantityDeparture from '@/components/Visa/VisaQuantityDeparture.vue';
+import VisainDetail from '@/components/Visa/VisainDetail.vue';
 import VisaBackTop from '@/components/Visa/VisaBackTop.vue';
+
 </script>

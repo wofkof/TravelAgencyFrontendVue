@@ -13,12 +13,26 @@
             <el-input placeholder="請輸入" v-model="contactName"></el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <!-- <el-col :span="12">
           <el-form-item label="e-mail">
             <el-input placeholder="請輸入" v-model="contactEmail"></el-input>
           </el-form-item>
+        </el-col> -->
+        <el-col :span="12">
+          <el-form-item label="e-mail">
+            <el-autocomplete
+               v-model="contactEmail"
+               :fetch-suggestions="querySearch"
+               placeholder="請輸入 e-mail"
+               @select="handleSelect">
+               <template #suffix>
+               <span>@</span>
+               </template>
+            </el-autocomplete>
+          </el-form-item>
         </el-col>
       </el-row>
+
       <el-form-item label="手機">
         <el-input placeholder="(例) 0910123456" v-model="contactPhone">
           <template #prepend>
@@ -42,6 +56,32 @@ const phonePrefix = ref('+886');
 
 import useVisaRouter from "@/utils/visaRouterHelp";
 const visaRouter = useVisaRouter();
+
+const domains = ref(['gmail.com', 'yahoo.com.tw', 'hotmail.com', 'msa.hinet.net', 'icloud.com']);
+const suggestions = ref([]);
+
+const querySearch = (queryString, cb) => {
+  const results = queryString
+    ? domains.value.map(domain => ({ value: `${queryString}${domain}` })).filter(createFilter(queryString))
+    : [];
+  cb(results);
+};
+
+const createFilter = (queryString) => {
+  return (suggestion) => {
+    const parts = contactEmail.value.split('@');
+    if (parts.length > 1) {
+      return suggestion.value.toLowerCase().includes(parts[0].toLowerCase() + '@' + queryString.toLowerCase());
+    } else {
+      return suggestion.value.toLowerCase().includes(queryString.toLowerCase());
+    }
+  };
+};
+
+const handleSelect = (item) => {
+  contactEmail.value = item.value;
+};
+
 </script>
 
 <style scoped>
