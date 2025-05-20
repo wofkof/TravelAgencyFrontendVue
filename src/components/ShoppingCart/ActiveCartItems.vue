@@ -40,7 +40,7 @@
                 :key="option.type"
                 class="option-item"
               >
-                <span>{{ option.type }}</span>
+                <div>{{ option.type }}</div>
                 <div class="quantity-controls">
                   <el-button
                     @click="handleDecrementOptionQuantity(item, option)"
@@ -50,7 +50,7 @@
                     circle
                     :icon="Minus" title="減少數量"
                   />
-                  <span class="qty-display">{{ option.quantity }}</span>
+                  <span class="qty-display">{{ option.quantity }}人</span>
                   <el-button
                     @click="cartStore.updateOptionQuantity(item.id, option.type, 1)"
                     class="qty-el-btn"
@@ -63,9 +63,8 @@
             </div>
             <div
               v-else-if="item.quantity !== undefined"
-              class="simple-quantity"
+              class="quantity-controls simple-quantity-controls"
             >
-              <span>{{ item.quantity }} 張</span> <div class="quantity-controls">
                  <el-button
                   @click="handleDecrementSimpleQuantity(item)"
                   :disabled="item.quantity <= 0"
@@ -74,6 +73,7 @@
                   circle
                   :icon="Minus" title="減少數量"
                 />
+                <span class="qty-display">{{ item.quantity }} 張</span>
                 <el-button
                   @click="cartStore.updateSimpleQuantity(item.id, 1)"
                   class="qty-el-btn"
@@ -81,7 +81,6 @@
                   circle
                   :icon="Plus" title="增加數量"
                 />
-              </div>
             </div>
              <div v-else>
                </div>
@@ -342,7 +341,8 @@ const goToCheckout = () => {
 /* --- 購物車單項樣式 (使用 Grid 佈局) --- */
 .cart-item {
   display: grid;
-  grid-template-columns: min-content 80px 1fr 100px minmax(130px, auto) minmax(90px, auto) min-content;
+  grid-template-columns: auto 80px 1fr 100px 240px 120px auto;
+  align-items: center;
   gap: 10px 15px; /* 行間距 10px，列間距 15px */
   padding: 15px 0; /* 上下內邊距 15px */
   border-bottom: 1px solid #eee; /* 項目間的分隔線 */
@@ -387,6 +387,7 @@ const goToCheckout = () => {
   align-items: center; /* 圖標垂直居中對齊 */
   gap: 8px; /* 按鈕間幾乎無間距 (或根據需要調整) */
   justify-content: center; /* 圖標在自己的列中居中 */
+  min-width: 50px;
 }
 
 .action-icon {
@@ -440,11 +441,10 @@ const goToCheckout = () => {
 
 /* --- 項目內部元素樣式 --- */
 .item-image img {
-  width: 80px; /* 與 grid 列寬定義一致 */
-  height: 80px;
-  object-fit: contain; /* 完整顯示圖片，保持比例，不裁剪 */
-  border: 1px solid #eee; /* 細邊框 */
-  display: block; /* 避免圖片下方產生額外空隙 */
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .item-name {
@@ -461,42 +461,64 @@ const goToCheckout = () => {
   line-height: 1.4; /* 增加行高提高可讀性 */
 }
 
-/* 項目選項列表 和 簡單數量顯示 的統一樣式 */
-.options-list .option-item,
-.simple-quantity {
+.options-list .option-item span {
+  white-space: nowrap; /* 保持文字不換行 */
+  display: inline-block; /* 需要是塊級或行內塊級元素才能設定寬度 */
+  width: 70px; /* 嘗試一個像素值，你可能需要微調 */
+  text-align: center;
+}
+
+.options-list .option-item div {
+  white-space: nowrap; /* 保持文字不換行 */
+  display: inline-block; /* 需要是塊級或行內塊級元素才能設定寬度 */
+  width: 70px; /* 嘗試一個像素值，你可能需要微調 */
+  text-align: left;
+}
+
+.options-list .option-item {
   display: flex;
-  justify-content: space-between; /* 文字和數量控制器兩端對齊 */
-  align-items: center;
+  justify-content: flex-start; /* 讓內容靠左排列 */
+  align-items: center; /* 垂直居中對齊 */
   font-size: 0.9em;
+  gap: 10px; /* 調整這個值來控制間距 */
 }
 
 /* 數量控制按鈕組合 (+/- 按鈕和數字) */
 .quantity-controls {
   display: flex;
   align-items: center;
-  gap: 8px; /* 按鈕和數字之間的間距 */
+  gap: 8px;
+  min-width: 100px;
 }
+
 
 /* 數量顯示的數字 */
 .qty-display {
-  min-width: 25px; /* 最小寬度，避免數字變化時佈局跳動 */
-  text-align: center;
+  display: block; 
+  min-width: 24px; /* 數字區域的最小寬度 */
+  text-align: center; /* 置中文字 */
   font-weight: bold;
   font-size: 1em;
   color: #303133;
+  flex-shrink: 0; /* 防止縮小 */
 }
 
 /* 微調 Element Plus 按鈕樣式 (用於數量控制) */
 .quantity-controls .el-button.is-circle {
   width: 22px; /* 圓形按鈕尺寸 */
   height: 22px;
-  margin: 3px 3px; /* 按鈕間距 */
+  margin: 3px 0; /* 按鈕間距 */
+  padding: 0; /* 去除內邊距 */
 }
-/* .quantity-controls .el-button { */
-  /* 可以進一步自定義顏色、背景等 */
-  /* color: #409EFF; */
-  /* background-color: #f5f7fa; */
-/* } */
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  /* **調整 gap 值來控制按鈕和數字之間的間距** */
+  gap: 8px; /* 例如設置為 8px，這樣 `-` 到數字和數字到 `+` 之間都是 8px 間距 */
+  min-width: 90px;
+  flex-shrink: 0;
+}
 
 /* --- 摘要與全選區塊樣式 --- */
 .summary-select-all-container {

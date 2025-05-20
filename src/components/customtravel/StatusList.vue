@@ -23,8 +23,8 @@
             <span class="status-text">{{ item.statusText }}</span>
           </div>
             <div class="actions">
-              <el-button color="#4ac2e091" @click="viewTravel(item.customTravelId)" :icon="View" circle />         
-              <el-button v-if="item.statusText === '審核完成'" color="#f34fc28f" @click="addToCart(item)" style="cursor: pointer" :icon="ShoppingCart" circle />               
+              <el-button color="#E3F2FD" @click="viewTravel(item.customTravelId)" :icon="View" circle />         
+              <el-button v-if="item.statusText === '審核完成'" color="#E3F2FD" @click="addToCart(item)" style="cursor: pointer" :icon="ShoppingCart" circle />               
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@
   import { View, ShoppingCart } from '@element-plus/icons-vue'
   import { useCartStore } from '@/stores/ShoppingCart'
   import { ElMessage } from 'element-plus'
-  import axios from 'axios'
+  import api from '@/utils/api'
 
   const travelList = ref([])
   const router = useRouter()
@@ -56,7 +56,7 @@
 onMounted(async () => {
   try {
     const memberId = localStorage.getItem('memberId')
-    const res = await axios.get(`https://localhost:7265/api/List?memberId=${memberId}`)
+    const res = await api.get(`/List?memberId=${memberId}`)
     travelList.value = res.data.map(item => ({
       customTravelId: item.customTravelId,
       title: item.note || '無標題',
@@ -75,7 +75,6 @@ onMounted(async () => {
 const emit = defineEmits(['view-detail'])
 const viewTravel = (id) =>{
   emit('view-detail', id)
-  // router.push({ name:'CustomtravelStatusContent',params:{id}})
 }
 
 const addToCart = (item) => {
@@ -95,6 +94,7 @@ const addToCart = (item) => {
     max-width: 800px;
     height: 600px;
     margin: 0 auto;
+    overflow-y: auto;
   }
   
   h1 {
@@ -117,7 +117,7 @@ const addToCart = (item) => {
   .travel-info {
     flex: 1;
     padding: 15px;
-    background-color: #c8ecf5;
+    background-color: #F9FAFB;
   }
   
   .row {
@@ -161,7 +161,7 @@ const addToCart = (item) => {
   
   .actions { 
     flex: 1;
-    background-color: #dce8f7;
+    background-color: #c2bfbfa6;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -170,16 +170,16 @@ const addToCart = (item) => {
   }
   
   .status-pending {
-    background-color: #f7b267;
+    background-color: #FFF3CD;
   }
   .status-review {
-    background-color: #f7d674;
+    background-color: #FFE082;
   }
   .status-success {
-    background-color: #f4e04d;
+    background-color: #C8E6C9;
   }
   .status-cancel {
-    background-color: #f26c63;
+    background-color: #FFCDD2;
   }
   </style>
   

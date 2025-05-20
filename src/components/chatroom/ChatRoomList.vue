@@ -13,8 +13,8 @@
         shadow="hover"
         style="margin: 5px"
       >
-        <div style="text-align: center;">聊天室({{ room.chatRoomId }})</div>
-        <div style="font-size: xx-small; color: gray;">
+        <div style="text-align: center">聊天室({{ room.chatRoomId }})</div>
+        <div style="font-size: xx-small; color: gray">
           創建時間 : {{ formatDateTime(room.createdAt, { type: "date" }) }}
         </div>
       </el-card>
@@ -31,8 +31,11 @@ import { formatDateTime } from "@/utils/formatDateTime";
 const chatStore = useChatStore();
 
 onMounted(() => {
-  const memberId = 11110;
-  fetchChatRooms(memberId);
+  if (chatStore.memberId) {
+    fetchChatRooms(chatStore.memberId);
+  } else {
+    ElMessage.error("請先登入，載入聊天室列表");
+  }
 });
 
 const selectChatRoom = (chatRoomId) => {

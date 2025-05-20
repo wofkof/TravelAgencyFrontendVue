@@ -35,7 +35,15 @@ defineProps({
   },
 });
 
-const fullImageUrl = (path) => getApiBaseUrl() + path;
+const fullImageUrl = (path) => {
+  const base = getApiBaseUrl();
+  const uploadIndex = path.indexOf("/Uploads/");
+  if (uploadIndex >= 0) {
+    return base + path.slice(uploadIndex);
+  }
+  return path;
+};
+
 const fullMediaUrl = (path) => getApiBaseUrl() + path;
 </script>
 

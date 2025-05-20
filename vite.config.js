@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
+import mkcert from "vite-plugin-mkcert";
 
 import Components from "unplugin-vue-components/vite";
 import AutoImport from "unplugin-auto-import/vite";
@@ -9,6 +10,7 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 export default defineConfig({
   plugins: [
     vue(),
+    mkcert(),
 
     Components({
       dirs: ["src/components"],
@@ -26,17 +28,20 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      'vue3-google-map': path.resolve(__dirname, './node_modules/vue3-google-map/dist/index.mjs'),
     },
   },
   server: {
+    host: "0.0.0.0",
+    https: true,
     port: 3000,
     open: true,
     proxy: {
       "/api": {
         target: "https://localhost:7265",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        secure: false,  // 允許代理到使用自簽章憑證的後端
+        // rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path,
       },
     },
   },
