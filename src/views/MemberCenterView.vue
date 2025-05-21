@@ -30,7 +30,7 @@ import TravelerList from '@/components/MemberCenter/TravelerList.vue'
 import Collection from '@/components/MemberCenter/Collection.vue'
 import Comment from '@/components/MemberCenter/Comment.vue'
 import AccountSetting from '@/components/MemberCenter/AccountSetting.vue'
-import Order from '@/components/MemberCenter/Order.vue'
+import Order from '@/components/MemberCenter/OrderHistory.vue'
 import StatusMain from '@/components/customtravel/StatusMain.vue'
 
 

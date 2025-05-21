@@ -6,12 +6,12 @@
       <!-- 姓名、出生年月日 -->
       <div class="form-row">
         <div class="form-col">
-          <label class="label">中文姓名 <span class="text-red-500">*</span></label>
-          <el-input v-model="member.Name" placeholder="請輸入姓名" class="fixed-input" />
+          <label class="label">姓名 <span class="text-red-500">*</span></label>
+          <el-input v-model="member.name" placeholder="請輸入姓名" class="fixed-input" />
         </div>
        
         <div class="form-col">
-          <label class="label">出生年月日 <span class="text-red-500">*</span></label>
+          <label class="label">生日 <span class="text-red-500">*</span></label>
           <el-date-picker
             v-model="member.birthday"
             type="date"
@@ -26,7 +26,7 @@
       <!-- 信箱、手機 -->
       <div class="form-row">
         <div class="form-col">
-          <label class="label">聯絡 E-mail <span class="text-red-500">*</span></label>
+          <label class="label">E-mail <span class="text-red-500">*</span></label>
           <el-input v-model="member.email" disabled class="fixed-input" />
         </div>
         <div class="form-col">
@@ -35,7 +35,21 @@
         </div>
       </div>
 
-      <!-- 身分證、性別 -->
+      
+
+      <!-- 國籍、地址類別 -->
+      <div class="form-row">
+        <div class="form-col">
+          <label class="label">國籍</label>
+          <el-select v-model="member.nationality" placeholder="請選擇國籍" class="fixed-input">
+            <el-option label="台灣" value="TW" />
+            <el-option label="日本" value="JP" />
+            <el-option label="美國" value="US" />
+            <el-option label="韓國" value="KR" />
+            <el-option label="其他" value="OTHER" />
+          </el-select>
+        </div>
+        <!-- 身分證、性別 -->
       <div class="form-row">
         <div class="form-col">
           <label class="label">身分證字號</label>
@@ -50,28 +64,17 @@
           </el-select>
         </div>
       </div>
-
-      <!-- 地址 -->
-      <div class="form-row">
-        <div class="form-col-full">
-          <label class="label">居住地址</label>
-          <el-input v-model="member.address" class="w-full" />
-        </div>
+        
       </div>
-
-      <!-- 國籍、證件類別 -->
-      <div class="form-row">
-        <div class="form-col">
-          <label class="label">國籍</label>
-          <el-select v-model="member.nationality" placeholder="請選擇國籍" class="fixed-input">
-            <el-option label="台灣" value="TW" />
-            <el-option label="日本" value="JP" />
-            <el-option label="美國" value="US" />
-            <el-option label="韓國" value="KR" />
-            <el-option label="其他" value="OTHER" />
-          </el-select>
+        <div class="form-row">
+          <div class="form-col" style="margin-right: auto;">
+            <label class="label">居住地址</label>
+            <el-input v-model="member.address" class="fixed-input" />
+          </div>
         </div>
-        <div class="form-col">
+      <!-- 護照資訊 -->
+      <p class="mt-4 font-semibold">-----護照資訊-----</p>
+      <div class="form-col">
           <label class="label">證件類別</label>
           <el-select v-model="member.documentType" placeholder="請選擇證件類型" class="fixed-input">
             <el-option label="護照" value="Passport" />
@@ -79,10 +82,6 @@
             <el-option label="台胞證" value="EntryPermit" />
           </el-select>
         </div>
-      </div>
-
-      <!-- 護照資訊 -->
-      <p class="mt-4 font-semibold">-----護照資訊-----</p>
       <div class="form-row">
         <div class="form-col">
           <label class="label">護照英文姓 (Surname)</label>
@@ -125,6 +124,13 @@ import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
 
 const member = ref({})
+const phoneError = ref(false)
+
+const validatePhone = () => {
+  const phoneRegex = /^09\\d{8}$/;
+  phoneError.value = !phoneRegex.test(member.value.phone);
+}
+
 
 onMounted(async () => {
   const id = localStorage.getItem('memberId')
