@@ -1,6 +1,6 @@
 <template>
-  <el-button size="small" type="warning" @click="testFakeMessage">
-    測試紅點
+  <el-button size="small" type="warning" @click="testFakeMessage" plain circle>
+    <el-icon><Bell /></el-icon>
   </el-button>
 </template>
 

@@ -27,6 +27,7 @@ declare module 'vue' {
     CardTitle: typeof import('./components/ui/card/CardTitle.vue')['default']
     CartPreviewIcon: typeof import('./components/tools/CartPreviewIcon.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
+    ChatSearchBar: typeof import('./components/chatroom/ChatSearchBar.vue')['default']
     CheckoutSteps: typeof import('./components/tools/CheckoutSteps.vue')['default']
     China: typeof import('./components/Visa/China.vue')['default']
     Collection: typeof import('./components/MemberCenter/Collection.vue')['default']

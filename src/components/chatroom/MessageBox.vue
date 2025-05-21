@@ -3,13 +3,30 @@
   <div class="message-area">
     <el-scrollbar ref="scrollRef" class="message-list">
       <div
-        v-for="msg in currentMessages"
+        v-for="msg in filteredMessages"
         :key="msg.sentAt"
         class="message-line"
         :class="msg.senderType === 'Member' ? 'from-me' : 'from-them'"
       >
+        <span style="margin-bottom: 5px">
+          <el-tag
+            :type="
+              msg.senderType === 'Member'
+                ? 'warning'
+                : msg.senderType === 'Employee'
+                ? 'success'
+                : 'info'
+            "
+            size="small"
+            style="margin-right: 5px"
+          >
+            {{ getSenderTypeText(msg.senderType) }}
+          </el-tag>
+          <el-tag type="primary" size="small">
+            {{ msg.senderName }}
+          </el-tag>
+        </span>
         <MessageRenderer :msg="msg" />
-
         <div style="display: flex">
           <div class="message-timestamp">
             {{ formatRelativeTime(msg.sentAt) }}
@@ -32,44 +49,46 @@
         autosize
         class="message-input"
       />
+      <!-- 送出按鈕 -->
+      <el-button @click="send" type="primary" size="small" plain circle
+        ><el-icon><Promotion /></el-icon
+      ></el-button>
 
-      <div class="button-group">
-        <!-- 送出按鈕 -->
-        <el-button @click="send" type="primary" size="small" plain circle
-          ><el-icon><Promotion /></el-icon
-        ></el-button>
-
-        <!-- 表情按鈕 -->
-        <EmojiButton @click="toggleEmojiPicker" />
-
-        <!-- 圖片按鈕 -->
-        <ImageUploader />
-        <!-- 錄音按鈕 -->
-        <VoiceUploader />
-        <!-- 通話按鈕 -->
-        <el-button
-          type="success"
-          @click="startAudioCall()"
-          size="small"
-          plain
-          circle
-          ><el-icon><Phone /></el-icon
-        ></el-button>
-        <!-- 視訊通話按鈕 -->
-        <el-button
-          type="primary"
-          @click="startVideoCall()"
-          size="small"
-          plain
-          circle
-          ><el-icon><VideoCamera /></el-icon
-        ></el-button>
-      </div>
+      <!-- 表情按鈕 -->
+      <EmojiButton @click="toggleEmojiPicker" style="margin-left: 0px" />
     </div>
-
-    <!-- 測試用的假訊息 -->
-    <div style="display: flex">
-      <TestFakeMessage />
+    <div class="button-group">
+      <!-- 圖片按鈕 -->
+      <ImageUploader style="margin-left: 5px" />
+      <!-- 錄音按鈕 -->
+      <VoiceUploader />
+      <!-- 通話按鈕 -->
+      <el-button
+        type="success"
+        @click="startAudioCall()"
+        size="small"
+        plain
+        circle
+        style="margin-left: 0px"
+        ><el-icon><Phone /></el-icon
+      ></el-button>
+      <!-- 視訊通話按鈕 -->
+      <el-button
+        type="primary"
+        @click="startVideoCall()"
+        size="small"
+        plain
+        circle
+        style="margin-left: 0px"
+        ><el-icon><VideoCamera /></el-icon
+      ></el-button>
+      <!-- 測試用的假訊息 -->
+      <TestFakeMessage style="margin-left: 0px" />
+      <!-- 搜尋訊息 -->
+      <ChatSearchBar
+        v-model:searchText="searchText"
+        v-model:isSearching="isSearching"
+      />
     </div>
   </div>
 
@@ -89,11 +108,14 @@ import { useChatStore } from "@/stores/chatStore";
 import { setupSocket, sendMessage, getConnection } from "@/utils/socket";
 import { formatRelativeTime } from "@/utils/formatDateTime";
 import { getMessages, markAsRead } from "@/apis/messageApi";
+import { getSenderTypeText } from "@/utils/enumHelper";
 import ImageUploader from "@/components/chatroom/ImageUploader.vue";
 import EmojiButton from "@/components/chatroom/EmojiButton.vue";
 import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
+import ChatSearchBar from "@/components/chatroom/ChatSearchBar.vue";
+import { c } from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
 
 declare global {
   interface Window {
@@ -107,6 +129,20 @@ const pickerVisible = ref(false);
 const pickerContainer = ref<HTMLElement | null>(null);
 const pickerInstance = ref<any>(null);
 const scrollRef = ref();
+const searchText = ref("");
+const isSearching = ref(false);
+
+// 搜尋訊息
+const filteredMessages = computed(() => {
+  if (!isSearching.value || !searchText.value.trim()) {
+    return currentMessages.value;
+  }
+  return currentMessages.value.filter(
+    (msg) =>
+      msg.messageType === "text" &&
+      msg.content?.toLowerCase().includes(searchText.value.trim().toLowerCase())
+  );
+});
 
 // 通話邏輯
 const startAudioCall = () => {
@@ -243,7 +279,13 @@ const send = async () => {
   const type = isPureEmoji(messageContent) ? "emoji" : "text";
 
   try {
-    await sendMessage(chatRoomId, senderType, senderId, type, messageContent);
+    await sendMessage(
+      chatRoomId,
+      senderType,
+      senderId,
+      type,
+      messageContent
+    );
     scrollToBottom();
   } catch (err) {
     console.error("送出訊息失敗", err);
@@ -296,6 +338,7 @@ const send = async () => {
   padding: 0 4px;
 }
 .message-input-bar {
+  display: flex;
   align-items: flex-end;
   gap: 8px;
   padding: 6px;
