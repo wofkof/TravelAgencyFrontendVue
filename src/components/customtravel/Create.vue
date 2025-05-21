@@ -1,55 +1,71 @@
 <template>
-  <div class="container">
-    <h1>建立自訂行程</h1>
-    <div class="form">
-      <el-form
-        :model="form"
-        ref="formRef"
-        :rules="rules"
-        label-position="top"
-        label-width="80px"
-        style="max-width: 600px"
-        :hide-required-asterisk="true"
-      >
-        <el-form-item label="行程名稱" prop="title">
-          <el-input v-model="form.title" />
+  <div class="backview">
+    <div style="margin-top: 155px"></div>
+    <div class="container">
+      <div class="form">
+        <h1>建立自訂行程</h1>
+        <el-form
+          :model="form"
+          ref="formRef"
+          :rules="rules"
+          label-position="top"
+          label-width="80px"
+          style="max-width: 600px"
+          :hide-required-asterisk="true"
+        >
+          <el-form-item label="行程名稱" prop="title">
+            <el-input v-model="form.title" />
           </el-form-item>
-        <el-form-item label="日期" prop="daterange">
-          <el-date-picker
-            v-model="form.daterange"
-            type="daterange"
-            start-placeholder="Start Date"
-            end-placeholder="End Date"
-            value-format="YYYY-MM-DD"
-            :disabled-date="disabledBefore"
-            @change="DateChange"
-          />
+          <el-form-item label="日期" prop="daterange">
+            <el-date-picker
+              v-model="form.daterange"
+              type="daterange"
+              start-placeholder="Start Date"
+              end-placeholder="End Date"
+              value-format="YYYY-MM-DD"
+              :disabled-date="disabledBefore"
+              @change="DateChange"
+            />
           </el-form-item>
-        <el-form-item label="天數">
-          <el-input v-model="form.days" readonly />
+          <el-form-item label="天數">
+            <el-input v-model="form.days" readonly />
           </el-form-item>
-        <el-form-item label="人數" prop="people">
-          <el-input
-            v-model="form.people"
-            @input="NumberInput"
-            placeholder="請輸入人數(1-50)"
-          />
+          <el-form-item label="人數" prop="people">
+            <el-input
+              v-model="form.people"
+              @input="NumberInput"
+              placeholder="請輸入人數(1-50)"
+            />
           </el-form-item>
-        <el-form-item>
-          <el-button color="#74cc6c" class="btn" @click="onSubmit" plain  round>
-            新增行程
+          <el-form-item>
+            <el-button
+              color="#74cc6c"
+              class="btn"
+              @click="onSubmit"
+              plain
+              round
+            >
+              新增行程
             </el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button color="#62b9ff" class="btn" @click="goBack" plain  round>
-            返回
-          </el-button>
           </el-form-item>
-      </el-form>
+          <el-form-item>
+            <el-button color="#62b9ff" class="btn" @click="goBack" plain round>
+              返回
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
-  </div>
-  <div style="display:flex; align-items: center; justify-content: center; margin:0 ; ">
-    <RecommendedTrips />
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+      "
+    >
+      <RecommendedTrips />
+    </div>
   </div>
 </template>
 
@@ -162,33 +178,40 @@ const goBack = () => {
 </script>
 
 <style scoped>
+.backview {
+  background: url("@/assets/images/scenery.png") no-repeat center center;
+  background-size: cover;
+  min-height: 100vh;
+  width: 100%;
+  padding: 60px 20px;
+  box-sizing: border-box;
+  margin-top: -155px;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   max-width: 100vw;
 }
 
 h1 {
+  text-align: center;
   font-weight: bold;
   font-size: 28px;
   margin-bottom: 20px;
 }
 
 .form {
-  /* background-color: #F9FAFB;
-  box-shadow: 2px 2px 8px #ccc; */
-   background-color: rgba(255, 255, 255, 0.644); /* ✅ 半透明白色 */
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.521);
   padding: 40px 50px;
   border-radius: 20px;
   width: 100%;
   max-width: 500px;
 }
 
-.btn {  
+.btn {
   display: flex;
   justify-content: center;
   gap: 16px;
@@ -204,5 +227,4 @@ h1 {
   color: #333;
   margin-bottom: 6px;
 }
-
 </style>
