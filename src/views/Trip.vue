@@ -20,8 +20,8 @@
         <img :src="mainInfo.cover" alt="" class="h-56 w-max" >
       </div>
       <div class="text-lg font-bold my-2">
-          <p>行程 1</p>
-          <p>可賣： 1 席次：1</p>
+          <p>行程 {{mainInfo.number}}</p>
+          <p>可賣： {{mainInfo.availableSeats}} 席次：{{ mainInfo.totalSeats }}</p>
           <p>去程：{{ formattedDepartureDate }}</p>
           <p>回程：{{ formattedReturnDate }}</p>
           <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
@@ -56,11 +56,11 @@
                   <tbody>
                     <tr v-for="g in groupList" :key="groupList.groupId">
                       <td>{{ formatDateTime(g.departure, { type: 'date' })}}</td>
-                      <td>2</td>
+                      <td>{{g.number}}</td>
                       <td>{{g.availableSeats}}</td>
                       <td>{{g.totalSeats}}</td>
                       <td>{{g.groupStatus}}</td>
-                      <td>6 元</td>
+                      <td>{{g.price}} 元</td>
                     </tr>
                   </tbody>
                 
@@ -81,14 +81,21 @@
   <div class="bg-white rounded-xl p-4 shadow mb-6">
     <div class="demo-collapse">
         <el-collapse >
-          <el-collapse-item name="1">
+          <el-collapse-item v-for="s in scheduleList" :key="scheduleList.scheduleId">
             <template #title="{ isActive }">
               <div :class="['title-wrapper']" class="text-xl font-medium">
-                第天
+                第{{s.day}}天
               </div>
-          </template>
+            </template>
             <div class="text-lg text-gray-900 leading-relaxed">
-              
+              <p>{{ s.description }}</p>
+              <p>{{ s.breakfast }}  {{ s.lunch }}  {{ s.dinner }}</p>
+              <p>{{ s.hotel }}</p>
+              <p>{{ s.attraction1 }}</p>
+              <p>{{ s.attraction2 }}</p>
+              <p>{{ s.attraction3 }}</p>
+              <p>{{ s.attraction4 }}</p>
+              <p>{{ s.attraction5 }}</p>
             </div>
           </el-collapse-item>
     </el-collapse>
@@ -116,23 +123,48 @@
       "return": "",
       "description": "",
       "cover": "",
+      "number": 0,
       "price": 0,
       "country": "",
-      "region": ""
+      "region": "",
+      "totalSeats": "",
+      "availableSeats": ""
     }
   );
     const groupList = ref(
       [
         {
           "groupId": 0,
+          "detailId":0,
           "departure": "",
           "return": "",
           "totalSeats": 0,
           "availableSeats": 0,
-          "groupStatus": ""
+          "groupStatus": "",
+          "price": 0,
+          "number": 0
         },
       ]
     );
+
+    const scheduleList = ref(
+      [
+        {
+          "scheduleId": 0,
+          "day": 0,
+          "description": "",
+          "breakfast": "",
+          "lunch": "",
+          "dinner": "",
+          "hotel": "",
+          "attraction1": 0,
+          "attraction2": 0,
+          "attraction3": 0,
+          "attraction4": 0,
+          "attraction5": 0
+        }
+      ]
+    )
 
   const formattedDepartureDate = computed(() =>
     formatDateTime(mainInfo.value.departure, { type: 'date' })
@@ -158,9 +190,16 @@ onMounted(async () => {
   try {
     const glist = await api.get(`/OfficialSearch/getGrouplist/${projectId}`);
     groupList.value = glist.data;
-    console.log()
   } catch (err) {
     console.error("取得行程groupList失敗", err);
+  }
+
+  try {
+    const slist = await api.get(`/OfficialSearch/getSchedulelist/${detailId}`);
+    scheduleList.value = slist.data;
+    console.log(slist.data)
+  } catch (err) {
+    console.error("取得行程scheduleList失敗", err);
   }
 
 });
