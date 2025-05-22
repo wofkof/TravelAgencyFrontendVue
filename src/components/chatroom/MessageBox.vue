@@ -56,6 +56,22 @@
 
       <!-- 表情按鈕 -->
       <EmojiButton @click="toggleEmojiPicker" style="margin-left: 0px" />
+      <!-- 貼圖按鈕 -->
+      <el-button
+        type="warning"
+        @click="showStickerPanel = !showStickerPanel"
+        style="margin-left: 0px"
+        size="small"
+        plain
+        circle
+        ><el-icon><PictureFilled /></el-icon
+      ></el-button>
+
+      <StickerPanel
+        v-if="showStickerPanel"
+        ref="stickerPanelRef"
+        @select="sendSticker"
+      />
     </div>
     <div class="button-group">
       <!-- 圖片按鈕 -->
@@ -115,7 +131,7 @@ import TestFakeMessage from "@/components/chatroom/TestFakeMessage.vue";
 import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
 import ChatSearchBar from "@/components/chatroom/ChatSearchBar.vue";
-import { c } from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
+import StickerPanel from "@/components/chatroom/StickerPanel.vue";
 
 declare global {
   interface Window {
@@ -131,6 +147,23 @@ const pickerInstance = ref<any>(null);
 const scrollRef = ref();
 const searchText = ref("");
 const isSearching = ref(false);
+const showStickerPanel = ref(false);
+const stickerPanelRef = ref(null);
+
+const sendSticker = async (url: string) => {
+  const chatRoomId = chatStore.currentChatRoomId;
+  if (!chatRoomId) return;
+
+  try {
+    await sendMessage(chatRoomId, senderType, senderId, "sticker", url);
+    scrollToBottom();
+  } catch (err) {
+    console.error("貼圖訊息發送失敗", err);
+    alert("貼圖發送失敗");
+  }
+
+  showStickerPanel.value = false;
+};
 
 // 搜尋訊息
 const filteredMessages = computed(() => {
@@ -213,12 +246,20 @@ const closePicker = () => {
 
 const handleClickOutside = (e: MouseEvent) => {
   const target = e.target as HTMLElement;
+
+  // 處理 emoji picker 關閉
   if (
     pickerContainer.value &&
     !pickerContainer.value.contains(target) &&
     !target.closest(".el-button")
   ) {
     closePicker();
+  }
+
+  // 處理貼圖面板關閉
+  const panel = stickerPanelRef.value?.$el;
+  if (panel && !panel.contains(target) && !target.closest(".el-button")) {
+    showStickerPanel.value = false;
   }
 };
 
@@ -279,13 +320,7 @@ const send = async () => {
   const type = isPureEmoji(messageContent) ? "emoji" : "text";
 
   try {
-    await sendMessage(
-      chatRoomId,
-      senderType,
-      senderId,
-      type,
-      messageContent
-    );
+    await sendMessage(chatRoomId, senderType, senderId, type, messageContent);
     scrollToBottom();
   } catch (err) {
     console.error("送出訊息失敗", err);

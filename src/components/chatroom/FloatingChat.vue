@@ -11,8 +11,8 @@
 
   <div v-if="showChat" class="chat-popup">
     <div class="chat-popup-header">
-      <span>聊天室</span>
-      <CustomerServiceButton />
+      <span><img src="@/assets/images/travelLogo.png" width="50" /></span>
+      <CustomerServiceButton style="margin-right: 400px" />
       <el-icon class="close-btn" @click="toggleChat">
         <CloseBold />
       </el-icon>
@@ -89,7 +89,7 @@ const toggleChat = chatStore.toggleChatPopup;
   z-index: 1001;
 }
 .chat-popup-header {
-  background-color: #007bff;
+  background-color: #0077ff54;
   color: white;
   padding: 10px;
   display: flex;
@@ -109,7 +109,7 @@ const toggleChat = chatStore.toggleChatPopup;
   background: #f8f9fa;
   overflow: hidden;
   padding: 0;
-  display: flex; 
+  display: flex;
   flex-direction: row;
 }
 

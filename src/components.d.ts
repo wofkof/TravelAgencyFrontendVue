@@ -150,6 +150,8 @@ declare module 'vue' {
     StatusContent: typeof import('./components/customtravel/StatusContent.vue')['default']
     StatusList: typeof import('./components/customtravel/StatusList.vue')['default']
     StatusMain: typeof import('./components/customtravel/StatusMain.vue')['default']
+    StickerPanel: typeof import('./components/chatroom/StickerPanel.vue')['default']
+    StickerPicker: typeof import('./components/chatroom/StickerPicker.vue')['default']
     TestFakeMessage: typeof import('./components/chatroom/TestFakeMessage.vue')['default']
     TestimonialSection: typeof import('./components/travellian/TestimonialSection.vue')['default']
     Thailand: typeof import('./components/Visa/Thailand.vue')['default']

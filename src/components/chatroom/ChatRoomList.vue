@@ -9,12 +9,13 @@
     >
       <el-card
         class="cursor-pointer"
+        :class="{ selected: room.chatRoomId === chatStore.currentChatRoomId }"
         @click="selectChatRoom(room.chatRoomId)"
         shadow="hover"
         style="margin: 5px"
       >
-        <div style="text-align: center">
-          與 {{ room.employeeName || "未知" }}
+        <div style="text-align: center; font-weight: bold">
+          {{ room.employeeName || "未知" }}
         </div>
         <div class="chatroom-meta">
           <div>
@@ -72,5 +73,9 @@ const selectChatRoom = (chatRoomId) => {
   font-size: 11px;
   color: gray;
   line-height: 1.4;
+}
+.selected {
+  border: 2px solid #409eff;
+  background-color: #f0f9ff;
 }
 </style>
