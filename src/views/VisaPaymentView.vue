@@ -22,7 +22,7 @@
 
 
              <el-main style="background-color: #f9fafc;">Main
-             
+             <VisaSelectVisaPay />
              </el-main>
              <!-- 主要內容元件，背景顏色為 #f9fafc (淺灰色) -->
 
@@ -48,5 +48,6 @@
  import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
  import VisaBackTop from '@/components/Visa/VisaBackTop.vue';
 import VisaCreaditCard from '@/components/Visa/VisaCreditCard.vue';
+import VisaSalectVisaPay from '@/components/Visa/VisaSelectVisaPay.vue';
 
  </script>

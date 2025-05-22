@@ -174,6 +174,7 @@ declare module 'vue' {
     VisaPickupMethod: typeof import('./components/Visa/VisaPickupMethod.vue')['default']
     VisaQuantityDeparture: typeof import('./components/Visa/VisaQuantityDeparture.vue')['default']
     VisaReceiptInformation: typeof import('./components/Visa/VisaReceiptInformation.vue')['default']
+    VisaSelectVisaPay: typeof import('./components/Visa/VisaSelectVisaPay.vue')['default']
     VisaThankOrder: typeof import('./components/Visa/VisaThankOrder.vue')['default']
     VisaTotalAmount: typeof import('./components/Visa/VisaTotalAmount.vue')['default']
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']

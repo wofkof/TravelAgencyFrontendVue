@@ -84,6 +84,10 @@ export default function useVisaRouter() {
         router.push({ name: 'VisaThankOrder' });
     };
 
+    const VisaSelectVisaPay = () => {
+        router.push({ name: 'VisaSelectVisaPay' });
+    }
+
   
     // 你可以在這裡添加更多與簽證相關的路由導航函數
 
