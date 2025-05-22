@@ -742,35 +742,77 @@ const submitOrder = async () => {
             // --- 第二步：根據選擇的支付方式，呼叫對應的後端支付準備 API ---
             if (formData.paymentMethod === 'ECPay_CreditCard') {
                 console.log(`準備為訂單 ${orderId} 請求 ECPay 信用卡支付...`);
-                // 呼叫後端的 ECPayController.PrepareECPayPayment Action
-                // 假設您的 API服務 (例如 orderapi.js) 中有一個 prepareEcpayPayment(orderId) 的方法
                 try {
-                    // 這裡需要一個新的 API 函數來調用 /api/ECPay/Checkout/{orderId}
-                    // 假設它叫 initiateEcpayPayment(orderId)
                     const ecpayResponse = await fetch(`/api/ECPay/Checkout/${orderId}`, { method: 'POST' });
+
                     if (ecpayResponse.ok) {
-                        const htmlToSubmit = await ecpayResponse.text();
-                        console.log("收到 ECPay HTML 表單，準備提交...");
+                        const responseData = await ecpayResponse.json(); // 解析 JSON
+                        console.log("後端 API 回應的 responseData:", responseData); // 您已確認這行能正確打印
 
-                        const blob = new Blob([htmlToSubmit], { type: 'text/html' });
-                        const url = URL.createObjectURL(blob);
-                        window.location.replace(url); // 或 window.location.href = url;
-                        // 不需要再呼叫 URL.revokeObjectURL(url)，因為頁面已經跳轉了
-                        // 此時瀏覽器應該會自動提交表單並導向綠界
+                        // ***** 重點修改開始 *****
+                        // 檢查 responseData 是否有效，並且包含我們需要的屬性
+                        if (responseData && responseData.ecPayAioCheckOutUrl && responseData.parameters) {
+                            console.log("條件判斷通過，收到 ECPay 參數，準備動態提交表單...");
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = responseData.ecPayAioCheckOutUrl; // 使用後端回傳的綠界 URL
 
-                        // isSubmitting.value = false; // 這裡頁面已經跳轉，這個可能不會執行到
-                        return; // 結束 submitOrder 函數
+                            for (const key in responseData.parameters) {
+                                if (responseData.parameters.hasOwnProperty(key)) {
+                                    const input = document.createElement('input');
+                                    input.type = 'hidden';
+                                    input.name = key;
+                                    input.value = responseData.parameters[key]; // 使用後端回傳的參數
+                                    form.appendChild(input);
+                                }
+                            }
+                            document.body.appendChild(form); // 將表單加入到 DOM 中
+                            console.log("表單已建立並準備提交至:", form.action);
+                            console.log("表單內容 (HTML):", form.outerHTML); // 查看將要提交的表單結構
 
+                            try {
+                                form.submit(); // 自動提交表單，導向綠界
+                                console.log("form.submit() 已調用。");
+                                // 頁面即將跳轉，後續的 isSubmitting.value = false; 在 finally 中處理即可
+                                // 這裡不需要再 return，因為 finally 會執行
+                            } catch (submitFormError) {
+                                console.error("調用 form.submit() 時發生錯誤:", submitFormError);
+                                submitError.value = `提交到 ECPay 時發生錯誤: ${submitFormError.message}`;
+                                ElMessage.error(submitError.value);
+                                // 如果 form.submit() 失敗，需要重置 isSubmitting
+                                isSubmitting.value = false;
+                            }
+                            // ***** 重點修改結束 *****
+
+                        } else {
+                            // 後端回傳的 JSON 結構不符合預期
+                            console.error('ECPay 支付準備 API 回應格式不正確或缺少必要欄位:', responseData);
+                            submitError.value = 'ECPay 支付參數格式錯誤，無法繼續。';
+                            ElMessage.error(submitError.value);
+                            isSubmitting.value = false; // 重置提交狀態
+                        }
                     } else {
-                        const errorData = await ecpayResponse.json().catch(() => ({ message: '準備ECPay支付失敗，且無法解析錯誤回應。' }));
-                        console.error('準備 ECPay 支付失敗:', ecpayResponse.status, errorData);
-                        submitError.value = `準備ECPay支付失敗: ${errorData.message || ecpayResponse.statusText}`;
+                        // HTTP 請求失敗的處理 (例如 4xx, 5xx 錯誤)
+                        let errorText = `HTTP 錯誤 ${ecpayResponse.status}: ${ecpayResponse.statusText}`;
+                        try {
+                            const errorData = await ecpayResponse.json(); // 嘗試解析錯誤回應的 JSON
+                            errorText = errorData.message || errorData.title || errorText;
+                            console.error('準備 ECPay 支付失敗 (HTTP Status):', ecpayResponse.status, errorData);
+                        } catch (e) {
+                            // 如果錯誤回應不是 JSON，直接使用 text
+                            const rawErrorText = await ecpayResponse.text();
+                            errorText = rawErrorText || errorText;
+                            console.error('準備 ECPay 支付失敗 (HTTP Status):', ecpayResponse.status, rawErrorText);
+                        }
+                        submitError.value = `準備ECPay支付失敗: ${errorText}`;
                         ElMessage.error(submitError.value);
+                        isSubmitting.value = false; // 重置提交狀態
                     }
-                } catch (ecpayErr) {
-                    console.error("請求 ECPay 支付準備時發生錯誤:", ecpayErr);
-                    submitError.value = `請求ECPay支付時發生網路或客戶端錯誤: ${ecpayErr.message}`;
+                } catch (ecpayNetworkErr) { // 捕獲 fetch 本身的網路錯誤或其他客戶端錯誤
+                    console.error("請求 ECPay 支付準備時發生網路或客戶端錯誤:", ecpayNetworkErr);
+                    submitError.value = `請求ECPay支付時發生網路或客戶端錯誤: ${ecpayNetworkErr.message}`;
                     ElMessage.error(submitError.value);
+                    isSubmitting.value = false; // 重置提交狀態
                 }
             } else if (formData.paymentMethod === 'LINEPay') {
                 console.log(`訂單 ${orderId} 選擇 LINE Pay，導向 LINE Pay 處理流程...`);

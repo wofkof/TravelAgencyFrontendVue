@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-// 匯入需要的 Element Plus 圖標組件
+
 import { ShoppingCart, Document, CircleCheck } from '@element-plus/icons-vue';
 
 // --- 路由 ---
@@ -9,23 +9,21 @@ import { ShoppingCart, Document, CircleCheck } from '@element-plus/icons-vue';
 const route = useRoute();
 
 // --- 計算屬性 ---
-/**
- * 計算目前活動步驟的索引 (0-based)。
- * /ShoppingCart      -> 步驟 0
- * /order-form -> 步驟 1
- * /order-complete -> 步驟 2 (標示訂購完成步驟為當前或已完成)
- */
 const activeStepIndex = computed(() => {
-  switch (route.path) {
-    case '/ShoppingCart': return 0;
-    case '/order-form': return 1;
-    case '/order-complete': return 2; // 完成步驟對應索引 2
-    default: return 0; // 如果路由不匹配，默認顯示購物車步驟
+  const currentPath = route.path; // 獲取當前完整路徑
+
+  if (currentPath === '/ShoppingCart') {
+    return 0;
+  } else if (currentPath === '/order-form') {
+    return 1;
+  } else if (currentPath.startsWith('/order-complete')) { // 路徑是否以 /order-complete 開頭
+    return 2; // 完成步驟對應索引 2
   }
+  // 如果路由不匹配任何已知步驟，可以設定一個預設值，或者根據您的需求調整
+  // 例如，如果使用者直接進入一個未定義的結帳流程路徑，可能還是顯示第一步
+  return 0;
 });
 
-// Element Plus 組件和圖標通常在 main.js 全域註冊，此處無需導入 ElSteps, ElStep
-// 但圖標因為是用 :icon 綁定變數，所以仍需在此導入
 </script>
 
 <template>
@@ -94,6 +92,15 @@ const activeStepIndex = computed(() => {
 /* 當處於步驟 1 (填寫資料頁面) 時 */
 .checkout-steps-container.on-step-1 .el-step:nth-child(3) .step-link {
   /* :nth-child(3) 選取第 3 個 el-step (訂購完成) */
+  color: #c0c4cc !important; /* 強制設為禁用灰色 (Element Plus 禁用文字顏色) */
+  cursor: not-allowed; /* 顯示禁止圖示 */
+  pointer-events: none; /* 禁用滑鼠事件，使其不可點擊 */
+}
+
+/* 當處於步驟 2 (訂購完成) 時 */
+.checkout-steps-container.on-step-2 .el-step:nth-child(1) .step-link,
+.checkout-steps-container.on-step-2 .el-step:nth-child(2) .step-link {
+  /* :nth-child(1) 和 :nth-child(2) 選取第 1 和第 2 個 el-step */
   color: #c0c4cc !important; /* 強制設為禁用灰色 (Element Plus 禁用文字顏色) */
   cursor: not-allowed; /* 顯示禁止圖示 */
   pointer-events: none; /* 禁用滑鼠事件，使其不可點擊 */

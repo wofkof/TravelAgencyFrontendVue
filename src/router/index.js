@@ -56,10 +56,11 @@ const routes = [
     meta: { simpleNavbar: true }
   },
   {
-    path: "/order-complete", // 訂單完成的路徑
+    path: "/order-complete/:orderId",
     name: "Ordercomplete",
-    component: OrderComplete, // 對應到 Ordercomplete 組件
-    meta: { simpleNavbar: true }
+    component: OrderComplete,
+    meta: { simpleNavbar: true },
+    props: true // 將路由參數作為 props 傳遞給元件
   },
   {
     path: "/CustomtravelCreate",
