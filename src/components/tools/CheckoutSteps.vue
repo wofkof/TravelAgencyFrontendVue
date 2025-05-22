@@ -19,8 +19,7 @@ const activeStepIndex = computed(() => {
   } else if (currentPath.startsWith('/order-complete')) { // 路徑是否以 /order-complete 開頭
     return 2; // 完成步驟對應索引 2
   }
-  // 如果路由不匹配任何已知步驟，可以設定一個預設值，或者根據您的需求調整
-  // 例如，如果使用者直接進入一個未定義的結帳流程路徑，可能還是顯示第一步
+
   return 0;
 });
 

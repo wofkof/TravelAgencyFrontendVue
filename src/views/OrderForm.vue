@@ -155,13 +155,7 @@ import { createOrder } from '@/utils/orderapi'; // API Service
 import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
 
 // --- 引入 Element Plus 圖標 ---
-// 只需要引入這個組件 *直接使用* 的 Icons
-// 子組件中使用的 Icons 應該在子組件內部引入
 import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
-
-// 引入國際化庫和語言包 (通常在 main.js 全局做一次)
-import countries from 'i18n-iso-countries';
-import zhLocale from '/zh-tw.json'; // 確認路徑正確
 
 // --- 引入子元件 ---
 // 確保這些子元件的路徑正確
@@ -206,8 +200,8 @@ const activeCollapseNames = ref(['items', 'ordererInfo', 'payment']); // 預設�
 // --- 表單數據模型 (使用 reactive) ---
 // 集中管理所有子組件表單的數據
 const formData = reactive({
-  memberId: 11110, // 會員 ID，通常從登入狀態獲取
-  note: '', // 訂單備註 (直接綁定到 el-input)
+  memberId: null, // 會員 ID
+  note: '', // 訂單備註 (綁定到 el-input)
   // 訂購人資料 (ParticipantForm v-model 綁定)
   ordererInfo: {
     firstName: '', lastName: '', country: 'TW', countryCode: '+886',
@@ -222,11 +216,62 @@ const formData = reactive({
   eInvoiceInfo: {
     type: 'personal', taxId: '', companyTitle: '', deliveryEmail: ''
   },
-  // 信用卡詳細資料 (PaymentOptions 內部 CreditCardForm v-model 綁定)
-  // creditCardDetails: {
-  //   cardHolderName: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvc: ''
-  // }
 });
+
+// --- 生命週期鉤子 ---
+onMounted(() => {
+  // 元件掛載後，從 Pinia Store 加載需要結帳的商品
+  loadOrderItems();
+
+  // 從 localStorage 讀取會員資料並填充訂購人表單
+  try {
+    const storedMemberId = localStorage.getItem('memberId'); 
+    const storedMemberName = localStorage.getItem('memberName');
+    const storedEmail = localStorage.getItem('memberEmail');
+    const storedPhone = localStorage.getItem('memberPhone');
+
+  if (storedMemberId) {
+      formData.memberId = parseInt(storedMemberId, 10); // 正確：轉換為整數
+      if (isNaN(formData.memberId)) { // 檢查轉換是否成功
+          formData.memberId = 0; // 或 null，或其他錯誤處理
+          console.error("無法將 localStorage 中的 memberId 轉換為數字:", storedMemberId);
+      }
+  } else {
+      formData.memberId = 0; // 或 null，如果 localStorage 中沒有
+  }
+
+    if (storedMemberName && typeof storedMemberName === 'string' && storedMemberName.length > 0) {
+      let lastName = '';
+      let firstName = '';
+
+      // 簡單拆分姓名：假設第一個字元是姓氏，其餘是名字。
+      if (storedMemberName.length === 1) {
+        lastName = storedMemberName; 
+        firstName = '';
+      } else { // storedMemberName.length >= 2
+        lastName = storedMemberName.substring(0, 1);
+        firstName = storedMemberName.substring(1);
+      }
+      
+      // 更新 formData.ordererInfo 中的姓和名
+      formData.ordererInfo.lastName = lastName;
+      formData.ordererInfo.firstName = firstName;
+
+      // console.log(`從 localStorage 加載會員姓名: 姓=${lastName}, 名=${firstName}`);
+
+      if (storedEmail) {
+        formData.ordererInfo.email = storedEmail;
+      }
+
+      if (storedPhone) {
+        formData.ordererInfo.phoneNumber = storedPhone;
+      }
+    }
+  } catch (e) {
+    console.error("從 localStorage 讀取會員資料時發生錯誤:", e);
+  }
+});
+
 
 // --- 計算屬性 (Computed Properties) ---
 
@@ -626,64 +671,73 @@ const submitOrder = async () => {
 
         // 1. 準備訂購人資訊
         const preparedOrdererInfo = {
-            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrdererInfoDto 一致
             Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
             MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
             Email: formData.ordererInfo.email || null,
-            //  documentType: formData.ordererInfo.documentType, // 添加證件類型
-            //  idNumber: formData.ordererInfo.documentNumber, // 添加證件號碼
-            //  nationality: formData.ordererInfo.country, // 添加國籍
         };
 
-        // 2. 準備旅客列表
-        // 遍歷 formData.participantsByItem 中的每個商品對應的旅客陣列
-        const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
-            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrderParticipantDto 一致
-            // 映射 ItemParticipantForm 的數據到後端 DTO
-             let backendDocumentType = null;
-             switch (paxData.documentType) {
-                 case 'ID_CARD_TW': backendDocumentType = 0; break;
-                 case 'PASSPORT': backendDocumentType = 1; break;
-                 case 'ARC': backendDocumentType = 2; break;
-                 case 'ENTRY_PERMIT': backendDocumentType = 3; break;
-             }
-             let backendGender = null;
-             switch (paxData.gender) {
-                 case 'male': backendGender = 0; break;
-                 case 'female': backendGender = 1; break;
-                 case 'other': backendGender = 2; break;
-             }
-             let backendIdNumber = null;
-             let backendDocumentNumber = null;
 
-             if (paxData.documentType === 'ID_CARD_TW') {
-                 backendIdNumber = paxData.idNumber || null;
-             } else { 
-                backendDocumentNumber = paxData.documentNumber || null; 
-             }
+        // 2. 準備會員更新專用的完整個人資料 (只有當用戶勾選時才準備)
+        let memberProfileToUpdate = null; // 需與後端確認此物件的欄位名和結構
+        if (formData.ordererInfo.updateProfile) {
+            let backendOrdererDocumentType = null;
+            switch (formData.ordererInfo.documentType) {
+                case 'ID_CARD_TW': backendOrdererDocumentType = 0; break;
+                case 'PASSPORT':   backendOrdererDocumentType = 1; break;
+                case 'ARC':        backendOrdererDocumentType = 2; break;
+                case 'ENTRY_PERMIT': backendOrdererDocumentType = 3; break;
+                default: backendOrdererDocumentType = null;
+            }
+            memberProfileToUpdate = {
+                Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
+                MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
+                Email: formData.ordererInfo.email || null,
+                Nationality: formData.ordererInfo.country,
+                DocumentType: backendOrdererDocumentType,
+                DocumentNumber: formData.ordererInfo.documentNumber || null,
+            };
+        }
+        // 3. 準備旅客列表 (此處邏輯與會員更新無關，保持原樣)
+        const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
+            let backendDocumentType; // 這是旅客的證件類型
+            switch (paxData.documentType) {
+                case 'ID_CARD_TW': backendDocumentType = 0; break;
+                case 'PASSPORT': backendDocumentType = 1; break;
+                case 'ARC': backendDocumentType = 2; break;
+                case 'ENTRY_PERMIT': backendDocumentType = 3; break;
+            }
+            let backendGender = null;
+            switch (paxData.gender) {
+                case 'male': backendGender = 0; break;
+                case 'female': backendGender = 1; break;
+                case 'other': backendGender = 2; break;
+            }
+            let backendIdNumber = null;
+            let backendPaxDocumentNumber = null; // 改名以區分訂購人的 documentNumber
+
+            if (paxData.documentType === 'ID_CARD_TW') {
+                backendIdNumber = paxData.idNumber || null;
+            } else {
+                backendPaxDocumentNumber = paxData.documentNumber || null;
+            }
             return {
-                 // 這些欄位需要根據後端 OrderParticipantDto 的實際定義來映射
-                 // favoriteTravelerId: paxData.selectedFrequentTraveler || null, // 如果後端 DTO 需要這個
-                 // memberIdAsParticipant: paxData.memberIdAsParticipant || null, // 如果旅客本身就是會員，這裡需要會員 ID
-                 Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(), // 中文姓名
-                 BirthDate: paxData.birthDate, // "YYYY-MM-DD"
-                 IdNumber: backendIdNumber, // 臺灣身分證號碼
-                 Gender: backendGender, // 性別 Enum 值
-                 // 假設 ItemParticipantForm 收集了電話和 email
-                 Phone: paxData.phoneNumber || null, // 電話
-                 Email: paxData.email || null, // Email
-                 DocumentType: backendDocumentType, // 證件類型 Enum 值
-                 DocumentNumber: backendDocumentNumber, // 護照號碼和其他證件號碼
-                 PassportSurname: paxData.lastNameEn || null, // 護照英文姓
-                 PassportGivenName: paxData.firstNameEn || null, // 護照英文名
-                 PassportExpireDate: paxData.passportExpiryDate || null, // 護照效期 "YYYY-MM-DD"
-                 Nationality: paxData.country, // 國籍 (ISO 3166-1 Alpha-2 Code, e.g., 'TW')
-                 Note: paxData.remarks || '' // 備註
+                Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(),
+                BirthDate: paxData.birthDate,
+                IdNumber: backendIdNumber,
+                Gender: backendGender,
+                Phone: paxData.phoneNumber || null,
+                Email: paxData.email || null,
+                DocumentType: backendDocumentType, // 旅客的證件類型
+                DocumentNumber: backendPaxDocumentNumber, // 旅客的證件號碼
+                PassportSurname: paxData.lastNameEn || null,
+                PassportGivenName: paxData.firstNameEn || null,
+                PassportExpireDate: paxData.passportExpiryDate || null,
+                Nationality: paxData.country,
+                Note: paxData.remarks || ''
             };
         });
 
-
-        // 3. 準備發票請求資訊
+        // 4. 準備發票請求資訊
         let backendInvoiceOption = 0; // 預設個人
         switch (formData.eInvoiceInfo.type) {
             case 'personal': backendInvoiceOption = 0; break;
@@ -700,7 +754,7 @@ const submitOrder = async () => {
             InvoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // 如果有這個欄位
         };
 
-        // 4. 準備選擇的付款方式
+        // 5. 準備選擇的付款方式
          let backendSelectedPaymentMethod = 0; // 預設一個值
          switch (formData.paymentMethod) {
              // 確保這裡的 case 值與 PaymentOptions.vue 中定義的 value 對應
@@ -712,16 +766,18 @@ const submitOrder = async () => {
 
         // 組合最終 API Payload
         const orderPayload = {
-            // memberId: formData.memberId, // 通常由後端處理
+            memberId: formData.memberId, 
             totalAmount: totalAmount.value,
             orderNotes: formData.note,
             ordererInfo: preparedOrdererInfo,
             participants: preparedParticipants, // 扁平化的旅客陣列
             invoiceRequestInfo: preparedInvoiceRequestInfo,
             selectedPaymentMethod: backendSelectedPaymentMethod,
-            cartItems: cartItemsForApi // 從 Pinia Store 獲取的 cartItems
-        };
+            cartItems: cartItemsForApi, // 從 Pinia Store 獲取的 cartItems
 
+            updateMemberProfile: formData.ordererInfo.updateProfile,
+        };
+        console.log("即將用於創建訂單的 MemberId:", formData.memberId);
         console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
 
     try {
@@ -969,12 +1025,6 @@ watch(() => formData.paymentMethod, (newValue) => {
 });
 
 
-
-// --- 生命週期鉤子 ---
-onMounted(() => {
-  // 元件掛載後，從 Pinia Store 加載需要結帳的商品
-  loadOrderItems();
-});
 
 </script>
 
