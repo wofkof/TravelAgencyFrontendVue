@@ -111,7 +111,6 @@
           註冊
         </el-button>
       </template> -->
-
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
           <LoginSignupSwitch
@@ -134,7 +133,7 @@
               @mouseleave="closeMenu"
             >
               <button
-                class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
                 @click="toggleMenu"
               >
                 <svg
@@ -267,6 +266,7 @@ import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter } from "vue-router";
 import LoginSignupSwitch from "@/components/tools/LoginSignupSwitch.vue";
+import { ElMessage } from "element-plus";
 import { useChatStore } from "@/stores/chatStore";
 
 const router = useRouter();
@@ -304,6 +304,7 @@ function handleLogout() {
   //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
+  ElMessage.success("您已成功登出");
   router.push("/");
 }
 

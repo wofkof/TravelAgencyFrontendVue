@@ -2,10 +2,10 @@
 const emit = defineEmits(['switch-to-login'])
 import { ElMessage } from 'element-plus'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PasswordInput from "./PasswordInput.vue";
 
 const name = ref('')
 const phone = ref('')
@@ -33,7 +33,7 @@ const submit = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/account/signup', {
+    await api.post('/Account/signup', {
       name: name.value,
       phone: phone.value,
       email: email.value,
@@ -53,6 +53,7 @@ const submit = async () => {
     email.value = ''
     password.value = ''
     confirmPassword.value = ''
+    emailCode.value = ''
     // 延遲2秒再切換回登入頁
     setTimeout(() => {
       emit('switch-to-login')
@@ -94,19 +95,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-import { EyeIcon, EyeOffIcon } from 'lucide-vue-next'
+import api from '@/utils/api'
 
-// 控制密碼欄位的顯示或隱藏
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-function togglePassword() {
-  showPassword.value = !showPassword.value
-}
-
-function toggleConfirmPassword() {
-  showConfirmPassword.value = !showConfirmPassword.value
-}
 //Email驗證倒數區
 const emailCode = ref('')
 const countdown = ref(0)
@@ -118,7 +108,7 @@ const sendVerificationCode = async () => {
   }
 
   try {
-    await axios.post('https://localhost:7265/api/account/send-email-code', {
+    await api.post('/Account/send-email-code', {
       email: email.value
     })
 
@@ -177,19 +167,12 @@ const sendVerificationCode = async () => {
 </span>
               </div>
 
-              <!-- <div class="grid gap-2">
-                <Label for="email">聯絡信箱</Label>
-                <Input id="email" v-model="email" placeholder="travellian@example.com" required />
-                <span v-if="errors.Email" class="text-red-500 text-sm">
-  <template v-for="(msg, i) in errors.Email" :key="i">{{ msg }}<br /></template>
-</span>
-              </div> -->
 <!-- 新增發送驗證碼鈕 -->
  <div class="grid gap-2">
   <Label for="email">聯絡信箱</Label>
   <div class="flex gap-2">
     <Input id="email" v-model="email" placeholder="travellian@example.com" required autocomplete="off" class="flex-1" />
-    <Button type="button" :disabled="countdown > 0" @click="sendVerificationCode">
+    <Button type="button"  class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold" :disabled="countdown > 0" @click="sendVerificationCode">
       {{ countdown > 0 ? countdown + ' 秒後重送' : '發送驗證碼' }}
     </Button>
   </div>
@@ -200,65 +183,29 @@ const sendVerificationCode = async () => {
  <!-- 驗證碼欄位&重新發送鈕 -->
   <div class="grid gap-2">
   <Label for="email-code">Email 驗證碼</Label>
-  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" required autocomplete="off" />
+  <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" maxlength="6" required autocomplete="off" />
   <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
   </span>
-  <div class="grid gap-2 relative">
-  <Label for="password">密碼</Label>
-  <div class="relative">
-    <Input
-      :type="showPassword ? 'text' : 'password'"
-      id="password"
-      v-model="password"
-      placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼
-"
-      required  maxlength="12"
-      class="pr-10"
-    />
-    <button
-      type="button"
-      @click="togglePassword"
-      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-      tabindex="-1"
-      aria-label="切換密碼顯示"
-    >
-      <component :is="showPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
-    </button>
-  </div>
-  <span v-if="errors.Password" class="text-red-500 text-sm">
-    <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
-  </span>
+  <PasswordInput
+  id="password"
+  v-model="password"
+  label="密碼"
+  placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼"
+/>
+<span v-if="errors.Password" class="text-red-500 text-sm">
+  <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
+</span>
 </div>
-
-<div class="grid gap-2 relative">
-  <Label for="confirm-password">確認密碼</Label>
-  <div class="relative">
-    <Input
-      :type="showConfirmPassword ? 'text' : 'password'"
-      id="confirm-password"
-      v-model="confirmPassword"
-      placeholder="請再次輸入密碼"
-      required maxlength="12"
-      class="pr-10"
-    />
-    <button
-      type="button"
-      @click="toggleConfirmPassword"
-      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-      tabindex="-1"
-      aria-label="切換確認密碼顯示"
-    >
-      <component :is="showConfirmPassword ? EyeIcon : EyeOffIcon" class="w-5 h-5" />
-    </button>
-  </div>
-  <span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
-    <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
-  </span>
- 
-</div>
-
-</div>
+<PasswordInput
+  id="confirm-password"
+  v-model="confirmPassword"
+  label="確認密碼"
+  placeholder="請再次輸入密碼"
+/>
+<span v-if="errors.ConfirmPassword" class="text-red-500 text-sm">
+  <template v-for="(msg, i) in errors.ConfirmPassword" :key="i">{{ msg }}<br /></template>
+</span>
 
 </div>
               <Button type="submit" class="w-full">
