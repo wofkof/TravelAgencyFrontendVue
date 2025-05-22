@@ -92,15 +92,15 @@ export default function useVisaRouter() {
     // 你可以在這裡添加更多與簽證相關的路由導航函數
 
 
-    //導航方向
-    return {
-        VisaOrderView,
-        VisaDetailView,
-        VisaPaymentView,
-        VisaCompleteOrderView,
-        //待做付款
-        //待做完成訂單
+  //導航方向
+  return {
+    VisaOrderView,
+    VisaDetailView,
+    // VisaPaymentView,
+    // VisaCompleteOrderView,
+    //待做付款
+    //待做完成訂單
 
-        // 其他導航函數
-    };
+    // 其他導航函數
+  };
 }

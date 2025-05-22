@@ -272,6 +272,7 @@ import { useChatStore } from "@/stores/chatStore";
 
 const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
@@ -305,7 +306,7 @@ function handleLogout() {
   //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
-  ElMessage.success('您已成功登出');
+  ElMessage.success("您已成功登出");
   router.push("/");
 }
 
