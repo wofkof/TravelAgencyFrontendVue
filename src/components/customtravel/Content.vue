@@ -29,12 +29,19 @@
         >
           <div class="scroll-wrapper">
             <el-timeline style="width: 100%">
+              <draggable
+                :list="dailyActivities[day - 1]"
+                :animation="200"
+                ghost-class="ghost"
+                drag-class="drag"
+                @update="onDragUpdate(day - 1, $event)"
+                item-key="time"
+              >
+              <template #item="{ element, index }">
               <el-timeline-item
                 placement="top"
-                v-for="activity in sortedActivities(day)"
-                :key="activity.originalIndex"
-                :timestamp="`${activity.item.time} ${CategoryName(
-                  activity.item.category
+                :timestamp="`${element.time} ${CategoryName(
+                      element.category
                 )}`"
                 :icon="LocationInformation"
               >
@@ -43,30 +50,32 @@
                     <div class="row">
                       <div class="item">
                         {{
-                          ItemName(activity.item.category, activity.item.item)
+                          ItemName(element.category, element.item)
                         }}
                       </div>
                     </div>
                     <div class="row">
-                      <div class="desc">{{ activity.item.desc }}</div>
+                      <div class="desc">{{ element.desc }}</div>
                     </div>
                   </div>
                   <div class="actions">
                     <el-button
                       color="#90CAF9"
-                      @click="editItem(day - 1, activity.originalIndex)"
+                      @click="editItem(day - 1, index)"
                       :icon="Edit"
                       circle
                     ></el-button>
                     <el-button
                       color="#f8c1c9"
-                      @click="removeItem(day - 1, activity.originalIndex)"
+                      @click="removeItem(day - 1, index)"
                       :icon="Delete"
                       circle
                     ></el-button>
                   </div>
                 </div>
               </el-timeline-item>
+              </template>
+              </draggable>
             </el-timeline>
           </div>
         </el-tab-pane>
@@ -98,6 +107,7 @@ import ConfirmDialog from "@/components/customtravel/ConfirmDialog.vue";
 import api from "@/utils/api";
 import { useTravelStore } from "@/stores/customtravelStore";
 import { ElMessage } from "element-plus";
+import draggable from "vuedraggable";
 
 const route = useRoute();
 const router = useRouter();
@@ -176,10 +186,8 @@ onMounted(async () => {
 
 const goBack = () => router.push("/CustomtravelList");
 
-const sortedActivities = (day) => {
-  return dailyActivities.value[day - 1]
-    .map((item, index) => ({ item, originalIndex: index }))
-    .sort((a, b) => a.item.time.localeCompare(b.item.time));
+const onDragUpdate = (dayIndex, event) => {
+  travelStore.setDailyActivities(dailyActivities.value);
 };
 
 const CategoryName = (id) => {
@@ -470,5 +478,14 @@ h1 {
   align-items: center;
   justify-content: center;
   background-color: transparent;
+}
+
+.ghost {
+  opacity: 0.4;
+  background-color: #f0f0f0;
+}
+
+.drag {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
 }
 </style>
