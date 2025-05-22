@@ -12,6 +12,7 @@
   <div v-if="showChat" class="chat-popup">
     <div class="chat-popup-header">
       <span>聊天室</span>
+      <CustomerServiceButton />
       <el-icon class="close-btn" @click="toggleChat">
         <CloseBold />
       </el-icon>
@@ -32,6 +33,7 @@ import { computed } from "vue";
 import ChatRoomList from "@/components/chatroom/ChatRoomList.vue";
 import MessageBox from "@/components/chatroom/MessageBox.vue";
 import { useChatStore } from "@/stores/chatStore";
+import CustomerServiceButton from "@/components/chatroom/CustomerServiceButton.vue";
 
 const chatStore = useChatStore();
 

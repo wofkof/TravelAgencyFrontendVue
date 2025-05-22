@@ -13,20 +13,32 @@
         shadow="hover"
         style="margin: 5px"
       >
-        <div style="text-align: center">聊天室({{ room.chatRoomId }})</div>
-        <div style="font-size: xx-small; color: gray">
-          創建時間 : {{ formatDateTime(room.createdAt, { type: "date" }) }}
+        <div style="text-align: center">
+          與 {{ room.employeeName || "未知" }}
+        </div>
+        <div class="chatroom-meta">
+          <div>
+            最後訊息：
+            {{
+              room.lastMessageAt
+                ? formatRelativeTime(room.lastMessageAt)
+                : "尚無訊息"
+            }}
+          </div>
+          <div>
+            建立於：
+            {{ formatDateTime(room.createdAt, { type: "date" }) }}
+          </div>
         </div>
       </el-card>
     </el-badge>
   </el-scrollbar>
 </template>
-
 <script setup>
 import { onMounted } from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import { fetchChatRooms } from "@/services/chatService";
-import { formatDateTime } from "@/utils/formatDateTime";
+import { formatDateTime, formatRelativeTime } from "@/utils/formatDateTime";
 
 const chatStore = useChatStore();
 
@@ -55,5 +67,10 @@ const selectChatRoom = (chatRoomId) => {
 :deep(.el-badge__content) {
   top: 5px !important;
   right: 20px !important;
+}
+.chatroom-meta {
+  font-size: 11px;
+  color: gray;
+  line-height: 1.4;
 }
 </style>

@@ -38,6 +38,7 @@ declare module 'vue' {
     CostSummary: typeof import('./components/OrderForm/CostSummary.vue')['default']
     Create: typeof import('./components/customtravel/Create.vue')['default']
     CreditCardForm: typeof import('./components/OrderForm/CreditCardForm.vue')['default']
+    CustomerServiceButton: typeof import('./components/chatroom/CustomerServiceButton.vue')['default']
     CustomOrder: typeof import('./components/MemberCenter/CustomOrder.vue')['default']
     CustomPhoneCodeSelect: typeof import('./components/OrderForm/CustomPhoneCodeSelect.vue')['default']
     Domesticlostdown: typeof import('./components/Visa/Domesticlostdown.vue')['default']
