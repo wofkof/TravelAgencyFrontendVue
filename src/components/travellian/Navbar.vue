@@ -134,7 +134,8 @@
           >
             <button
               class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
-              @click="toggleMenu">
+              @click="toggleMenu"
+            >
               <button
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu">
