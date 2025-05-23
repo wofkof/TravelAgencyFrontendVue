@@ -10,10 +10,15 @@
             :key="trip.projectId"
             class="p-4 w-1/2 align-top"
           >
-            <div class="rounded p-2 shadow">
-              <p class="font-semibold">{{ trip.title }}</p>
-              <!-- 你可以加其他 trip 資訊 -->
-            </div>
+            <router-link
+              :to="{ name: 'DetailPage', params: { projectId: trip.projectId,detailId: trip.detailId,groupId: trip.groupId} }"
+            >
+              <div class="rounded p-2 shadow">
+                <p class="font-semibold">{{ trip.title }}</p>
+                <!-- 你可以加其他 trip 資訊 -->
+              </div>
+            </router-link>
+            
           </td>
           <!-- 若此列只有一筆，補上空白欄對齊 -->
           <td v-if="group.length === 1" class="p-4 w-1/2"></td>
