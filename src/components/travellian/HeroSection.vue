@@ -55,6 +55,7 @@
 import { useRouter } from "vue-router";
 import { reactive } from "vue";
 import { useSearchResultStore } from "@/stores/useSearchResultStore";
+import api from "@/utils/api";
 
 const router = useRouter();
 const searchResultStore = useSearchResultStore();
@@ -66,33 +67,34 @@ const search = reactive({
   checkout: null
 });
 
+// 將日期轉為 yyyy-MM-dd 格式，空值不送
+const formatDate = (date) => {
+  return date instanceof Date ? date.toISOString().slice(0, 10) : "";
+};
+
 const handleSearch = async () => {
-  const query = new URLSearchParams({
+  const params = {
     destination: search.keyword,
     peopleCount: search.person,
-    startDate: search.checkin ?? '',
-    endDate: search.checkout ?? ''
-  }).toString();
+  };
+
+  // 只有有填才加進參數
+  const startDate = formatDate(search.checkin);
+  const endDate = formatDate(search.checkout);
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
 
   try {
-    const response = await fetch(`https://localhost:7265/api/OfficialSearch/search?${query}`);
+    const response = await api.get("/OfficialSearch/search", { params });
 
-    if (!response.ok) {
-      throw new Error("查詢失敗：" + response.status);
-    }
-
-    const data = await response.json();
-
-    // 存入 Pinia
     searchResultStore.searchInput = {
       destination: search.keyword,
       peopleCount: search.person,
       startDate: search.checkin,
       endDate: search.checkout
     };
-    searchResultStore.searchResult = data;
+    searchResultStore.searchResult = response.data;
 
-    // 導向搜尋結果頁
     router.push("/SearchResult");
 
   } catch (err) {
@@ -100,9 +102,6 @@ const handleSearch = async () => {
     alert("請輸入正確關鍵字");
   }
 };
-
-
-
 </script>
 
 <style>

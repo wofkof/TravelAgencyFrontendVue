@@ -29,8 +29,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
-import api from '@/utils/api'
+import { ref, onMounted, computed } from 'vue';
+import api from '@/utils/api';
 
 const props = defineProps<{ category: string }>()
 
