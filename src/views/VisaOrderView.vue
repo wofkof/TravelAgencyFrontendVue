@@ -22,6 +22,7 @@
 
              <el-main style="background-color: #f9fafc;">Main
                 <VisaPassengerInformation />
+                <VisaTotalAmount />
                 <VisaOrderContact />
                 <VisaPickupMethod />
                 <VisaReceiptInformation />
@@ -48,10 +49,14 @@
 </template>
 
 <script>
-import VisaOrder from '@/components/Visa/VisaOrder.vue';
+import VisaCarousel from '@/components/Visa/VisaCarousel.vue';
+import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
 import VisaPassengerInformation from '@/components/Visa/VisaPassengerInformation.vue';
-import VisaTotalAmount from '@/components/Visa/VisaTotalAmount.vue';
 import VisaOrderContact from '@/components/Visa/VisaOrderContact.vue';
 import VisaPickupMethod from '@/components/Visa/VisaPickupMethod.vue';
 import VisaReceiptInformation from '@/components/Visa/VisaReceiptInformation.vue';
+import VisaTotalAmount from '@/components/Visa/VisaTotalAmount.vue';
+import VisaBackTop from '@/components/Visa/VisaBackTop.vue';
+import VisaOrder from '@/components/Visa/VisaOrder.vue';
+
 </script>

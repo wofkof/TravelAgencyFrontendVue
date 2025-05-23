@@ -49,7 +49,8 @@ const handleRemoveItem = async (item) => {
  * @returns {number} - 項目總單位數量
  */
 const getItemQuantity = (item) => {
-    return item.options ? item.options.reduce((sum, opt) => sum + opt.quantity, 0) : item.quantity;
+    // return item.options ? item.options.reduce((sum, opt) => sum + opt.quantity, 0) : item.quantity;
+    return 1;
 };
 </script>
 
