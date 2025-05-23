@@ -33,7 +33,7 @@
               />
 
               <!-- 加法驗證 -->           
-                <MathCaptcha v-model:isValid="isCaptchaPassed" />              
+                <MathCaptcha v-model:isValid="isCaptchaPassed" ref="captchaRef" />              
               <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
@@ -188,5 +188,13 @@ async function handleLogin() {
     }
   }
 }
+function resetForm() {
+  form.account = "";
+  form.password = "";
+  touched.value = false;
+  isCaptchaPassed.value = false;
+  captchaRef.value?.resetCaptcha?.();
+}
+defineExpose({ resetForm });
 
 </script>

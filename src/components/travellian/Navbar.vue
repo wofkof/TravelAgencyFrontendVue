@@ -221,14 +221,18 @@
 
   <!-- Dialog 區域 -->
   <el-dialog
-    v-model="showLogin"
-    width="800px"
-    top="0"
-    :close-on-click-modal="true"
-    @open="handleDialogOpen"
-    @closed="handleDialogClosed"
-  >
+  v-model="showLogin"
+  width="800px"
+  top="0"
+  :close-on-click-modal="true"
+  @open="() => {
+    handleDialogOpen();
+    loginRef.value?.resetForm?.();
+  }"
+  @closed="handleDialogClosed"
+>
     <Login
+      ref="loginRef"
       @switchToSignUp="handleSwitchToSignUp"
       @switch-to-forget="handleSwitchToForgetPassword"
       @login-success="handleLoginSuccess"
@@ -272,6 +276,7 @@ import { useChatStore } from "@/stores/chatStore";
 const route = useRoute();
 const router = useRouter();
 const forgetPasswordRef = ref()
+const loginRef = ref()
 
 
 
@@ -307,6 +312,7 @@ function handleLogout() {
   //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
   isLoggedIn.value = false;
   memberName.value = "";
+  loginRef.value?.resetForm?.();
   ElMessage.success("您已成功登出");
   router.push("/");
 }
@@ -320,6 +326,7 @@ function handleSwitchToSignUp() {
 function handleSwitchToLogin() {
   showSignUp.value = false;
   showForgetPassword.value = false;
+  loginRef.value?.resetForm?.();
   showLogin.value = true;
 }
 
