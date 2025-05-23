@@ -16,6 +16,38 @@ export const useCartStore = defineStore('ShoppingCart', () => {
       name: '台北經典三天兩夜探索之旅',
       details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
       imageUrl: '/images/tours/taipei-101-skyline.jpg',
+      startDate: '2025/08/20', // 用於顯示開始日期
+      startDayOfWeek: '五',    // 開始日的星期
+      endDate: '2025/08/22',   // 假設是3天2夜，結束日期
+      endDayOfWeek: '日',      // 結束日的星期
+      totalDays: 3,            // 總天數
+
+      flights: null, // 或留空，或提供一個通用描述
+      accommodation: {
+        description: '市中心舒適住宿', // 通用描述
+        roomType: '標準雙人房',      // 預設房型
+        // occupancy 資訊可以從 options 動態生成或在此處預設
+      },
+      options: [
+        { type: '成人', quantity: 1, price: 10000, unitLabel: '佔床' }, // unitLabel 可用於住宿人數描述
+        { type: '兒童', quantity: 0, price: 6500, unitLabel: '佔床' },
+        { type: '嬰兒', quantity: 0, price: 1000, unitLabel: '不佔床' }
+      ],
+      category: '國內旅遊',
+      selected: true,
+      isFavorite: false,
+      // --- 原有的 departureDate 可以保留，或者如果 startDate/endDate 更精確，則考慮其用途 ---
+      departureDate: '2025/08/20',
+    },
+
+    {
+      id: uuidv4(), //uuid
+      productId: '1',
+      productType: 'GroupTravel',
+      destinationCountryCode: 'TW', // 保留
+      name: '台北經典三天兩夜探索之旅',
+      details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
+      imageUrl: '/images/tours/taipei-101-skyline.jpg',
       startDate: '2025/08/15', // 用於顯示開始日期
       startDayOfWeek: '五',    // 開始日的星期
       endDate: '2025/08/17',   // 假設是3天2夜，結束日期
@@ -323,17 +355,7 @@ export const useCartStore = defineStore('ShoppingCart', () => {
    * 計算屬性：有效購物車內所有商品的總「單位」數量。
    * 會計算選項內的數量及簡單數量。適用於導航欄購物車圖標的計數。
    */
-  const itemCount = computed(() => activeItems.value.reduce((sum, item) => {
-    if (item.options && item.options.length > 0) {
-      // 加總此商品所有選項的數量
-      return sum + item.options.reduce((optSum, opt) => optSum + opt.quantity, 0);
-    } else if (item.quantity !== undefined) {
-      // 加上此商品的簡單數量
-      return sum + item.quantity;
-    }
-    // 如果商品既沒有 options 也沒有 quantity，總數不變
-    return sum;
-  }, 0));
+  const itemCount = computed(() => activeItems.value.length);
 
 
   /**
@@ -430,61 +452,68 @@ export const useCartStore = defineStore('ShoppingCart', () => {
 
   /**
    * 將一個商品添加到購物車。
-   * 檢查具有相同 productId 的商品是否已存在。
-   * 對於簡單數量的商品進行基本合併；選項合併需要更複雜的邏輯。
-   * @param {object} product - 要添加的商品物件 (結構應與購物車項目匹配)。
+   * 如果具有相同 productId 和相同 startDate (或其他唯一日期識別) 的商品已存在，則合併數量。
+   * 否則，添加為新的購物車項目。
+   * @param {object} productToAdd - 要添加的商品物件 (結構應與購物車項目匹配)。
    */
-  function addItem(product) {
-    // 使用 productId 檢查是否存在，假設它是產品本身的穩定標識符
-    const existingItemIndex = items.value.findIndex(item => item.productId === product.productId);
+  function addItem(productToAdd) {
+    // 使用 productId 和 startDate (或您用來區分不同出發日期的欄位) 來查找現有項目
+    // 確保 productToAdd 中有 startDate 或類似的日期欄位
+    const existingItem = items.value.find(
+      item => item.productId === productToAdd.productId &&
+              item.startDate === productToAdd.startDate // 或者 item.departureDate === productToAdd.departureDate
+    );
 
-    if (existingItemIndex > -1) {
-      const existingItem = items.value[existingItemIndex];
-      // 這裡的合併邏輯基於選項或簡單數量
-      if (existingItem.options && product.options) {
-        product.options.forEach(newOpt => {
+    if (existingItem) {
+      // 商品已存在 (相同 productId 和相同 startDate)，合併數量
+      if (existingItem.options && productToAdd.options) {
+        productToAdd.options.forEach(newOpt => {
           const existingOpt = existingItem.options.find(opt => opt.type === newOpt.type);
           if (existingOpt) {
-            existingOpt.quantity += (newOpt.quantity || 0);
+            existingOpt.quantity += (newOpt.quantity || 0); // 確保 newOpt.quantity 存在
           } else {
-            console.warn(`商品 ${existingItem.name} 中不存在選項 ${newOpt.type}，未添加/合併。`);
+            // 如果 productToAdd 中的選項類型在 existingItem 中不存在，
+            // 您可以選擇添加新選項或忽略。目前您的邏輯是警告。
+            console.warn(`商品 ${existingItem.name} 中不存在選項 ${newOpt.type}，無法合併該選項數量。`);
           }
         });
-      } else if (existingItem.quantity !== undefined && product.quantity !== undefined) {
-        existingItem.quantity += (product.quantity || 1);
+      } else if (existingItem.quantity !== undefined && productToAdd.quantity !== undefined) {
+        existingItem.quantity += (productToAdd.quantity || 0); // 確保 productToAdd.quantity 存在
       } else {
-        console.warn("addItem: 無法合併不同結構的項目 (選項 vs 簡單數量) 或缺少必要欄位。商品未有效更新。", product);
+        console.warn("addItem: 無法合併不同結構的項目或缺少必要數量欄位。商品未有效更新。", productToAdd);
       }
-      existingItem.selected = true;
-
+      existingItem.selected = true; // 合併後也將其設為選中
     } else {
-      // 購物車中未找到此商品，將其作為新項目添加
-      // 確保傳入的 'product' 物件包含購物車項目所需的所有欄位
+      // 購物車中未找到此特定行程 (productId + startDate)，將其作為新項目添加
       const newItem = {
-        id: product.id || uuidv4(), // 使用 uuidv4() 生成唯一 ID，或使用傳入的 product.id
-        productId: product.productId, // 後端產品 ID
-        productType: product.productType,
-        name: product.name || '未命名商品',
-        details: product.details || '',
-        imageUrl: product.imageUrl || null,
-        destinationCountryCode: product.destinationCountryCode,
-        startDate: product.startDate,
-        startDayOfWeek: product.startDayOfWeek,
-        endDate: product.endDate,
-        endDayOfWeek: product.endDayOfWeek,
-        totalDays: product.totalDays,
-        flights: product.flights ? JSON.parse(JSON.stringify(product.flights)) : null,
-        accommodation: product.accommodation ? JSON.parse(JSON.stringify(product.accommodation)) : null,
+        id: uuidv4(), // 每個購物車條目都有一個唯一的 UUID
+        productId: productToAdd.productId,
+        productType: productToAdd.productType,
+        name: productToAdd.name || '未命名商品',
+        details: productToAdd.details || '',
+        imageUrl: productToAdd.imageUrl || null,
+        destinationCountryCode: productToAdd.destinationCountryCode,
+        // 確保複製所有必要的行程日期資訊
+        startDate: productToAdd.startDate,
+        startDayOfWeek: productToAdd.startDayOfWeek,
+        endDate: productToAdd.endDate,
+        endDayOfWeek: productToAdd.endDayOfWeek,
+        totalDays: productToAdd.totalDays,
+        departureDate: productToAdd.departureDate, // 通常與 startDate 相同或相關
+
+        flights: productToAdd.flights ? JSON.parse(JSON.stringify(productToAdd.flights)) : null,
+        accommodation: productToAdd.accommodation ? JSON.parse(JSON.stringify(productToAdd.accommodation)) : null,
 
         // 深拷貝選項，確保每個購物車項目的選項是獨立的
-        options: product.options ? JSON.parse(JSON.stringify(product.options)) : undefined,
-        quantity: product.quantity, // 用於沒有 options 的商品
-        pricePerUnit: product.pricePerUnit, // 用於沒有 options 的商品
-        category: product.category || '',
+        options: productToAdd.options ? JSON.parse(JSON.stringify(productToAdd.options)) : undefined,
+        // 對於沒有 options 的商品，其 quantity 代表人數
+        quantity: productToAdd.options ? undefined : productToAdd.quantity,
+        pricePerUnit: productToAdd.options ? undefined : productToAdd.pricePerUnit,
+
+        category: productToAdd.category || '',
         selected: true, // 新項目預設為選中
-        isFavorite: false,
-        departureDate: product.departureDate, // 確保傳遞 departureDate
-        // 確保 product 物件中包含所有 cart item 所需的欄位
+        isFavorite: productToAdd.isFavorite || false,
+        // 確保 productToAdd 物件中包含所有 cart item 所需的欄位
       };
       items.value.push(newItem);
     }

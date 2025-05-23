@@ -30,6 +30,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  appType: 'spa', 
   server: {
     host: "0.0.0.0",
     https: true,

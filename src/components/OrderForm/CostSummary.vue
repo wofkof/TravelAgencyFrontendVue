@@ -48,7 +48,7 @@
         size="large"
         style="width: 100%;"
       >
-        {{ isSubmitting ? '提交中...' : '確認付款' }}
+        {{ isSubmitting ? '提交中...' : '前往付款' }}
       </el-button>
 
       <div class="important-notes">
