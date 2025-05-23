@@ -17,7 +17,7 @@
 
     <div class="w-1/2 flex gap-2 p-4 text-left relative">
       <div class="w-1/2 rounded-md">
-        <img :src="mainInfo.cover" alt="" class="h-56 w-max" >
+        <img :src="mainInfo.cover" alt="" class="h-56 w-full object-cover rounded"  >
       </div>
       <div class="text-lg font-bold my-2">
           <p>行程 {{mainInfo.number}}</p>
@@ -54,7 +54,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="g in groupList" :key="groupList.groupId">
+                    <tr v-for="g in groupList" :key="g.groupId">
                       <td>{{ formatDateTime(g.departure, { type: 'date' })}}</td>
                       <td>{{g.number}}</td>
                       <td>{{g.availableSeats}}</td>
@@ -81,7 +81,7 @@
   <div class="bg-white rounded-xl p-4 shadow mb-6">
     <div class="demo-collapse">
         <el-collapse >
-          <el-collapse-item v-for="s in scheduleList" :key="scheduleList.scheduleId">
+          <el-collapse-item v-for="s in scheduleList" :key="s.scheduleId">
             <template #title="{ isActive }">
               <div :class="['title-wrapper']" class="text-xl font-medium">
                 第{{s.day}}天
@@ -91,11 +91,9 @@
               <p>{{ s.description }}</p>
               <p>{{ s.breakfast }}  {{ s.lunch }}  {{ s.dinner }}</p>
               <p>{{ s.hotel }}</p>
-              <p>{{ s.attraction1 }}</p>
-              <p>{{ s.attraction2 }}</p>
-              <p>{{ s.attraction3 }}</p>
-              <p>{{ s.attraction4 }}</p>
-              <p>{{ s.attraction5 }}</p>
+              <p v-for="a in s.attractions" :key="a.attractionId" class="text-blue-800">
+                {{ a.name }} - {{ a.description }}
+              </p>
             </div>
           </el-collapse-item>
     </el-collapse>
@@ -161,9 +159,19 @@
           "attraction2": 0,
           "attraction3": 0,
           "attraction4": 0,
-          "attraction5": 0
+          "attraction5": 0,
+          "attractions": []
         }
       ]
+    )
+
+    const attraction = ref(
+    { "attractionId": 0,
+      "name": "",
+      "description": "",
+      "longitude": 0,
+      "latitude": 0
+    }
     )
 
   const formattedDepartureDate = computed(() =>
@@ -174,6 +182,16 @@
   );
 const route = useRoute();
 
+const getAttractionById = async (attractionId) => {
+      if (!attractionId || attractionId === 0) return null;
+
+      try {
+        const attrlist = await api.get(`/OfficialSearch/getAttraction/${attractionId}`);
+        return attrlist.data;
+      } catch (err) {
+        console.error("取得景點失敗", err);
+      }
+    };
 
 onMounted(async () => {
   const projectId = route.params.projectId;
@@ -198,9 +216,27 @@ onMounted(async () => {
     const slist = await api.get(`/OfficialSearch/getSchedulelist/${detailId}`);
     scheduleList.value = slist.data;
     console.log(slist.data)
+    for (const schedule of scheduleList.value) {
+    const ids = [
+      schedule.attraction1,
+      schedule.attraction2,
+      schedule.attraction3,
+      schedule.attraction4,
+      schedule.attraction5
+    ];
+
+    schedule.attractions = [];
+
+    for (const id of ids) {
+      const attr = await getAttractionById(id);
+      if (attr) schedule.attractions.push(attr);
+      console.log(attr);
+    }
+  }
   } catch (err) {
     console.error("取得行程scheduleList失敗", err);
   }
+  
 
 });
   </script>
