@@ -273,7 +273,6 @@ import { useChatStore } from "@/stores/chatStore";
 
 const route = useRoute();
 const router = useRouter();
-const route = useRoute();
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
