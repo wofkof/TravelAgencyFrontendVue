@@ -254,7 +254,7 @@
     @open="handleDialogOpen"
     @closed="handleDialogClosed"
   >
-    <ForgetPassword @switch-to-login="handleSwitchToLogin" />
+    <ForgetPassword ref="forgetPasswordRef" @switch-to-login="handleSwitchToLogin" />
   </el-dialog>
 </template>
 
@@ -271,6 +271,8 @@ import { useChatStore } from "@/stores/chatStore";
 
 const route = useRoute();
 const router = useRouter();
+const forgetPasswordRef = ref()
+
 
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
@@ -324,6 +326,7 @@ function handleSwitchToLogin() {
 function handleSwitchToForgetPassword() {
   showLogin.value = false;
   showForgetPassword.value = true;
+  forgetPasswordRef.value?.resetForm?.()
 }
 // 會員中心下拉選單開關（設定hover + click 並存）
 const isMenuOpen = ref(false);

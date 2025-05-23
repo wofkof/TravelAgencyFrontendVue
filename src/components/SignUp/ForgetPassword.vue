@@ -106,12 +106,12 @@
                         v-if="step === 2"
                         type="button"
                         class="flex-1"
-                        @click="step = 1"
+                        @click="() => { form.account = ''; form.code = ''; step = 1 }"
                       >
                       返回填寫信箱
                     </Button>
                   <!--  返回登入 -->
-                  <Button type="button" class="flex-1" @click="$emit('switch-to-login')">
+                  <Button type="button" class="flex-1" @click="() => { resetForm(); $emit('switch-to-login') }">
                     返回登入
                   </Button>
                   </div>
@@ -227,6 +227,7 @@ if (step.value === 1) {
       })
       ElMessage.success('密碼已重設成功，請重新登入')
       setTimeout(() => {
+        resetForm()
         emit('switch-to-login')
       }, 1000)
     } catch (err) {
@@ -234,4 +235,16 @@ if (step.value === 1) {
     }
   }
 }
+function resetForm() {
+  form.account = ''
+  form.code = ''
+  form.newPassword = ''
+  form.confirmPassword = ''
+  step.value = 1
+  countdown.value = 0
+  touched.value = false
+}
+defineExpose({
+  resetForm
+})
 </script>
