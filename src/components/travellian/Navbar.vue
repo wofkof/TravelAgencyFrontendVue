@@ -134,7 +134,7 @@
           >
             
               <button
-                class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -231,6 +231,7 @@
     <Login
       @switchToSignUp="handleSwitchToSignUp"
       @switch-to-forget="handleSwitchToForgetPassword"
+      @login-success="handleLoginSuccess"
     />
   </el-dialog>
 
@@ -369,6 +370,16 @@ function handleDialogClosed() {
   document.body.style.overflow = "";
   document.body.style.paddingRight = "";
 }
+function handleLoginSuccess() {
+  const name = localStorage.getItem("memberName")
+  if (name) {
+    isLoggedIn.value = true
+    memberName.value = name
+  }
+  showLogin.value = false // 關閉登入視窗
+  ElMessage.success("登入成功")
+}
+
 </script>
 
 <style>

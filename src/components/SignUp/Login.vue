@@ -104,6 +104,7 @@
 <script setup>
 import api from '@/utils/api'
 import { reactive, computed, ref } from "vue";
+const emit = defineEmits(['login-success'])
 const form = reactive({
   account: "",
   password: "",
@@ -168,17 +169,7 @@ async function handleLogin() {
     const memberId = response.data.id;
     localStorage.setItem("memberId", memberId);
     localStorage.setItem("memberName", memberName);
-
-      ElMessage({
-      message: '登入成功！將自動跳轉至首頁',
-      type: 'success',
-      duration: 2000
-    });
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 2000);
-
+    emit('login-success')
   } catch (error) {
     if (error.response && error.response.status === 401) {
       ElMessage({
