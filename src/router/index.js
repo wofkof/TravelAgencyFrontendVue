@@ -23,13 +23,13 @@ import OrderComplete from "@/views/OrderComplete.vue";
 const routes = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/Domestic", name: "Domestic", component: DomesticView, props: () => ({ category: 'Domestic' }) },
-  { path: "/ForeignView", name: "ForeignView", component: ForeignView, props: () => ({ category: 'Foreign' })},
+  { path: "/ForeignView", name: "ForeignView", component: ForeignView, props: () => ({ category: 'Foreign' }) },
   {
     path: "/FreeTravelView",
     name: "FreeTravelView",
     component: FreeTravelView,
   },
-  { path: "/CruiseView", name: "CruiseView", component: CruiseView , props: () => ({ category: 'CruiseShip' })},
+  { path: "/CruiseView", name: "CruiseView", component: CruiseView, props: () => ({ category: 'CruiseShip' }) },
 
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
@@ -82,7 +82,7 @@ const routes = [
 
   { path: "/Trip", name: "Trip", component: Trip },
 
-  { path: '/detail/:id', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
+  { path: '/detail/:projectId/:detailId/:groupId', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 

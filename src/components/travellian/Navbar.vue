@@ -132,10 +132,7 @@
             @mouseenter="openMenu"
             @mouseleave="closeMenu"
           >
-            <button
-              class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-transparent transition whitespace-nowrap"
-              @click="toggleMenu"
-            >
+            
               <button
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu">
@@ -214,7 +211,7 @@
                   </li>
                 </ul>
               </div>
-            </button>
+            
             </div>
           </div>
         </div>
@@ -273,7 +270,7 @@ import { useChatStore } from "@/stores/chatStore";
 
 const route = useRoute();
 const router = useRouter();
-const route = useRoute();
+
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
