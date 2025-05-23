@@ -24,7 +24,7 @@
           </div>
             <div class="actions">
               <el-button color="#E3F2FD" @click="viewTravel(item.customTravelId)" :icon="View" circle />         
-              <el-button v-if="item.statusText === '審核完成'" color="#E3F2FD" @click="addToCart(item)" style="cursor: pointer" :icon="ShoppingCart" circle />               
+              <el-button v-if="item.statusText === '已通過'" color="#E3F2FD" @click="addToCart(item)" style="cursor: pointer" :icon="ShoppingCart" circle />               
           </div>
         </div>
       </div>
@@ -46,8 +46,8 @@
   const statusClass = (statusText) => {
     switch (statusText) {
       case '待審核': return 'status-pending'
-      case '審核中': return 'status-review'
-      case '審核完成': return 'status-success'
+      case '已通過': return 'status-review'
+      case '已完成': return 'status-success'
       case '已取消': return 'status-cancel'
       default: return ''
     }
@@ -78,7 +78,9 @@ const viewTravel = (id) =>{
 }
 
 const addToCart = (item) => {
-  if (!cartStore.cartItems.some(x => x.customTravelId === item.customTravelId)) {
+  console.log("目前購物車：", cartStore.activeItems.map(x => x.productId))
+  console.log("嘗試加入：", item.customTravelId)
+  if (!cartStore.activeItems.some(x => x.productId === item.customTravelId)) {
     cartStore.addItem(item)
     ElMessage.success('已加入購物車')
   } else {

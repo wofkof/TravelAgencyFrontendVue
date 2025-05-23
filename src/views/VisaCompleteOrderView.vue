@@ -1,5 +1,4 @@
 <template>
-
   <div class="common-layout" style="height: 1800px;">
     <!-- 設定容器高度 -->
 

@@ -1,12 +1,13 @@
 <!-- src/components/FilterBar.vue -->
 <template>
 
-  <div class="text-left p-4">
-    <h1>類型</h1>
-    <input type="checkbox" name="" id="">團體旅遊<br>
-    <input type="checkbox" name="" id="">郵輪
+  <div class="text-left p-4 text-lg">
+    <h1 class="text-xl font-semibold">類型</h1>
+    <input type="checkbox" name="" id=""> 國內旅遊<br>
+    <input type="checkbox" name="" id=""> 國外旅遊<br>
+    <input type="checkbox" name="" id=""> 郵輪
     <hr class="my-2" />
-    <h1>預算</h1>
+    <h1 class="text-xl font-semibold">預算</h1>
     <div ref="slider" class="slider"></div>
     <div class="input-fields">
       <div>
@@ -28,18 +29,12 @@
       </div>
     </div>
     <hr class="my-2"/>
-    <h1>旅遊天數</h1>
-    <input type="checkbox" name="" id="">2-4<br>
-    <input type="checkbox" name="" id="">5-9<br>
-    <input type="checkbox" name="" id="">10-14<br>
-    <input type="checkbox" name="" id="">其他
+    <h1 class="text-xl font-semibold">旅遊天數</h1>
+    <input type="checkbox" name="" id=""> 1-4<br>
+    <input type="checkbox" name="" id=""> 5-9<br>
+    <input type="checkbox" name="" id=""> 10-14<br>
+    <input type="checkbox" name="" id=""> 其他
     <hr class="my-2"/>
-    <h1>出發時間</h1>
-    <input type="checkbox" name="" id="">晚上<br>
-    <input type="checkbox" name="" id="">中午<br>
-    <input type="checkbox" name="" id="">早上出發
-    
-    
   </div>
 
 </template>
