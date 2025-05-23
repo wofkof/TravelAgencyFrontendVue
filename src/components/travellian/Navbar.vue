@@ -102,15 +102,6 @@
       "
     >
       <CartPreviewIcon />
-      <!-- 未登入 -->
-      <!-- <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
-        <el-button plain @click="showLogin = true" style="white-space: nowrap">
-          登入
-        </el-button>
-        <el-button type="primary" @click="showSignUp = true" style="white-space: nowrap">
-          註冊
-        </el-button>
-      </template> -->
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
           <LoginSignupSwitch
@@ -236,6 +227,8 @@
       @switchToSignUp="handleSwitchToSignUp"
       @switch-to-forget="handleSwitchToForgetPassword"
       @login-success="handleLoginSuccess"
+      @close="showLogin = false"
+      @login-success="authStore.loadFromStorage"
     />
   </el-dialog>
 
@@ -272,8 +265,12 @@ import { useRouter, useRoute } from 'vue-router'
 import LoginSignupSwitch from '@/components/tools/LoginSignupSwitch.vue';
 import { ElMessage } from 'element-plus'
 import { useChatStore } from "@/stores/chatStore";
+import { useAuthStore } from '@/stores/authStore'
+
+const chatStore = useChatStore()
 
 const route = useRoute();
+const authStore = useAuthStore()
 const router = useRouter();
 const forgetPasswordRef = ref()
 const loginRef = ref()
@@ -291,30 +288,26 @@ const showSignUp = ref(false);
 const showForgetPassword = ref(false);
 
 // 登入狀態控制變數
-const isLoggedIn = ref(false);
-const memberName = ref("");
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+const memberName = computed(() => authStore.memberName)
 
-// 頁面載入時檢查登入狀態
 onMounted(() => {
-  const name = localStorage.getItem("memberName");
-  if (name) {
-    isLoggedIn.value = true;
-    memberName.value = name;
-  }
-});
+  authStore.loadFromStorage()
+  //正式版要拿掉
+  // console.log('Pinia 中的會員資訊：', {
+  //   isLoggedIn: authStore.isLoggedIn,
+  //   memberName: authStore.memberName,
+  //   memberId: authStore.memberId
+  // })
+})
 
 // 登出
 function handleLogout() {
-  const chatStore = useChatStore();
-  localStorage.removeItem("memberName");
-  localStorage.removeItem("memberId");
-  chatStore.reset();
-  //localStorage.removeItem("token");     // ← 若有 JWT token 或其他資訊，登出後要記得清除
-  isLoggedIn.value = false;
-  memberName.value = "";
+  authStore.logout()
+  chatStore.reset()
   loginRef.value?.resetForm?.();
-  ElMessage.success("您已成功登出");
-  router.push("/");
+  ElMessage.success("您已成功登出")
+  router.push("/")
 }
 
 // 切換邏輯
@@ -337,7 +330,6 @@ function handleSwitchToForgetPassword() {
 }
 // 會員中心下拉選單開關（設定hover + click 並存）
 const isMenuOpen = ref(false);
-const menuRef = ref(null);
 let hoverTimeout = null; // 用於延遲關閉選單
 
 function toggleMenu() {

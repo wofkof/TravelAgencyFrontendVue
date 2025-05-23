@@ -10,7 +10,14 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue";
 import AudioCall from "./components/chatroom/AudioCall.vue";
+import { onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
 
+const authStore = useAuthStore()
+
+onMounted(() => {
+  authStore.loadFromStorage() 
+})
 
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route

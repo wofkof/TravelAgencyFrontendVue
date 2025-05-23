@@ -50,5 +50,9 @@
 </template>
 
 <script setup>
-const memberName = localStorage.getItem('memberName') || 'XXX'
+import { useAuthStore } from '@/stores/authStore'
+import { computed } from 'vue'
+
+const authStore = useAuthStore()
+const memberName = computed(() => authStore.memberName || 'XXX')
 </script>

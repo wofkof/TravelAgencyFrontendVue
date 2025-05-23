@@ -78,16 +78,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed} from 'vue'
 import api from '@/utils/api'
 import dayjs from 'dayjs'
+import { useAuthStore } from '@/stores/authStore'
+const authStore = useAuthStore()
 
 const orders = ref([])
 const expandedOrderId = ref(null)
 const expandedOrderDetail = ref(null)
 const loaded = ref(false)
 
-const memberId = localStorage.getItem('memberId')
+const memberId = computed(() => authStore.memberId)
 
 const formatDate = (dateStr) => dateStr ? dayjs(dateStr).format('YYYY-MM-DD') : '—'
 
@@ -105,11 +107,13 @@ const toggleExpanded = async (orderId) => {
     console.error('取得訂單詳情失敗', err)
   }
 }
-
 onMounted(async () => {
-  if (!memberId) return
+  if (!memberId.value) {
+  console.warn('無法取得會員ID，未登入或 Pinia 尚未初始化')
+  return
+}
   try {
-    const res = await api.get(`/OrderHistory/list/${memberId}`)
+    const res = await api.get(`/OrderHistory/list/${memberId.value}`)
     orders.value = res.data
   } catch (err) {
     console.error('取得歷史訂單失敗:', err)
@@ -117,6 +121,7 @@ onMounted(async () => {
     loaded.value = true
   }
 })
+
 </script>
 
 <style scoped>

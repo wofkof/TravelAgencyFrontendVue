@@ -104,7 +104,12 @@
 <script setup>
 import api from '@/utils/api'
 import { reactive, computed, ref } from "vue";
-const emit = defineEmits(['login-success'])
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter, useRoute } from 'vue-router'
+import { defineEmits } from 'vue'
+const emit = defineEmits(["close", "login-success"])
+const authStore = useAuthStore()
+
 const form = reactive({
   account: "",
   password: "",
@@ -121,7 +126,10 @@ import { ElMessage } from 'element-plus'
 import MathCaptcha from "./MathCaptcha.vue";
 import PasswordInput from "./PasswordInput.vue";
 const isCaptchaPassed = ref(false)
+const router = useRouter()
+const route = useRoute()
 
+const isPageMode = computed(() => route.name === "LoginPage")
 async function handleLogin() {
   form.account = form.account.trim();
   form.password = form.password.trim();
@@ -164,13 +172,31 @@ async function handleLogin() {
         password: form.password,
       }
     );
+    
     //將會員名稱及ID存入 localStorage
     const memberName = response.data.name;
     const memberId = response.data.id;
-    localStorage.setItem("memberId", memberId);
-    localStorage.setItem("memberName", memberName);
-    emit('login-success')
+authStore.login(memberName, memberId, rememberMe.value)
+ // 登入成功後更新 store 狀態
+
+      ElMessage({
+      message: '登入成功！將自動跳轉至首頁',
+      type: 'success',
+      duration: 2000
+    });
+
+   setTimeout(() => {
+    console.log("✅ Pinia 中的會員資訊：", authStore.$state)
+  emit("login-success")
+  if (isPageMode.value) {
+    router.push("/")
+  } else {
+    emit("close")
+  }
+}, 1500);
+
   } catch (error) {
+     authStore.reset() 
     if (error.response && error.response.status === 401) {
       ElMessage({
         message: '帳號或密碼錯誤',

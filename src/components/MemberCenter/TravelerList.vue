@@ -151,6 +151,9 @@
 
 <script>
 import api from '@/utils/api'
+import { useAuthStore } from '@/stores/authStore'
+const authStore = useAuthStore()
+
 export default {
   data() {
     return {
@@ -198,7 +201,9 @@ limitPassportDate(date) {
     return date < sixMonthsLater
   },
     async fetchTravelers() {
-      const memberId = localStorage.getItem('memberId') 
+      const memberId = authStore.memberId
+      if (!memberId) return
+
       console.log('🔍 抓到登入者ID：', memberId)
       try {
         const res = await api.get(`/FavoriteTraveler/${memberId}`)
@@ -213,8 +218,7 @@ limitPassportDate(date) {
       }
     },
 async saveTraveler(t) {
-  console.log(' 儲存觸發了', t)
-  const memberId = localStorage.getItem('memberId')
+  const memberId = authStore.memberId
   if (!memberId) {
     ElMessage.error('請先登入會員')
     return

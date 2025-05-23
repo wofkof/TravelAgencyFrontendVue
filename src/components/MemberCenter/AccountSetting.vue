@@ -182,7 +182,8 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
-
+import { useAuthStore } from '@/stores/authStore' 
+const authStore = useAuthStore()   
 const member = ref({})
 const errors = ref({})
 
@@ -262,7 +263,7 @@ const documentTypeMap = {
 
 
 onMounted(async () => {
-  const id = localStorage.getItem('memberId')
+   const id = authStore.memberId 
   if (!id) {
     ElMessage.warning('尚未登入，無法載入會員資料')
     return
