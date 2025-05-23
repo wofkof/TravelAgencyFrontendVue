@@ -5,6 +5,11 @@
       {{ msg.content }}
     </template>
 
+    <!-- 貼圖 -->
+    <template v-else-if="msg.messageType === 'sticker'">
+      <img :src="fullImageUrl(msg.content)" alt="貼圖" class="chat-sticker" />
+    </template>
+
     <!-- 圖片 -->
     <template v-else-if="msg.messageType === 'image'">
       <img :src="fullImageUrl(msg.content)" alt="圖片訊息" class="chat-image" />
@@ -35,6 +40,7 @@ defineProps({
   },
 });
 
+// 不抓資料庫的localhost
 const fullImageUrl = (path) => {
   const base = getApiBaseUrl();
   const uploadIndex = path.indexOf("/Uploads/");
@@ -44,7 +50,14 @@ const fullImageUrl = (path) => {
   return path;
 };
 
-const fullMediaUrl = (path) => getApiBaseUrl() + path;
+const fullMediaUrl = (path) => {
+  const base = getApiBaseUrl();
+  const uploadIndex = path.indexOf("/Uploads/");
+  if (uploadIndex >= 0) {
+    return base + path.slice(uploadIndex);
+  }
+  return path;
+};
 </script>
 
 <style scoped>
@@ -67,5 +80,16 @@ audio.chat-audio {
   width: 200px;
   height: 32px;
   margin-top: 4px;
+}
+
+.chat-sticker {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  transition: transform 0.2s;
+}
+.chat-sticker:hover {
+  transform: scale(1.3);
+  z-index: 10;
 }
 </style>

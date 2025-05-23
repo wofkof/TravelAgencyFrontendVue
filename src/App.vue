@@ -12,7 +12,6 @@ import CheckoutSteps from "@/components/tools/CheckoutSteps.vue";
 import AudioCall from "./components/chatroom/AudioCall.vue";
 
 
-
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route
 
@@ -21,9 +20,13 @@ const isHomePage = computed(() => route.path === "/"); // <-- 檢查路徑
 
 // 計算屬性，判斷當前路由是否需要顯示步驟導覽列
 const showCheckoutSteps = computed(() => {
-  const checkoutPaths = ["/ShoppingCart", "/order-form", "/order-complete"];
-  return checkoutPaths.includes(route.path);
+  const currentPath = route.path;
+
+  return currentPath === "/ShoppingCart" ||
+         currentPath === "/order-form" ||
+         currentPath.startsWith("/order-complete");
 });
+
 </script>
 
 <template>

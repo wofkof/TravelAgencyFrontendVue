@@ -15,7 +15,13 @@
       應付總額
       <span class="total-price">TWD 1,700</span>
     </div>
-    <el-button type="primary" size="large" style="width: 100%;">送出訂單資料</el-button>
+
+    <el-button type="primary" 
+
+    @click="visaRouter.VisaPaymentView"
+
+    size="large" style="width: 100%;">送出訂單資料</el-button>
+    
   </el-card>
 </template>
 

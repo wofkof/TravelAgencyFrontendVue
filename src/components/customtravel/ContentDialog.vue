@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="dialogFormVisible" title="新增項目" width="500" :close-on-click-modal="false" @closed="onDialogClosed">
-    <el-form :model="form" :rules="formRules" ref="formRef"  validate-on-rule-change="false">
+    <el-form :model="form" :rules="formRules" ref="formRef"  :validate-on-rule-change="false">
       <el-form-item label="分類項目" prop="category" :label-width="formLabelWidth">
         <el-select v-model="form.category" placeholder="請選擇分類">
           <el-option label="住宿" :value="0" />

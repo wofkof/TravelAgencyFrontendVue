@@ -14,25 +14,22 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
-import VisaPage from "@/views/VisaPage.vue";//富成,定義顯示是誰
-import VisaOrderView from '@/views/VisaOrderView.vue';//富成,定義顯示是誰
-import VisaDetailView from '@/views/VisaDetailView.vue';//富成,定義顯示是誰
-// import VisaPaymentView from "@/views/VisaPaymentView.vue";//富成,定義顯示是誰
-// import VisaCompleteOrderView from "@/views/VisaCompleteOrderView.vue";//富成,定義顯示是誰
+import VisaPage from "@/views/VisaPage.vue";//富成
 import OrderComplete from "@/views/OrderComplete.vue";
+
 
 
 
 const routes = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/Domestic", name: "Domestic", component: DomesticView, props: () => ({ category: 'Domestic' }) },
-  { path: "/ForeignView", name: "ForeignView", component: ForeignView, props: () => ({ category: 'Foreign' })},
+  { path: "/ForeignView", name: "ForeignView", component: ForeignView, props: () => ({ category: 'Foreign' }) },
   {
     path: "/FreeTravelView",
     name: "FreeTravelView",
     component: FreeTravelView,
   },
-  { path: "/CruiseView", name: "CruiseView", component: CruiseView , props: () => ({ category: 'CruiseShip' })},
+  { path: "/CruiseView", name: "CruiseView", component: CruiseView, props: () => ({ category: 'CruiseShip' }) },
 
   { path: "/ContactView", name: "ContactView", component: ContactView },
   { path: "/login", name: "Login", component: Login },
@@ -60,10 +57,11 @@ const routes = [
     meta: { simpleNavbar: true }
   },
   {
-    path: "/order-complete", // 訂單完成的路徑
+    path: "/order-complete/:orderId",
     name: "Ordercomplete",
-    component: OrderComplete, // 對應到 Ordercomplete 組件
-    meta: { simpleNavbar: true }
+    component: OrderComplete,
+    meta: { simpleNavbar: true },
+    props: true // 將路由參數作為 props 傳遞給元件
   },
   {
     path: "/CustomtravelCreate",
@@ -84,43 +82,11 @@ const routes = [
 
   { path: "/Trip", name: "Trip", component: Trip },
 
+  { path: '/detail/:projectId/:detailId/:groupId', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
-  { path: '/detail/:projectId/:detailId/:groupId',name: 'DetailPage',component: () => import('@/views/Trip.vue') },
-
-
-  { 
-    path: "/VisaPage", //頁面的路徑URL
-    name: "VisaPage", // // 路由名稱
-    component: VisaPage, //對應到Views組件
-  }, //富成
-
-  {
-    path: '/visa/detail',//頁面的路徑URL
-    name: 'VisaDetailView',// // 路由名稱
-    component: VisaDetailView,//對應到Views組件
-  },//富成
-
-  {
-    path: '/visa/order',//頁面的路徑URL
-    name: 'VisaOrderView',// // 路由名稱
-    component: VisaOrderView,//對應到Views組件
-  },//富成
-
-  // {
-  //   path: '/visa/payment',//頁面的路徑URL
-  //   name: 'VisaPaymentView',// // 路由名稱
-  //   component: VisaPaymentView,//對應到Views組件
-  // },//富成
-
-  // {
-  //   path: '/visa/complete',//頁面的路徑URL
-  //   name: 'VisaCompleteOrderView',// // 路由名稱
-  //   component: VisaCompleteOrderView,//對應到Views組件
-  // }//富成
+  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 
 ];
-
-
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -128,6 +94,4 @@ const router = createRouter({
     return { top: 0 };
   },
 });
-
-
-export default router;//將 router 實例導出。富成
+export default router;//富成
