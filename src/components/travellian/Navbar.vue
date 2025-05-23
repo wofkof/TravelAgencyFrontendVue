@@ -228,7 +228,6 @@
       @switch-to-forget="handleSwitchToForgetPassword"
       @login-success="handleLoginSuccess"
       @close="showLogin = false"
-      @login-success="authStore.loadFromStorage"
     />
   </el-dialog>
 
@@ -294,11 +293,11 @@ const memberName = computed(() => authStore.memberName)
 onMounted(() => {
   authStore.loadFromStorage()
   //正式版要拿掉
-  // console.log('Pinia 中的會員資訊：', {
-  //   isLoggedIn: authStore.isLoggedIn,
-  //   memberName: authStore.memberName,
-  //   memberId: authStore.memberId
-  // })
+  console.log('Pinia 中的會員資訊：', {
+    isLoggedIn: authStore.isLoggedIn,
+    memberName: authStore.memberName,
+    memberId: authStore.memberId
+  })
 })
 
 // 登出
@@ -373,12 +372,8 @@ function handleDialogClosed() {
   document.body.style.paddingRight = "";
 }
 function handleLoginSuccess() {
-  const name = localStorage.getItem("memberName")
-  if (name) {
-    isLoggedIn.value = true
-    memberName.value = name
-  }
-  showLogin.value = false // 關閉登入視窗
+  authStore.loadFromStorage()
+  showLogin.value = false
   ElMessage.success("登入成功")
 }
 

@@ -128,6 +128,8 @@ import PasswordInput from "./PasswordInput.vue";
 const isCaptchaPassed = ref(false)
 const router = useRouter()
 const route = useRoute()
+const captchaRef = ref(null)
+
 
 const isPageMode = computed(() => route.name === "LoginPage")
 async function handleLogin() {
@@ -178,12 +180,6 @@ async function handleLogin() {
     const memberId = response.data.id;
 authStore.login(memberName, memberId, rememberMe.value)
  // 登入成功後更新 store 狀態
-
-      ElMessage({
-      message: '登入成功！將自動跳轉至首頁',
-      type: 'success',
-      duration: 2000
-    });
 
    setTimeout(() => {
     console.log("✅ Pinia 中的會員資訊：", authStore.$state)
