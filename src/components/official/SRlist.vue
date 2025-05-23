@@ -3,7 +3,7 @@
     <router-link
       v-for="item in results"
       :key="item.projectId"
-      :to="{ name: 'DetailPage', params: { projectId: item.projectId ,detailId :item.detailId ,groupId: item.groupTravelId} }"
+      :to="{ name: 'DetailPage', params: { projectId: item.projectId,detailId: item.detailId,groupId: item.groupId} }"
       class="block"
     >
       <div class="shadow-lg rounded-lg p-4 mb-4 grid grid-cols-3 gap-4 h-auto">
