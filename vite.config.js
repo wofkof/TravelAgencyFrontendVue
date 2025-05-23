@@ -39,10 +39,10 @@ export default defineConfig({
     proxy: {
       "/api": {
         target: "https://localhost:7265",
-        changeOrigin: true,
-        secure: true,  // 允許代理到使用自簽章憑證的後端
-        // rewrite: (path) => path.replace(/^\/api/, ""),
-        rewrite: (path) => path,
+        changeOrigin: true
+        secure: true, // 允許代理到使用自簽章憑證的後端
+        rewrite: (path) => path.replace(/^\/api/, ""),
+        // rewrite: (path) => path,
       },
     },
   },
