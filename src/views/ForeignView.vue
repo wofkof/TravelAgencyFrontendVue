@@ -6,7 +6,7 @@
       <TripCard :category="category"/>
     </div>
     
-    <div class="bg-slate-100 rounded-md pb-1 pt-3 mb-5">
+    <div class="bg-slate-100 rounded-md pb-1 pt-3 m-5">
     <filterCard :tags="['全部', '東北亞', '東南亞', '歐洲', '櫻花季', '日本動畫朝聖', '萬靈節', '寬街音樂劇', '紅磨坊', '美洲', '美洲', '美洲', '美洲', '美洲']"
     v-model="currentRegion"class="mb-6"/>
     </div>

@@ -179,4 +179,7 @@ declare module 'vue' {
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
     VueWorldMap: typeof import('./components/Visa/VueWorldMap.vue')['default']
   }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
+  }
 }

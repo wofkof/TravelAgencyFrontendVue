@@ -6,7 +6,7 @@
       <TripCard :category="category"/>
     </div>
     
-    <div class="bg-slate-100 rounded-md pb-1 pt-3 mb-5">
+    <div class="bg-slate-100 rounded-md pb-1 pt-3 m-5">
       <filterCard :tags="['全部', '北部', '中部', '南部', '東部','離島']"
       v-model="currentRegion"class="mb-6"/>
     </div>

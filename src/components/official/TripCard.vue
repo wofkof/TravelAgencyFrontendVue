@@ -1,9 +1,7 @@
 <template>
   <div class="grid grid-cols-4 gap-4">
-    <div v-if="loading">載入中...</div>
-    <div v-else>
-      
-        <router-link
+    <div v-loading="loading">
+      <router-link
               v-for="trip in trips"
               :key="trip.projectId"
               :to="{ name: 'DetailPage', params: { projectId: trip.projectId,detailId: trip.detailId,groupId: trip.groupId} }"
@@ -16,9 +14,8 @@
             </div>
           </div>
         </router-link>
-        
-      
     </div>
+   
   </div>
 </template>
 
@@ -37,12 +34,11 @@ onMounted(async () => {
   console.log('收到的 category：', props.category)
   try {
     const response = await api.get(`/OfficialIndex/${encodeURIComponent(props.category)}`)
-    trips.value = response.data
+    trips.value = response.data;
+    loading.value = false;
   } catch (error) {
     console.error('API 錯誤:', error)
     trips.value = []
-  } finally {
-    loading.value = false
-  }
+  } 
 })
 </script>
