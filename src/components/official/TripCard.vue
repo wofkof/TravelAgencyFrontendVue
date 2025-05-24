@@ -1,6 +1,6 @@
 <template>
-  <div class="grid grid-cols-4 gap-4">
-    <div v-loading="loading">
+  <div class="grid grid-cols-4 gap-4" v-loading="loading">
+    <div class="min-h-48">
       <router-link
               v-for="trip in trips"
               :key="trip.projectId"

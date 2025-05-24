@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: -155px">
     <BigBanner />
-    <div class="m-6">
+    <div class="max-w-7xl mx-auto p-4">
       <p class="text-2xl font-bold m-6">熱門行程</p>
       <TripCard :category="category"/>
     </div>
