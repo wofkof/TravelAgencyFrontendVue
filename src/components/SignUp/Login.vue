@@ -107,9 +107,11 @@ import { reactive, computed, ref } from "vue";
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { defineEmits } from 'vue'
-const emit = defineEmits(["close", "login-success"])
+import { ElMessage } from 'element-plus'
+import MathCaptcha from "./MathCaptcha.vue";
+import PasswordInput from "./PasswordInput.vue";
+const emit = defineEmits(["close", "login-success", 'switch-to-sign-up', 'switch-to-forget'])
 const authStore = useAuthStore()
-
 const form = reactive({
   account: "",
   password: "",
@@ -119,24 +121,21 @@ const isValidAccount = computed(() => {
   const account = String(form.account).trim();
   return /^09\d{8}$/.test(account) || /^\S+@\S+\.\S+$/.test(account);
 });
-
+//驗證密碼格式
+const isValidPassword = computed(() => {
+  return /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/.test(form.password);
+});
 const rememberMe = ref(false);
 const touched = ref(false);
-import { ElMessage } from 'element-plus'
-import MathCaptcha from "./MathCaptcha.vue";
-import PasswordInput from "./PasswordInput.vue";
 const isCaptchaPassed = ref(false)
 const router = useRouter()
 const route = useRoute()
 const captchaRef = ref(null)
-
-
 const isPageMode = computed(() => route.name === "LoginPage")
 async function handleLogin() {
   form.account = form.account.trim();
   form.password = form.password.trim();
   touched.value = true;
-
   if (!isValidAccount.value) {
     ElMessage({
       message: '請輸入有效的手機號碼或信箱格式',
@@ -145,16 +144,14 @@ async function handleLogin() {
     });
     return;
   }
-
-  if (!form.password || form.password.length < 6 || form.password.length > 12) {
-     ElMessage({
-      message: '密碼長度為 6~12 位，且包含大、小寫英文',
-      type: 'warning',
-      duration: 3000
-    });
-    return;
-  }
-
+if (!isValidPassword.value) {
+  ElMessage({
+    message: '密碼需包含大小寫英文，長度為6~12字元',
+    type: 'warning',
+    duration: 3000
+  });
+  return;
+}
   if (!isCaptchaPassed.value) {
   ElMessage({
     message: '驗證欄位輸入有誤，請再次確認',
@@ -163,8 +160,6 @@ async function handleLogin() {
   })
   return
 }
-
-
   try {
     // ✅ 呼叫後端登入 API
     const response = await api.post(
@@ -178,19 +173,15 @@ async function handleLogin() {
     //將會員名稱及ID存入 localStorage
     const memberName = response.data.name;
     const memberId = response.data.id;
-authStore.login(memberName, memberId, rememberMe.value)
- // 登入成功後更新 store 狀態
-
-   setTimeout(() => {
+    authStore.login(memberName, memberId, rememberMe.value)
+      emit("login-success")
     console.log("✅ Pinia 中的會員資訊：", authStore.$state)
-  emit("login-success")
-  if (isPageMode.value) {
-    router.push("/")
-  } else {
-    emit("close")
-  }
-}, 1500);
 
+    if (isPageMode.value) {
+      router.push("/")
+    } else {
+      emit("close")
+    }
   } catch (error) {
      authStore.reset() 
     if (error.response && error.response.status === 401) {

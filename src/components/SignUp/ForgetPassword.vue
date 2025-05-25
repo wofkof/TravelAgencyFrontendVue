@@ -89,13 +89,17 @@
                     我們已發送驗證碼至您填寫的信箱，請於 10 分鐘內輸入 6 碼驗證碼完成身份驗證。<br /><br />
                     ※ 若未收到信件，請確認垃圾郵件匣或嘗試重新發送驗證碼。
                   </p>
-                  <p v-if="step === 3" class="text-sm text-muted-foreground">
+                  <div v-if="step === 3" class="text-sm text-muted-foreground">
+                  <p>您目前正在為 <strong>{{ form.account }}</strong> 重設密碼</p>
+                  <br />
+                  <p>
                     說明：<br />
-                    請設定長度6~12位數，且包含大、小寫英文的密碼，以提高帳戶安全性。<br /><br />
+                    請設定長度6~12位數，且包含大、小寫英文的密碼，以提高帳戶安全性。
+                    <br /><br />
                     ※ 設定完成後，系統將自動導回登入畫面。
                   </p>
+                </div>
 
- 
                   <!--  提交按鈕 -->
                   <Button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
                     {{ step === 1 ? '下一步' : step === 2 ? '驗證驗證碼' : '重設密碼' }}
@@ -131,8 +135,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/api'
 import PasswordInput from "./PasswordInput.vue";
-
-
+const resendTimer = ref(null)
 const emit = defineEmits(['switch-to-login'])
 const step = ref(1)
 const countdown = ref(0)
@@ -143,7 +146,9 @@ const form = reactive({
   newPassword: '',
   confirmPassword: ''
 })
-
+const isValidPassword = computed(() => {
+  return /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/.test(form.newPassword);
+});
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const isValidEmail = computed(() => emailRegex.test(form.account.trim()))
 
@@ -162,13 +167,14 @@ async function sendVerificationCode() {
       'Content-Type': 'application/json'
     }
 })
-
     ElMessage.success('驗證碼已寄送，請至信箱查收')
     countdown.value = 60
-    const timer = setInterval(() => {
+    if (resendTimer.value) clearInterval(resendTimer.value)
+    resendTimer.value = setInterval(() => {
       countdown.value--
-      if (countdown.value <= 0) clearInterval(timer)
+      if (countdown.value <= 0) clearInterval(resendTimer.value)
     }, 1000)
+
   } catch (err) {
     const message =
       err.response?.data && typeof err.response.data === 'string'
@@ -211,11 +217,10 @@ if (step.value === 1) {
       ElMessage.error(err.response?.data ?? '驗證失敗')
     }
   } else if (step.value === 3) {
-   if (!form.newPassword || form.newPassword.length < 6) {
-      ElMessage.error('密碼長度至少需為 6 位數')
-      return
-    }
-
+   if (!isValidPassword.value) {
+  ElMessage.error('密碼需包含大小寫英文，長度為6~12字元')
+  return
+}
     if (form.newPassword !== form.confirmPassword) {
       ElMessage.error('請確認兩次輸入的密碼一致')
       return
@@ -230,6 +235,7 @@ if (step.value === 1) {
         resetForm()
         emit('switch-to-login')
       }, 1000)
+
     } catch (err) {
       ElMessage.error(err.response?.data ?? '重設失敗')
     }
@@ -243,6 +249,7 @@ function resetForm() {
   step.value = 1
   countdown.value = 0
   touched.value = false
+  if (resendTimer.value) clearInterval(resendTimer.value)
 }
 defineExpose({
   resetForm

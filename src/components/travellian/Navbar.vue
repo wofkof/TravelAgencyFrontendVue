@@ -104,10 +104,10 @@
       <CartPreviewIcon />
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
-          <LoginSignupSwitch
-            @click:login="showLogin = true"
-            @click:signup="showSignUp = true"
-          />
+        <LoginSignupSwitch
+          @click:login="openLoginModal"
+          @click:signup="openSignUpModal"
+        />
         </div>
       </template>
 
@@ -136,7 +136,7 @@
                     d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm51.2 32H172.8C77.3 288 0 365.3 0 460.8C0 487.5 24.5 512 51.2 512H345.6c26.7 0 51.2-24.5 51.2-51.2C396.8 365.3 319.5 288 224 288z"
                   />
                  </svg>
-                 歡迎，{{ memberName }}
+                 歡迎，{{ memberName || '使用者' }}
                  <span
                   :class="
                     isMenuOpen
@@ -210,81 +210,30 @@
     </nav>
   </div>
 
-  <!-- Dialog 區域 -->
-  <el-dialog
-  v-model="showLogin"
-  width="800px"
-  top="0"
-  :close-on-click-modal="true"
-  @open="() => {
-    handleDialogOpen();
-    loginRef.value?.resetForm?.();
-  }"
-  @closed="handleDialogClosed"
->
-    <Login
-      ref="loginRef"
-      @switchToSignUp="handleSwitchToSignUp"
-      @switch-to-forget="handleSwitchToForgetPassword"
-      @login-success="handleLoginSuccess"
-      @close="showLogin = false"
-    />
-  </el-dialog>
+<AuthModal v-model="showAuthModal" :initial="authStep"  @login-success="handleLoginSuccess" />
 
-  <el-dialog
-    v-model="showSignUp"
-    width="800px"
-    top="0"
-    :close-on-click-modal="true"
-    @open="handleDialogOpen"
-    @closed="handleDialogClosed"
-  >
-    <SignUp @switch-to-login="handleSwitchToLogin" />
-  </el-dialog>
-
-  <el-dialog
-    v-model="showForgetPassword"
-    width="800px"
-    top="0"
-    :close-on-click-modal="true"
-    @open="handleDialogOpen"
-    @closed="handleDialogClosed"
-  >
-    <ForgetPassword ref="forgetPasswordRef" @switch-to-login="handleSwitchToLogin" />
-  </el-dialog>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import Login from "@/components/SignUp/Login.vue";
-import SignUp from "@/components/SignUp/SignUp.vue";
-import ForgetPassword from "@/components/SignUp/ForgetPassword.vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter, useRoute } from 'vue-router'
 import LoginSignupSwitch from '@/components/tools/LoginSignupSwitch.vue';
 import { ElMessage } from 'element-plus'
 import { useChatStore } from "@/stores/chatStore";
 import { useAuthStore } from '@/stores/authStore'
-
+import AuthModal from "@/components/SignUp/AuthModal.vue"
+const showAuthModal = ref(false)
+const authStep = ref('Login') // 可為 'Login' | 'SignUp' | 'ForgetPassword'
 const chatStore = useChatStore()
-
 const route = useRoute();
 const authStore = useAuthStore()
 const router = useRouter();
-const forgetPasswordRef = ref()
-const loginRef = ref()
-
-
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
   return route.meta.simpleNavbar === true;
 });
-
-// 控制各個 dialog 顯示
-const showLogin = ref(false);
-const showSignUp = ref(false);
-const showForgetPassword = ref(false);
 
 // 登入狀態控制變數
 const isLoggedIn = computed(() => authStore.isLoggedIn)
@@ -304,29 +253,11 @@ onMounted(() => {
 function handleLogout() {
   authStore.logout()
   chatStore.reset()
-  loginRef.value?.resetForm?.();
+  
   ElMessage.success("您已成功登出")
   router.push("/")
 }
 
-// 切換邏輯
-function handleSwitchToSignUp() {
-  showLogin.value = false;
-  showSignUp.value = true;
-}
-
-function handleSwitchToLogin() {
-  showSignUp.value = false;
-  showForgetPassword.value = false;
-  loginRef.value?.resetForm?.();
-  showLogin.value = true;
-}
-
-function handleSwitchToForgetPassword() {
-  showLogin.value = false;
-  showForgetPassword.value = true;
-  forgetPasswordRef.value?.resetForm?.()
-}
 // 會員中心下拉選單開關（設定hover + click 並存）
 const isMenuOpen = ref(false);
 let hoverTimeout = null; // 用於延遲關閉選單
@@ -353,30 +284,20 @@ onBeforeUnmount(() => {
   clearTimeout(hoverTimeout);
 });
 
-// Dialog 開啟時處理
-function handleDialogOpen() {
-  // 計算捲軸的寬度
-  const scrollbarWidth =
-    window.innerWidth - document.documentElement.clientWidth;
-  // 如果有捲軸，為 body 增加 padding
-  if (scrollbarWidth > 0) {
-    document.body.style.paddingRight = scrollbarWidth + "px";
-  }
-  // 隱藏 body 的捲軸，防止內容滾動
-  document.body.style.overflow = "hidden";
-}
-
-// Dialog 關閉時處理
-function handleDialogClosed() {
-  document.body.style.overflow = "";
-  document.body.style.paddingRight = "";
-}
 function handleLoginSuccess() {
   authStore.loadFromStorage()
-  showLogin.value = false
-  ElMessage.success("登入成功")
+  showAuthModal.value = false 
+  ElMessage.success("登入成功") 
 }
 
+function openLoginModal() {
+  authStep.value = 'Login'
+  showAuthModal.value = true
+}
+function openSignUpModal() {
+  authStep.value = 'SignUp'
+  showAuthModal.value = true
+}
 </script>
 
 <style>
