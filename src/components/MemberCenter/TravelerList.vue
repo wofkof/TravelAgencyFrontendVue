@@ -80,9 +80,10 @@
     <div class="col">
       <label>性別</label><br />
       <el-select v-model="t.gender" placeholder="請選取性別" style="width: 240px" :disabled="t.country === 'TW'">
-        <el-option label="男性" value="男" />
-        <el-option label="女性" value="女" />
-        <el-option label="其他" value="其他" />
+        <el-option label="男性" :value="0" />
+<el-option label="女性" :value="1" />
+<el-option label="其他" :value="2" />
+
       </el-select>
     </div>
     </div>
@@ -249,9 +250,9 @@ if (t.passportExpireDate && new Date(t.passportExpireDate) <= new Date()) {
   this.fieldErrors.passportExpireDate = true
 }
 
-// 生日要是100年內
+// 生日要是85年內
 const hundredYearsAgo = new Date()
-hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100)
+hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 85)
 if (!t.birthDate || new Date(t.birthDate) < hundredYearsAgo || new Date(t.birthDate) > new Date()) {
   this.fieldErrors.birthDate = true
 }

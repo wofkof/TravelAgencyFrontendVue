@@ -3,7 +3,7 @@
     <BigBanner />
     <!-- 熱門行程 -->
     <div class="max-w-7xl mx-auto p-4">
-      <PopularTripforC />
+      <PopularTripforC :category="category"/>
     </div>
 
     <!-- 按郵輪類型排序 -->
@@ -11,11 +11,13 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from "vue";
 import BigBanner from "@/components/official/BigBanner.vue";
 import PopularTripforC from "@/components/official/PopularTripforC.vue";
 import TripInfos from "@/components/official/TripInfos.vue";
+
+const props = defineProps<{ category: string }>();
 </script>
 
 <style>

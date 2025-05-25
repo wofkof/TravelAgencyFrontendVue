@@ -39,6 +39,7 @@ export const setupSocket = async (chatRoomId) => {
     chatStore.addMessage(msg.chatRoomId, {
       senderType: msg.senderType,
       senderId: msg.senderId,
+      senderName: msg.senderName,
       messageType: msg.messageType,
       content: msg.content,
       sentAt: msg.sentAt,
