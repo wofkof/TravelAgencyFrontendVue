@@ -168,7 +168,7 @@
                     <router-link
                       to="/member/favorite-travelers"
                       class="block px-4 py-3 hover:bg-red-50"
-                      >👥 常用旅客清單</router-link
+                      >👥 常用旅客名單</router-link
                     >
                   </li>
                   <li>

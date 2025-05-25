@@ -21,7 +21,7 @@
         </li>
         <li>
            <router-link to="/member/favorite-travelers" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            👥 常用旅客清單
+            👥 常用旅客名單
           </router-link>
         </li>
         <li>

@@ -1,9 +1,10 @@
 <template>
   <div class="bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-xl font-semibold mb-4">個人資料設定</h2>
-
+    <h2 class="text-xl font-semibold mb-4">會員帳號管理</h2>
     <div class="space-y-6">
-  <!-- 姓名、生日 -->
+  
+   <div class="space-y-4">
+    <!-- 姓名、生日 -->
   <div class="form-row">
     <div class="form-col">
       <label class="label">姓名 <span class="text-red-500">*</span></label>
@@ -32,7 +33,7 @@
   <!-- 信箱、手機 -->
   <div class="form-row">
     <div class="form-col">
-      <label class="label">E-mail <span class="text-red-500">*</span></label>
+      <label class="label">聯絡E-mail <span class="text-red-500">*</span></label>
       <el-input
         v-model="member.email"
         disabled
@@ -53,6 +54,24 @@
     </div>
   </div>
 
+  <!-- 地址 -->
+    <div class="form-col" style="width: 100%">
+      <label class="label">居住地址</label>
+      <el-input
+    v-model="member.address"
+    class="w-full" />
+    </div>
+   </div>
+</div>
+  <!-- 護照資訊 -->  
+   <div class="bg-gray-50 shadow-sm border border-gray-200 rounded-xl p-6 mt-6 space-y-4">
+ <div class="flex items-center justify-between border-b pb-2">
+  <h3 class="text-lg font-semibold text-gray-800">
+    護照與證件資訊
+  </h3>
+  <h4 class="text-sm text-gray-500 font-normal">(非必填)</h4>
+</div>
+
   <!-- 國籍 -->
   <div class="form-row">
     <div class="form-col">
@@ -69,7 +88,7 @@
         <el-option label="其他" value="OTHER" />
       </el-select>
     </div>
-
+</div>
     <!-- 身分證與性別 -->
     <div class="form-row">
       <div class="form-col">
@@ -87,44 +106,18 @@
       <div class="form-col">
         <label class="label">性別</label>
         <el-select
-  v-model="member.gender"
-  placeholder="請選擇性別"
-  class="fixed-input"
-  :disabled="member.nationality === 'TW'"
->
-  <el-option label="男性" value="Male" />
-  <el-option label="女性" value="Female" />
-  <el-option label="其他" value="Other" />
-</el-select>
-
+        v-model="member.gender"
+        placeholder="請選擇性別"
+        class="fixed-input"
+        :disabled="member.nationality === 'TW'"
+      >
+        <el-option label="男性" value="Male" />
+        <el-option label="女性" value="Female" />
+        <el-option label="其他" value="Other" />
+      </el-select>
       </div>
     </div>
-  </div>
-
-  <!-- 地址 -->
-  <div class="form-row">
-    <div class="form-col" style="margin-right: auto;">
-      <label class="label">居住地址</label>
-      <el-input v-model="member.address" class="fixed-input" />
-    </div>
-  </div>
-
-  <!-- 護照資訊 -->
-  <p class="mt-4 font-semibold">-----護照資訊-----</p>
-
-  <div class="form-col">
-    <label class="label">證件類別</label>
-    <el-select
-      v-model="member.documentType"
-      placeholder="請選擇證件類型"
-      class="fixed-input" 
-    >
-      <el-option label="護照" value="Passport" />
-      <el-option label="居留證" value="ResidencePermit" />
-      <el-option label="台胞證" value="EntryPermit" />
-    </el-select>
-  </div>
-
+  
   <div class="form-row">
     <div class="form-col">
       <label class="label">護照英文姓 (Surname)</label>
@@ -144,16 +137,6 @@
     </div>
   </div>
 
-  <div class="form-row">
-    <div class="form-col">
-      <label class="label">護照號碼</label>
-      <el-input
-        v-model="member.documentNumber"
-        placeholder="請輸入護照號碼"
-        class="fixed-input"
-      />
-    </div>
-
     <div class="form-col">
       <label class="label">護照效期到期日</label>
       <el-date-picker
@@ -167,15 +150,35 @@
       />
       <p class="error-info" v-if="errors.passportExpireDate">{{ errors.passportExpireDate }}</p>
     </div>
+  <div class="form-row">
+    <div class="form-col">
+    <label class="label">證件類別</label>
+    <el-select
+      v-model="member.documentType"
+      placeholder="請選擇證件類型"
+      class="fixed-input" 
+    >
+      <el-option label="護照" value="Passport" />
+      <el-option label="居留證" value="ResidencePermit" />
+      <el-option label="台胞證" value="EntryPermit" />
+    </el-select>
   </div>
-
+  <div class="form-col">
+      <label class="label">證件號碼</label>
+      <el-input
+        v-model="member.documentNumber"
+        placeholder="請輸入護照號碼"
+        class="fixed-input"
+      />
+    </div>
+  </div>
+  
+  </div>
   <!-- 儲存按鈕 -->
   <div class="flex justify-end pt-4">
     <el-button type="primary" @click="updateMember">儲存修改</el-button>
   </div>
 </div>
-
-  </div>
 </template>
 
 <script setup>
@@ -214,11 +217,15 @@ const validateFields = () => {
 
   // 3. 護照到期日需為未來日
   if (member.value.passportExpireDate) {
-    const expire = new Date(member.value.passportExpireDate)
-    if (expire <= now) {
-      errors.value.passportExpireDate = '護照效期需為未來日期'
-    }
+  const expire = new Date(member.value.passportExpireDate)
+  const sixMonthsLater = new Date()
+  sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
+
+  if (expire <= sixMonthsLater) {
+    errors.value.passportExpireDate = '護照效期需距今至少六個月'
   }
+}
+
   // 4. 手機格式驗證（選填，但若填了就要符合格式）
   const phoneRegex = /^09\d{8}$/
   if (member.value.phone && !phoneRegex.test(member.value.phone)) {
