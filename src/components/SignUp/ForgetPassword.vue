@@ -25,7 +25,7 @@
             </div>
 
             <!--  表單區塊 -->
-            <form @submit.prevent="handleSubmit" class="p-6 md:p-6 overflow-auto max-h-[80vh]">
+            <form @submit.prevent="handleSubmit" class="p-6 md:p-6 overflow-auto h-full flex flex-col justify-center">
               <div class="flex flex-col gap-8">
                 <!--  Logo -->
                 <img src="@/assets/images/newlogo.png" width="160" class="mx-auto" />
