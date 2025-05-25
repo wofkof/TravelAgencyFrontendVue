@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
-
+import { ref } from 'vue'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isLoggedIn: false,
     memberName: '',
-    memberId: null
+    memberId: null,
+    showLoginModal: false
   }),
   actions: {
-    // ✅ 登入時寫入 Pinia + 儲存位置（依照是否記住我）
     login(name, id, rememberMe = false) {
       console.log("login 被呼叫了", name, id, "記住我？", rememberMe)
       this.isLoggedIn = true
@@ -49,7 +49,12 @@ export const useAuthStore = defineStore('auth', {
     this.isLoggedIn = false
     this.memberName = ''
     this.memberId = null
+    },
+     triggerLoginModal() {
+      this.showLoginModal = true
+    },
+    closeLoginModal() {
+      this.showLoginModal = false
     }
-
   }
 })

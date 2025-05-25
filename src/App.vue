@@ -12,6 +12,7 @@ import CheckoutSteps from "@/components/tools/CheckoutSteps.vue";
 import AudioCall from "./components/chatroom/AudioCall.vue";
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import AuthModal from "@/components/SignUp/AuthModal.vue"
 
 const authStore = useAuthStore()
 
@@ -33,7 +34,10 @@ const showCheckoutSteps = computed(() => {
          currentPath === "/order-form" ||
          currentPath.startsWith("/order-complete");
 });
-
+function handleLoginSuccess() {
+  authStore.loadFromStorage()
+  authStore.closeLoginModal()
+}
 </script>
 
 <template>
@@ -51,4 +55,10 @@ const showCheckoutSteps = computed(() => {
 
   <NewsletterSection />
   <FooterSection />
+  <AuthModal
+  v-model="authStore.showLoginModal"
+  @login-success="handleLoginSuccess"
+/>
+
+
 </template>
