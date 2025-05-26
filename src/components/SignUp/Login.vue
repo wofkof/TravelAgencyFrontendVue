@@ -31,9 +31,8 @@
                 id="password"
                 placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
               />
+              
 
-              <!-- 加法驗證 -->           
-                <MathCaptcha v-model:isValid="isCaptchaPassed" ref="captchaRef" />              
               <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
@@ -49,7 +48,11 @@
                   忘記密碼？
                 </button>
               </div>
-              
+              <!-- Google reCAPTCHA 框 -->
+              <div class="flex justify-center">
+              <div class="scale-[0.95] sm:scale-100" v-html="recaptchaHtml"></div>
+            </div>
+
               <!-- 登入按鈕 -->
               <Button type="submit" class="w-full"> 登入 </Button>
               <!-- 分隔線文字 -->
@@ -103,13 +106,17 @@
 
 <script setup>
 import api from '@/utils/api'
-import { reactive, computed, ref } from "vue";
+import { reactive, computed, ref,onMounted } from "vue";
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { defineEmits } from 'vue'
 import { ElMessage } from 'element-plus'
-import MathCaptcha from "./MathCaptcha.vue";
 import PasswordInput from "./PasswordInput.vue";
+const siteKey = '6LcVekgrAAAAAGl9ArUfrJjLffkSNTWtvMQlHBTo'
+const recaptchaHtml = `<div class="g-recaptcha" data-sitekey="${siteKey}"></div>`;
+const getRecaptchaToken = () => {
+  return grecaptcha.getResponse()
+}
 const emit = defineEmits(["close", "login-success", 'switch-to-sign-up', 'switch-to-forget'])
 const authStore = useAuthStore()
 const form = reactive({
@@ -127,11 +134,20 @@ const isValidPassword = computed(() => {
 });
 const rememberMe = ref(false);
 const touched = ref(false);
-const isCaptchaPassed = ref(false)
 const router = useRouter()
 const route = useRoute()
-const captchaRef = ref(null)
 const isPageMode = computed(() => route.name === "LoginPage")
+onMounted(() => {
+  const el = document.querySelector('.g-recaptcha')
+  if (window.grecaptcha && el) {
+    grecaptcha.render(el, {
+      sitekey: siteKey
+    });
+  } else {
+    console.warn('⚠️ grecaptcha 或 reCAPTCHA element 尚未就緒');
+  }
+});
+
 async function handleLogin() {
   form.account = form.account.trim();
   form.password = form.password.trim();
@@ -140,7 +156,7 @@ async function handleLogin() {
     ElMessage({
       message: '請輸入有效的手機號碼或信箱格式',
       type: 'warning',
-      duration: 3000
+      duration: 2500
     });
     return;
   }
@@ -148,15 +164,16 @@ if (!isValidPassword.value) {
   ElMessage({
     message: '密碼需包含大小寫英文，長度為6~12字元',
     type: 'warning',
-    duration: 3000
+    duration: 2500
   });
   return;
 }
-  if (!isCaptchaPassed.value) {
+const recaptchaToken = getRecaptchaToken()
+if (!recaptchaToken) {
   ElMessage({
-    message: '驗證欄位輸入有誤，請再次確認',
+    message: '請先通過「我不是機器人」驗證',
     type: 'warning',
-    duration: 3000
+    duration: 2500
   })
   return
 }
@@ -167,6 +184,7 @@ if (!isValidPassword.value) {
       {
         account: form.account,
         password: form.password,
+         recaptchaToken: recaptchaToken
       }
     );
     
@@ -175,27 +193,29 @@ if (!isValidPassword.value) {
     const memberId = response.data.id;
     authStore.login(memberName, memberId, rememberMe.value)
       emit("login-success")
-    console.log("✅ Pinia 中的會員資訊：", authStore.$state)
+    console.log(" Pinia 中的會員資訊：", authStore.$state)
 
     if (isPageMode.value) {
       router.push("/")
     } else {
       emit("close")
     }
+    grecaptcha.reset();
   } catch (error) {
      authStore.reset() 
     if (error.response && error.response.status === 401) {
       ElMessage({
         message: '帳號或密碼錯誤',
         type: 'error',
-        duration: 3000
+        duration: 2500
       });
+      grecaptcha.reset();
     } else {
       // 其他錯誤
       ElMessage({
         message: '登入失敗，請稍後再試',
         type: 'error',
-        duration: 3000
+        duration: 2500
       });
       console.error(error);
     }
@@ -205,8 +225,6 @@ function resetForm() {
   form.account = "";
   form.password = "";
   touched.value = false;
-  isCaptchaPassed.value = false;
-  captchaRef.value?.resetCaptcha?.();
 }
 defineExpose({ resetForm });
 
