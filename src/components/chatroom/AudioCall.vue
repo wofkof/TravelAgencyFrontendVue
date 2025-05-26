@@ -53,7 +53,7 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import {
   callUser,
@@ -65,6 +65,14 @@ import {
 import { getConnection } from "@/utils/socket";
 import { useChatStore } from "@/stores/chatStore";
 import { useCallStore } from "@/stores/callStore";
+
+import { createCallLog } from "@/apis/callLogApi";
+
+const chatStore = useChatStore();
+const callerId = chatStore.memberId;
+const callerType = chatStore.memberType;
+const receiverId = chatStore.getTargetUserId;
+const receiverType = "Employee";
 
 const visible = ref(false);
 const callStatus = ref("");
@@ -78,9 +86,40 @@ const enableVideo = ref(false); // 控制是否為視訊通話
 const isVideoEnabled = ref(true);
 let timer = null;
 let callStartTime = null;
+let callLogAlreadyRecorded = false;
 let ringtone = new Audio("/assets/sounds/incoming.mp3");
 
-const chatStore = useChatStore();
+const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
+  if (callLogAlreadyRecorded) {
+    console.warn(`[CallLog] 已記錄過，略過 ${status}`);
+    return;
+  }
+  callLogAlreadyRecorded = true;
+  try {
+    const safeStartTime = callStartTime ?? new Date();
+    const now = new Date();
+    const duration = Math.floor(
+      (now.getTime() - safeStartTime.getTime()) / 1000
+    );
+
+    await createCallLog({
+      chatRoomId: chatStore.currentChatRoomId,
+      callerType,
+      callerId,
+      receiverType,
+      receiverId,
+      callType: enableVideo.value ? "video" : "audio",
+      status,
+      startTime: safeStartTime.toISOString(),
+      endTime: status === "completed" ? now.toISOString() : undefined,
+      durationInSeconds: status === "completed" ? duration : undefined,
+    });
+
+    console.log(`[CallLog] 已紀錄通話狀態：${status}`);
+  } catch (err) {
+    console.error("[CallLog] API 呼叫失敗", err);
+  }
+};
 
 watch(
   () => callStore.showPopup,
@@ -159,6 +198,9 @@ const rejectIncomingCall = async () => {
   if (conn?.state === "Connected" && remoteConnectionId.value) {
     await conn.invoke("RejectCall", remoteConnectionId.value);
   }
+
+  await recordCallLog("rejected");
+
   endSession();
 };
 
@@ -178,6 +220,9 @@ const hangupCall = async () => {
 
   callStatus.value = "📴 通話已結束";
   stopTimer();
+
+  // 記錄通話
+  await recordCallLog("completed");
 
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
@@ -199,6 +244,7 @@ const endSession = () => {
   ringtone.pause();
   ringtone.currentTime = 0;
   stopTimer();
+  callLogAlreadyRecorded = false;
 };
 
 const startTimer = () => {
@@ -251,14 +297,20 @@ onMounted(() => {
   });
 
   const conn = getConnection();
-  conn?.on("ReceiveEndCall", () => {
+  conn?.on("ReceiveEndCall", async () => {
     callStatus.value = "📴 對方已掛斷";
     stopTimer();
+
+    await recordCallLog("completed");
+
     setTimeout(() => endSession(), 3000);
   });
-  conn?.on("CallRejected", () => {
+  conn?.on("CallRejected", async () => {
     callStatus.value = "📴 對方已拒接";
     stopTimer();
+
+    await recordCallLog("missed");
+
     setTimeout(() => endSession(), 3000);
   });
 });
