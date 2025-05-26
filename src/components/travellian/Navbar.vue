@@ -154,7 +154,7 @@
                     <router-link
                       to="/member/orders"
                       class="block px-4 py-3 hover:bg-red-50 rounded-t-xl"
-                      >📦 歷史訂單查詢</router-link
+                      >📦 訂單管理</router-link
                     >
                   </li>
                   <li>

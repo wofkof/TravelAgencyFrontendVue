@@ -11,7 +11,7 @@
       <ul>
         <li>
            <router-link to="/member/orders" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            📦 歷史訂單查詢
+            📦 訂單管理
           </router-link>
         </li>
          <li>

@@ -128,6 +128,7 @@ declare module 'vue' {
     NewChangeup: typeof import('./components/Visa/NewChangeup.vue')['default']
     NewsletterSection: typeof import('./components/travellian/NewsletterSection.vue')['default']
     NormalButton: typeof import('./components/official/normalButton.vue')['default']
+    OrderDetail: typeof import('./components/MemberCenter/OrderDetail.vue')['default']
     OrderHistory: typeof import('./components/MemberCenter/OrderHistory.vue')['default']
     OrderItemsDisplay: typeof import('./components/OrderForm/OrderItemsDisplay.vue')['default']
     ParticipantForm: typeof import('./components/OrderForm/ParticipantForm.vue')['default']
