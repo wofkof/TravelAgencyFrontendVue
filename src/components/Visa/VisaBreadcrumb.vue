@@ -3,7 +3,7 @@
 
   <el-breadcrumb :separator-icon="ArrowRight">
 
-    <el-breadcrumb-item :to="{ path: 'VisaDetailView' }">訂單明細</el-breadcrumb-item>
+    <el-breadcrumb-item :to="{ path: 'OrderFormView' }">訂單明細</el-breadcrumb-item>
 
     <el-breadcrumb-item>填寫訂單</el-breadcrumb-item>
 

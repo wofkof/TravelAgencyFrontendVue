@@ -18,7 +18,7 @@
 
     <el-button type="primary" 
 
-    @click="visaRouter.VisaPaymentView"
+    @click="visaRouter.PaymentView"
 
     size="large" style="width: 100%;">送出訂單資料</el-button>
     

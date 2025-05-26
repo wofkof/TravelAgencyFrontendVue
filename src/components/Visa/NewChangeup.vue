@@ -18,7 +18,7 @@
                 <el-col :span="12">效期：10年</el-col>
                 <el-col :span="30" style="text-align: right;" styl="text-align: left;">
                   <el-col :span="24" style="text-align: right;">TWD 1,700</el-col>
-                  <el-button type="primary" size="large" @click="visaRouter.VisaDetailView">選擇1</el-button>
+                  <el-button type="primary" size="large" @click="visaRouter.OrderFormView">選擇1</el-button>
                 </el-col>
               </el-card>
             </el-row>
@@ -29,7 +29,7 @@
                 <el-col :span="12">效期：10年</el-col>
                 <el-col :span="30" style="text-align: right;" styl="text-align: left;">
                   <el-col :span="24" style="text-align: right;">TWD 2,850</el-col>
-                  <el-button type="primary" size="large" @click="visaRouter.VisaDetailView">選擇2</el-button>
+                  <el-button type="primary" size="large" @click="visaRouter.OrderFormView">選擇2</el-button>
                 </el-col>
               </el-card>
             </el-row>

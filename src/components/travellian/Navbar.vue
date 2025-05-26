@@ -63,7 +63,7 @@
           >遊輪旅遊</router-link
         >
         <router-link
-          to="/VisaPage"
+          to="/DocumentMenuView"
           class="main-menu__item"
           exact
           active-class="main-menu__item--active"

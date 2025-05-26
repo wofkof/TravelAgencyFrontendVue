@@ -1,4 +1,4 @@
-<!-- Views/VisaPage.vue -->
+<!-- 我是證件選單第一頁 -->
 <template>
   <!-- 上面的輪播圖 -->
   <div class="common-layout">
@@ -97,7 +97,7 @@
                   <template #title>西亞</template>
                   <el-menu-item index="3-9-1"@click="activeMenu = 'turkiye'">土耳其共和國</el-menu-item>
 
-                  <el-menu-item index="3-9-2"@click="activeMenu = 'arabemirates'">阿拉伯聯合大公國</el-menu-item>
+                  <el-menu-item index="3-9-2"@click="activeMenu = 'Arabemirates'">阿拉伯聯合大公國</el-menu-item>
                 </el-sub-menu>
 
               </el-sub-menu>
@@ -120,7 +120,7 @@
           <USA v-if="activeMenu === 'usa'" />
           <Brazil v-if="activeMenu === 'brazil'" />
           <Turkiye v-if="activeMenu === 'turkiye'" />
-          <ArabEmirates v-if="activeMenu === 'arabemirates'" />
+          <ArabEmirates v-if="activeMenu === 'Arabemirates'" />
           <NewChangeup v-if="activeMenu === 'newchangeup'" />
           <NewChangedown v-if="activeMenu === 'newchangedown'" />
           <Foreignlostup v-if="activeMenu === 'foreignlostup'" />
@@ -165,7 +165,7 @@ import Canada from "@/components/Visa/Canada.vue";
 import USA from "@/components/Visa/USA.vue";
 import Brazil from "@/components/Visa/Brazil.vue";
 import Turkiye from "@/components/Visa/Turkiye.vue";
-import ArabEmirates from "@/components/Visa/Arab Emirates.vue";
+import ArabEmirates from "@/components/Visa/ArabEmirates.vue";
 import NewChangeup from "@/components/Visa/NewChangeup.vue";
 import NewChangedown from "@/components/Visa/NewChangedown.vue";
 import Foreignlostup from "@/components/Visa/Foreignlostup.vue";

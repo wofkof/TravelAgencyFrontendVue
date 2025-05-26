@@ -11,7 +11,7 @@ declare module 'vue' {
     AccordionSection: typeof import('./components/OrderForm/AccordionSection.vue')['default']
     AccountSetting: typeof import('./components/MemberCenter/AccountSetting.vue')['default']
     ActiveCartItems: typeof import('./components/ShoppingCart/ActiveCartItems.vue')['default']
-    'Arab Emirates': typeof import('./components/Visa/Arab Emirates.vue')['default']
+    ArabEmirates: typeof import('./components/Visa/ArabEmirates.vue')['default']
     AudioCall: typeof import('./components/chatroom/AudioCall.vue')['default']
     BigBanner: typeof import('./components/official/BigBanner.vue')['default']
     BlogSection: typeof import('./components/travellian/BlogSection.vue')['default']

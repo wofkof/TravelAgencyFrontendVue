@@ -42,7 +42,7 @@
 
       <el-button type="primary" 
       
-      @click="visaRouter.VisaCompleteOrderView"
+      @click="visaRouter.CompletedOrderDetailView"
       
       >確認送出</el-button>
 

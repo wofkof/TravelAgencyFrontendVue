@@ -1,6 +1,7 @@
-<template>
+<!-- 我是付款第三頁 -->
 
-  <div class="common-layout" style="height: 1800px;">
+<template>
+    <div class="common-layout" style="height: 1800px;">
     <!-- 設定容器高度 -->
 
 
@@ -22,15 +23,19 @@
 
 
              <el-main style="background-color: #f9fafc;">Main
-                <VisainDetail />
-                <VisaOrderInformation />
+                <VisaPassengerInformation />
+                <VisaTotalAmount />
+                <VisaOrderContact />
+                <VisaPickupMethod />
+                <VisaReceiptInformation />
+                <!-- 應付總額要在右邊待完成 -->
+
+
              </el-main>
              <!-- 主要內容元件，背景顏色為 #f9fafc (淺灰色) -->
 
              <el-footer style="height: 40px; background-color: #67c23a;">Footer
-                <VisaQuantityDeparture />
-                <VisaDetail />
-                <!-- 範例按鈕 -->
+                 <VisaTotalAmount />
                 <VisaBackTop />
              </el-footer>
             <!-- 頁尾元件，設定高度為 40 像素，背景顏色為 #67c23a (綠色) -->
@@ -45,14 +50,15 @@
 
 </template>
 
-<!-- 我將要引入的component有哪些,檔案位置 -->
-<script setup>
+<script>
 import VisaCarousel from '@/components/Visa/VisaCarousel.vue';
 import VisaBreadcrumb from '@/components/Visa/VisaBreadcrumb.vue';
-import VisaDetail from '@/components/Visa/VisaDetail.vue';
-import VisaOrderInformation from '@/components/Visa/VisaOrderInformation.vue';
-import VisaQuantityDeparture from '@/components/Visa/VisaQuantityDeparture.vue';
-import VisainDetail from '@/components/Visa/VisainDetail.vue';
+import VisaPassengerInformation from '@/components/Visa/VisaPassengerInformation.vue';
+import VisaOrderContact from '@/components/Visa/VisaOrderContact.vue';
+import VisaPickupMethod from '@/components/Visa/VisaPickupMethod.vue';
+import VisaReceiptInformation from '@/components/Visa/VisaReceiptInformation.vue';
+import VisaTotalAmount from '@/components/Visa/VisaTotalAmount.vue';
 import VisaBackTop from '@/components/Visa/VisaBackTop.vue';
+import VisaOrder from '@/components/Visa/VisaOrder.vue';
 
 </script>

@@ -14,7 +14,7 @@ import SearchResult from "@/views/SearchResult.vue";
 import Trip from "@/views/Trip.vue";
 import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
-import VisaPage from "@/views/VisaPage.vue";//富成
+import DocumentMenuView from "@/views/DocumentMenuView.vue";//富成
 import OrderComplete from "@/views/OrderComplete.vue";
 
 
@@ -84,7 +84,7 @@ const routes = [
 
   { path: '/detail/:projectId/:detailId/:groupId', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
-  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
+  { path: "/DocumentMenuView", name: "DocumentMenuView", component: DocumentMenuView }, //富成
 
 ];
 const router = createRouter({
