@@ -2,74 +2,75 @@
 
   <div class="max-w-7xl mx-auto p-4">
     <!-- 最外層容器 -->
+    <!-- 最後加上skeleton -->
+    <div class="bg-white rounded-xl p-4 shadow-lg mb-6">
+      <!-- 行程資訊大矩形 -->
 
-<div class="bg-white rounded-xl p-4 shadow-lg mb-6">
-  <!-- 行程資訊大矩形 -->
-
-  <!-- 標題區塊 -->
-  <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
-    {{ mainInfo.title }}
-  </div>
-
-  <div class="flex h-96">
-    <!-- 二等分區塊 -->
-     
-
-    <div class="w-1/2 flex gap-2 p-4 text-left relative">
-      <div class="w-1/2 rounded-md">
-        <img :src="mainInfo.cover" alt="" class="h-56 w-full object-cover rounded"  >
+      <!-- 標題區塊 -->
+      <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
+        {{ mainInfo.title }}
       </div>
-      <div class="text-lg font-bold my-2">
-          <p>行程 {{mainInfo.number}}</p>
-          <p>可賣： {{mainInfo.availableSeats}} 席次：{{ mainInfo.totalSeats }}</p>
-          <p>去程：{{ formattedDepartureDate }}</p>
-          <p>回程：{{ formattedReturnDate }}</p>
-          <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
-          <p>{{ mainInfo.price }}</p>
-      </div>
-      
-      
-      <normalButton class="absolute bottom-5 right-8 shadow"/>
-    </div>
 
-    <div class="w-1/2 bg-green-100 rounded-lg p-4">
-      <!-- 資訊 03：出團日期表格 -->
-       <!-- <div class="mb-2 p-2 border border-solid rounded-md border-gray-400">
-            <p class="mb-4">選擇行程</p>
-            <div class="grid grid-cols-5 gap-x-2">
-                <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">全部</button>
-                <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">行程1</button>
-            </div>
-        </div> -->
-          <div class="mb-2 border border-solid rounded-md border-gray-400">
-              <table class="w-full text-sm text-center border-separate border-spacing-y-2">
-                  <thead>
-                      <tr>
-                          <th class="border-b pb-1">出發日期</th>
-                          <th class="border-b pb-1">行程</th>
-                          <th class="border-b pb-1">可賣</th>
-                          <th class="border-b pb-1">席次</th>
-                          <th class="border-b pb-1">成行狀態</th>
-                          <th class="border-b pb-1">價格</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="g in groupList" :key="g.groupId">
-                      <td>{{ formatDateTime(g.departure, { type: 'date' })}}</td>
-                      <td>{{g.number}}</td>
-                      <td>{{g.availableSeats}}</td>
-                      <td>{{g.totalSeats}}</td>
-                      <td>{{g.groupStatus}}</td>
-                      <td>{{g.price}} 元</td>
-                    </tr>
-                  </tbody>
-                
-              </table>
+      <div class="flex h-96 bg-gray-100">
+        <!-- 二等分區塊 -->
+        
+
+        <div class="w-1/2 flex gap-2 p-4 text-left relative">
+          <div class="w-1/2 rounded-md">
+            <img :src="mainInfo.cover" alt="" class="h-56 w-full object-cover rounded"  >
           </div>
-    </div>
-  </div>
+          <div class="text-lg font-bold my-2">
+              <p>行程 {{mainInfo.number}}</p>
+              <p>可賣： {{mainInfo.availableSeats}} 席次：{{ mainInfo.totalSeats }}</p>
+              <p>去程：{{ formattedDepartureDate }}</p>
+              <p>回程：{{ formattedReturnDate }}</p>
+              <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
+              <p>{{ mainInfo.price }}</p>
+          </div>
+          
+          <button type="button" class="bg-blue-400 w-24 text-center font-semibold text-xl rounded-lg text-white m-0 p-1 absolute bottom-5 right-8 shadow">
+          報名<!-- 之後加一個邏輯判斷，如果額滿顯示候補，特殊情況顯示聯絡專人，或是 disable按鈕-->
+          </button>
+        </div>
 
-</div>
+        <div class="w-1/2 rounded-lg p-4">
+          <!-- 資訊 03：出團日期表格 -->
+          <!-- <div class="mb-2 p-2 border border-solid rounded-md border-gray-400">
+                <p class="mb-4">選擇行程</p>
+                <div class="grid grid-cols-5 gap-x-2">
+                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">全部</button>
+                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">行程1</button>
+                </div>
+            </div> -->
+              <div class="mb-2">
+                  <el-table
+                    :data="groupList"
+                    height="100%"
+                    border
+                    style="width: 100%;"
+                  >
+                    <el-table-column prop="departure" label="出發日期" width="120" >
+                      <template #default="{ row }">
+                        {{ formatDateTime(row.departure, { type: 'date' }) }}
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column prop="number" label="行程" width="80" />
+                    <el-table-column prop="availableSeats" label="可賣" width="80" />
+                    <el-table-column prop="totalSeats" label="席次" width="80" />
+                    <el-table-column prop="groupStatus" label="成行狀態" width="100" />
+                    
+                    <el-table-column prop="price" label="價格">
+                      <template #default="{ row }">
+                        {{ row.price }} 元
+                      </template>
+                    </el-table-column>
+                  </el-table>
+              </div>
+        </div>
+      </div>
+
+    </div>
 
 <div class="bg-white rounded-xl p-4 shadow mb-6 text-xl font-medium">
 {{ mainInfo.description }}

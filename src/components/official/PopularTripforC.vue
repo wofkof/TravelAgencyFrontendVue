@@ -50,7 +50,7 @@ onMounted(async () => {
   loading.value = true
   console.log('收到的 category：', props.category)
   try {
-    const response = await api.get(`/OfficialIndex/${encodeURIComponent(props.category)}`);
+    const response = await api.get(`/OfficialIndex/getcard/${encodeURIComponent(props.category)}`);
     trips.value = response.data;
     loading.value = false;
   } catch (error) {
