@@ -164,9 +164,18 @@ const rejectIncomingCall = async () => {
 
 const hangupCall = async () => {
   const conn = getConnection();
-  if (conn?.state === "Connected" && remoteConnectionId.value) {
-    await conn.invoke("EndCall", remoteConnectionId.value);
+
+  if (conn?.state === "Connected" && chatStore.currentChatRoomId) {
+    try {
+      await conn.invoke("EndCallByGroup", chatStore.currentChatRoomId);
+      console.log("[WebRTC] 已通知聊天室所有人掛斷");
+    } catch (err) {
+      console.error("[WebRTC] invoke EndCallByGroup 失敗", err);
+    }
+  } else {
+    console.warn("[WebRTC] 未連線或無 chatRoomId，略過 EndCall");
   }
+
   callStatus.value = "📴 通話已結束";
   stopTimer();
 

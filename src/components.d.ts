@@ -25,7 +25,6 @@ declare module 'vue' {
     CardFooter: typeof import('./components/ui/card/CardFooter.vue')['default']
     CardHeader: typeof import('./components/ui/card/CardHeader.vue')['default']
     CardTitle: typeof import('./components/ui/card/CardTitle.vue')['default']
-    Carousel: typeof import('./components/travellian/Carousel.vue')['default']
     CartPreviewIcon: typeof import('./components/tools/CartPreviewIcon.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
     ChatSearchBar: typeof import('./components/chatroom/ChatSearchBar.vue')['default']
