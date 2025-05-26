@@ -84,17 +84,24 @@
         <el-collapse >
           <el-collapse-item v-for="s in scheduleList" :key="s.scheduleId">
             <template #title="{ isActive }">
-              <div :class="['title-wrapper']" class="text-xl font-medium">
+              <div :class="['title-wrapper']" class="text-xl font-bold">
                 第{{s.day}}天
               </div>
             </template>
             <div class="text-lg text-gray-900 leading-relaxed">
-              <p>{{ s.description }}</p>
-              <p>{{ s.breakfast }}  {{ s.lunch }}  {{ s.dinner }}</p>
+              <p class="text-xl">{{ s.description }}</p>
+              <p>早餐: {{ s.breakfast }}</p>
+              <p>午餐: {{ s.lunch }}</p>
+              <p>晚餐: {{ s.dinner }}</p>
               <p>{{ s.hotel }}</p>
-              <p v-for="a in s.attractions" :key="a.attractionId" class="text-blue-800">
-                {{ a.name }} - {{ a.description }}
-              </p>
+              <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="text-blue-800">
+                <p>
+                  {{ a.name }} - {{ a.description }}
+                </p>
+                <!-- 使用唯一 map ID -->
+                <div :id="`map-${s.scheduleId}-${a.attractionId}`" style="height: 150px; width: 100%; margin-bottom: 1rem;"></div>
+                <!-- 排版優化，製成元件，element-popover -->
+              </div>
             </div>
           </el-collapse-item>
     </el-collapse>
@@ -112,7 +119,9 @@
     import { useRoute } from 'vue-router';
     import api from '@/utils/api';
     import { formatDateTime } from '@/utils/formatDateTime';
-    import normalButton from "@/components/official/normalButton.vue";
+    import L from 'leaflet';
+    import 'leaflet/dist/leaflet.css';
+    
 
     const mainInfo = ref(
     {
@@ -234,10 +243,32 @@ onMounted(async () => {
       console.log(attr);
     }
   }
+    setTimeout(() => {
+        for (const s of scheduleList.value) {
+          for (const a of s.attractions) {
+            const mapId = `map-${s.scheduleId}-${a.attractionId}`;
+            const el = document.getElementById(mapId);
+            if (el) {
+              const map = L.map(mapId).setView([a.latitude, a.longitude], 13);
+
+              L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              }).addTo(map);
+
+              L.marker([a.latitude, a.longitude]).addTo(map)
+                .bindPopup(`<b>${a.name}</b><br>${a.description}`).openPopup();
+            }
+          }
+        }
+      }, 500); // 等待 DOM 完成渲染
   } catch (err) {
     console.error("取得行程scheduleList失敗", err);
   }
-  
 
 });
   </script>
+
+  <!-- <script>
+        
+  </script> -->
