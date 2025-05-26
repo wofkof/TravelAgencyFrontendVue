@@ -63,6 +63,7 @@
     </div>
    </div>
 </div>
+
   <!-- 護照資訊 -->  
    <div class="bg-gray-50 shadow-sm border border-gray-200 rounded-xl p-6 mt-6 space-y-4">
  <div class="flex items-center justify-between border-b pb-2">
@@ -172,13 +173,57 @@
       />
     </div>
   </div>
-  
-  </div>
-  <!-- 儲存按鈕 -->
   <div class="flex justify-end pt-4">
-    <el-button type="primary" @click="updateMember">儲存修改</el-button>
+  <el-button type="primary" @click="updateMember">儲存修改</el-button>
+</div>
+  </div>
+ 
+<!-- 修改密碼 -->
+<div class="bg-gray-50 shadow-sm border border-gray-200 rounded-xl p-6 mt-6 space-y-4">
+  <div class="flex items-center justify-between border-b pb-2">
+    <h3 class="text-lg font-semibold text-gray-800">修改密碼</h3>
+    <h4 class="text-sm text-gray-500 font-normal">(需輸入舊密碼)</h4>
+  </div>
+
+  <div class="form-row">
+    <div class="form-col">
+      <label class="label">舊密碼</label>
+      <el-input
+        v-model="changePasswordForm.oldPassword"
+        type="password"
+        show-password
+        class="fixed-input" placeholder="請輸入目前使用的密碼"  :maxlength="12"
+  :minlength="6"
+      />
+    </div>
+    <div class="form-col">
+      <label class="label">新密碼</label>
+      <el-input
+        v-model="changePasswordForm.newPassword"
+        type="password"
+        show-password
+        class="fixed-input" placeholder="請設定長度6~12位數，且包含大、小寫英文的密碼"  :maxlength="12"
+  :minlength="6"
+      />
+    </div>
+    <div class="form-col">
+      <label class="label">確認新密碼</label>
+      <el-input
+        v-model="changePasswordForm.confirmPassword"
+        type="password"
+        show-password
+        class="fixed-input" placeholder="請再次輸入新密碼"  :maxlength="12"
+  :minlength="6"
+      />
+    </div>
+  </div>
+
+  <div class="flex justify-end pt-4">
+    <el-button type="warning" @click="changePassword">變更密碼</el-button>
   </div>
 </div>
+</div>
+
 </template>
 
 <script setup>
@@ -231,7 +276,6 @@ const validateFields = () => {
   if (member.value.phone && !phoneRegex.test(member.value.phone)) {
     errors.value.phone = '手機格式錯誤（應為09開頭共10碼）'
   }
-
   return Object.keys(errors.value).length === 0
 }
 
@@ -267,7 +311,10 @@ const documentTypeMap = {
   RESIDENCEPERMIT: 'ResidencePermit',
   ENTRYPERMIT: 'EntryPermit'
 }
-
+const isValidPassword = (pwd) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/;
+  return regex.test(pwd);
+}
 
 onMounted(async () => {
    const id = authStore.memberId 
@@ -290,6 +337,40 @@ onMounted(async () => {
     ElMessage.error('載入會員資料失敗')
   }
 })
+const changePasswordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const changePassword = async () => {
+  if (!changePasswordForm.value.oldPassword || !changePasswordForm.value.newPassword || !changePasswordForm.value.confirmPassword) {
+    ElMessage.error('請填寫所有欄位')
+    return
+  }
+  if (!isValidPassword(changePasswordForm.value.newPassword)) {
+  ElMessage.error('新密碼格式錯誤（需含大小寫英文，長度6~12位）')
+  return
+}
+
+  if (changePasswordForm.value.newPassword !== changePasswordForm.value.confirmPassword) {
+    ElMessage.error('新密碼與確認密碼不一致')
+    return
+  }
+
+  try {
+    await api.put('/Account/change-password', {
+      memberId: authStore.memberId,
+      oldPassword: changePasswordForm.value.oldPassword,
+      newPassword: changePasswordForm.value.newPassword,
+      confirmPassword: changePasswordForm.value.confirmPassword
+    })
+    ElMessage.success('密碼已更新')
+    changePasswordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
+  } catch (err) {
+    ElMessage.error(err.response?.data || '修改密碼失敗')
+  }
+}
 
 </script>
 
