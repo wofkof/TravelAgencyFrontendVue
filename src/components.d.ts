@@ -88,6 +88,8 @@ declare module 'vue' {
     ElStep: typeof import('element-plus/es')['ElStep']
     ElSteps: typeof import('element-plus/es')['ElSteps']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
+    ElTable: typeof import('element-plus/es')['ElTable']
+    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
@@ -179,5 +181,8 @@ declare module 'vue' {
     VisaTotalAmount: typeof import('./components/Visa/VisaTotalAmount.vue')['default']
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
     VueWorldMap: typeof import('./components/Visa/VueWorldMap.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
