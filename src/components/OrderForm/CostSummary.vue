@@ -2,121 +2,133 @@
   <div class="cost-summary-card cost-summary-component">
     <div class="summary-header">
       <span>訂單總金額 ({{ itemCount }}件商品)</span>
-      <span>NT$ {{ totalAmount }}</span>
+      <span>NT$ {{ totalAmount === null || totalAmount === undefined ? '0' : totalAmount.toLocaleString() }}</span>
     </div>
-
     <hr class="summary-divider">
 
     <div class="summary-item payment-amount">
       <span>付款金額</span>
-      <span class="amount-value">NT$ {{ totalAmount }}</span>
+      <span class="amount-value">NT$ {{ totalAmount === null || totalAmount === undefined ? '0' : totalAmount.toLocaleString() }}</span>
     </div>
-
     <div class="summary-item view-items-link" @click="handleViewItemsClick" title="點擊可查看訂單商品明細">
-         <span>訂購商品明細</span>
-         <el-link type="primary" :underline="false">點此查看 <el-icon><DArrowRight /></el-icon></el-link>
-     </div>
-    <hr class="summary-divider"> <div class="summary-status-area">
-         <div class="status-item">
-             <span>訂購人資料</span>
-             <span :class="{'status-complete': isOrdererBasicInfoFilled, 'status-incomplete': !isOrdererBasicInfoFilled}">
-                 <el-icon v-if="isOrdererBasicInfoFilled"><CircleCheck /></el-icon>
-                 <el-icon v-else><CircleClose /></el-icon>
-                 {{ ordererStatusMessage }}
-             </span>
-         </div>
-         <div class="status-item">
-             <span>旅客資料</span>
-             <span :class="{'status-complete': areAllParticipantQuantitiesFilled && allTravelersValid, 'status-incomplete': !areAllParticipantQuantitiesFilled || !allTravelersValid}">
-                 <el-icon v-if="areAllParticipantQuantitiesFilled && allTravelersValid"><CircleCheck /></el-icon>
-                 <el-icon v-else><CircleClose /></el-icon>
-                 {{ participantsStatusMessage }}
-             </span>
-         </div>
-          </div>
-     <hr class="summary-divider"> <div class="summary-item payment-info-area" @click="handlePaymentInfoClick" title="點擊可重新選擇付款方式">
-        <span>支付方式</span> <span class="payment-info-text">{{ paymentInfoText }}</span>
+      <span>訂購商品明細</span>
+      <el-link type="primary" :underline="false">點此查看 <el-icon><DArrowRight /></el-icon></el-link>
+    </div>
+    <hr class="summary-divider">
+    <div class="summary-status-area">
+      <div class="status-item">
+        <span>訂購人資料</span>
+        <span :class="{'status-complete': isOrdererBasicInfoFilled, 'status-incomplete': !isOrdererBasicInfoFilled}">
+          <el-icon v-if="isOrdererBasicInfoFilled"><CircleCheck /></el-icon>
+          <el-icon v-else><CircleClose /></el-icon>
+          {{ ordererStatusMessage }}
+        </span>
+      </div>
+      <div class="status-item">
+        <span>旅客資料</span>
+        <span :class="{'status-complete': areAllParticipantQuantitiesFilled && allTravelersValid, 'status-incomplete': !areAllParticipantQuantitiesFilled || !allTravelersValid}">
+          <el-icon v-if="areAllParticipantQuantitiesFilled && allTravelersValid"><CircleCheck /></el-icon>
+          <el-icon v-else><CircleClose /></el-icon>
+          {{ participantsStatusMessage }}
+        </span>
+      </div>
     </div>
 
+    <template v-if="showPaymentInfo">
+      <hr class="summary-divider">
+      <div class="summary-item payment-info-area" @click="handlePaymentInfoClick" title="點擊可重新選擇付款方式">
+        <span>支付方式</span> <span class="payment-info-text">{{ paymentInfoText }}</span>
+      </div>
+    </template>
 
     <div class="submit-button-area">
       <el-button
         type="primary"
-        native-type="submit"
         :loading="isSubmitting"
         :disabled="isCheckoutDisabled"
         size="large"
         style="width: 100%;"
-      >
-        {{ isSubmitting ? '提交中...' : '前往付款' }}
-      </el-button>
+        @click="onButtonClick" >
+        {{ isSubmitting ? '處理中...' : buttonText }} </el-button>
 
       <div class="important-notes">
-           <p>請注意：</p>
-           <ul>
-               <li>點擊「確認付款」即表示您已閱讀並同意本站的 <a href="#" target="_blank">訂購條款</a> 與 <a href="#" target="_blank">服務約定</a>。</li>
-               <li>請在 <span class="timer">30</span> 分鐘內完成支付流程，逾時訂單可能自動取消。</li>
-               </ul>
+        <p>請注意：</p>
+        <ul>
+          <li>點擊「{{ buttonText }}」即表示您已閱讀並同意本站的 <a href="/terms" target="_blank">訂購條款</a> 與 <a href="/privacy" target="_blank">服務約定</a>。</li> <li>請在 <span class="timer">{{ paymentTimerDisplay }}</span> 內完成支付流程，逾時訂單可能自動取消。</li>
+        </ul>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { defineProps, computed } from 'vue';
-import { DArrowRight, CircleCheck, CircleClose } from '@element-plus/icons-vue'; // 引入圖標
-
+import { defineProps, computed, defineEmits } from 'vue'; // << 新增 defineEmits >>
+import { DArrowRight, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 
 const props = defineProps({
   itemCount: { type: Number, required: true, default: 0 },
   totalAmount: { type: Number, required: true, default: 0 },
   selectedPaymentMethod: { type: String, default: null },
-  scrollToPayment: { type: Function, required: true },
+  // scrollToPayment: { type: Function, required: true }, // << 在第一階段不再強制需要 >>
+  scrollToPayment: { type: Function, default: () => {} }, // << 改為非必須，並提供預設空函數 >>
   isSubmitting: { type: Boolean, default: false },
   isCheckoutDisabled: { type: Boolean, default: true },
-  // **新增 props**
-  orderItems: { type: Array, default: () => [] }, // 訂單商品列表 (用於滾動連結)
-  ordererStatusMessage: { type: String, default: '請填寫訂購人資料' }, // 訂購人狀態訊息
-  participantsStatusMessage: { type: String, default: '請填寫旅客資料' }, // 旅客狀態訊息
-  scrollToItems: { type: Function, required: true }, // 滾動到商品區塊的函式
-
-  // 從 OrderForm 獲取更精確的驗證狀態
+  orderItems: { type: Array, default: () => [] },
+  ordererStatusMessage: { type: String, default: '請填寫訂購人資料' },
+  participantsStatusMessage: { type: String, default: '請填寫旅客資料' },
+  scrollToItems: { type: Function, required: true },
   isOrdererBasicInfoFilled: { type: Boolean, default: false },
   areAllParticipantQuantitiesFilled: { type: Boolean, default: false },
-  allTravelersValid: { type: Boolean, default: false }, // 旅客資料是否通過 ItemParticipantForm 的所有驗證
+  allTravelersValid: { type: Boolean, default: false },
+
+  // << 新增/修改 Props 以適應不同階段 >>
+  buttonText: { type: String, default: '前往付款' }, // 按鈕文字，由父組件提供
+  showPaymentInfo: { type: Boolean, default: true }, // 是否顯示支付方式區域，預設顯示 (用於付款頁)
+  paymentTimerSeconds: { type: Number, default: 30 * 60 } // 支付時限（秒），預設30分鐘
 });
 
-// 擴充付款方式顯示名稱映射
+// << 新增 emit，因為 native-type="submit" 的按鈕會觸發 form 的 submit 事件，但我們通常在父組件處理 >>
+const emit = defineEmits(['submit-order']);
+
 const paymentMethodMap = {
   'NewebPay_CreditCard': '藍新金流(信用卡)',
   'ECPay_CreditCard': '綠界科技(信用卡)',
   'LINEPay': 'LINE Pay',
-  // ... 其他支付方式
 };
 
-// 計算支付方式顯示文字
 const paymentInfoText = computed(() => {
-    const selectedMethodLabel = paymentMethodMap[props.selectedPaymentMethod] || '尚未選擇';
-    return selectedMethodLabel;
+  if (!props.showPaymentInfo) return ''; // 如果不顯示支付方式，則返回空
+  return paymentMethodMap[props.selectedPaymentMethod] || '尚未選擇';
 });
 
-// 點擊支付方式文字區域時觸發父元件傳來的滾動函式
 const handlePaymentInfoClick = () => {
-    if (props.selectedPaymentMethod) {
-       props.scrollToPayment();
-    }
+  if (props.showPaymentInfo && props.selectedPaymentMethod) { // 只有在顯示且已選擇時才觸發滾動
+    props.scrollToPayment();
+  }
 };
 
-// **新增：點擊查看商品明細時觸發父元件傳來的滾動函式**
 const handleViewItemsClick = () => {
-    props.scrollToItems();
+  props.scrollToItems();
 };
+
+// 新增：用於提交按鈕的點擊事件，它會 emit 一個事件給父組件
+const onButtonClick = () => {
+  emit('submit-order');
+}
+
+// 將秒轉換為 "xx 分鐘" 或 "xx 秒"
+const paymentTimerDisplay = computed(() => {
+  const minutes = Math.floor(props.paymentTimerSeconds / 60);
+  const seconds = props.paymentTimerSeconds % 60;
+  if (minutes > 0) {
+    return `${minutes} 分鐘` + (seconds > 0 ? ` ${seconds} 秒` : '');
+  }
+  return `${seconds} 秒`;
+});
 
 </script>
 
 <style scoped>
-/* **套用 Element Plus CSS 變數和組件樣式** */
 
 /* 整體卡片容器 */
 .cost-summary-card {

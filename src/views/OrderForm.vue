@@ -72,30 +72,6 @@
                 <div v-else>此商品無需填寫旅客資料或資料載入異常。</div>
               </AccordionSection>
 
-              <AccordionSection
-                title="付款方式"
-                section-name="payment"
-                class="section-card section-payment"
-                data-section-name="payment"
-                ref="paymentAccordionRef"
-              >
-                <PaymentOptions
-                  v-model="formData.paymentMethod"
-                  v-model:creditCardInfo="formData.creditCardDetails" @creditCardFormValidityChanged="handleCreditCardFormValidityChange"
-                   ref="paymentOptionsRef" />
-              </AccordionSection>
-
-              <AccordionSection
-                title="電子發票 / 收據"
-                section-name="einvoice"
-                :is-disabled="!isPaymentMethodSelected"
-                :tooltip-disabled="isPaymentMethodSelected ? '' : '請先選擇付款方式'"
-                class="section-card section-einvoice"
-                data-section-name="einvoice"
-              >
-                <EInvoiceForm v-model="formData.eInvoiceInfo" ref="einvoiceFormRef" />
-              </AccordionSection>
-
             </el-collapse>
 
             <div class="section-card note-section">
@@ -116,11 +92,12 @@
             <CostSummary
                 :item-count="selectedItemsTotalQuantity"
                 :total-amount="totalAmount"
-                :selected-payment-method="formData.paymentMethod"
-                :scroll-to-payment="scrollToPaymentOptions"
                 :is-submitting="isSubmitting"
                 :is-checkout-disabled="isCheckoutButtonDisabled"
-                @submit-order="submitOrder"
+                @submit-order="handleGoToPayment" 
+                button-text="送出訂單資料" 
+                :show-payment-info="false"       
+                :payment-timer-seconds="30"      
                 class="cost-summary-component"
                 :order-items="selectedOrderItems"
                 :orderer-status-message="ordererStatusMessage"
@@ -128,7 +105,8 @@
                 :scroll-to-items="scrollToItemsSection"
                 :is-orderer-basic-info-filled="isOrdererBasicInfoFilled"
                 :are-all-participant-quantities-filled="areAllParticipantQuantitiesFilled"
-                :all-travelers-valid="allTravelersValid" />
+                :all-travelers-valid="allTravelersValid"
+            />
           </div>
 
         </div>
@@ -151,8 +129,8 @@
 // --- 基本引入 ---
 import { ref, reactive, computed, onMounted, watch, nextTick, onBeforeUpdate } from 'vue'; // 引入所有必要的 Composition API
 import { useRouter } from 'vue-router'; // Vue Router
-import { createOrder } from '@/utils/orderapi'; // API Service
 import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
+import { initiateOrder } from '@/utils/orderapi'; // API Service
 
 // --- 引入 Element Plus 圖標 ---
 import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
@@ -163,8 +141,6 @@ import AccordionSection from '@/components/OrderForm/AccordionSection.vue';
 import OrderItemsDisplay from '@/components/OrderForm/OrderItemsDisplay.vue';
 import ParticipantForm from '@/components/OrderForm/ParticipantForm.vue';
 import ItemParticipantForm from '@/components/OrderForm/ItemParticipantForm.vue';
-import PaymentOptions from '@/components/OrderForm/PaymentOptions.vue';
-import EInvoiceForm from '@/components/OrderForm/EInvoiceForm.vue';
 import CostSummary from '@/components/OrderForm/CostSummary.vue';
 
 // --- 狀態管理 ---
@@ -175,15 +151,11 @@ const isLoading = ref(true); // 載入狀態
 const error = ref(null); // 載入錯誤訊息
 const isSubmitting = ref(false); // 提交狀態
 const submitError = ref(null); // 提交錯誤訊息
-// const submitSuccess = ref(false); // 提交成功狀態
-// const createdOrderId = ref(null); // 創建的訂單 ID
 const selectedOrderItems = ref([]); // 從購物車 Store 加載的選中商品列表
 
 // 子組件表單的引用
 const ordererFormRef = ref(null); // ParticipantForm 實例引用
 const itemTravelerFormRefs = ref({}); // ItemParticipantForm 實例引用物件 (key: item.id, value: ItemParticipantForm 實例)
-const einvoiceFormRef = ref(null); // EInvoiceForm 實例引用
-// const paymentOptionsRef = ref(null); // PaymentOptions 實例引用 (用於呼叫其 validate 方法，如果暴露)
 
 // ItemParticipantForm 的驗證狀態集合 (key: item.id, value: boolean)
 const itemTravelerValidity = reactive({});
@@ -191,7 +163,7 @@ const itemTravelerValidity = reactive({});
 
 // --- Accordion (手風琴) 狀態管理 ---
 // 控制哪些 AccordionSection 區塊是展開的
-const activeCollapseNames = ref(['items', 'ordererInfo', 'payment']); // 預設展開 商品、訂購人、付款方式 區塊
+const activeCollapseNames = ref(['items', 'ordererInfo']); // 預設展開 商品、訂購人區塊
 
 // 獲取 PaymentOptions 所在 AccordionSection 的引用 (用於滾動，也可以用 data-section-name 查找)
 // const paymentAccordionRef = ref(null); // 在模板中綁定到 PaymentOptions 所在 AccordionSection
@@ -210,12 +182,7 @@ const formData = reactive({
   },
   // 旅客資料 (按商品分組，ItemParticipantForm v-model 綁定對應的陣列)
   participantsByItem: {},
-  // 付款方式 (PaymentOptions v-model 綁定)
-  paymentMethod: null,
-  // 電子發票資訊 (EInvoiceForm v-model 綁定)
-  eInvoiceInfo: {
-    type: 'personal', taxId: '', companyTitle: '', deliveryEmail: ''
-  },
+  
 });
 
 // --- 生命週期鉤子 ---
@@ -270,20 +237,31 @@ onMounted(() => {
   } catch (e) {
     console.error("從 localStorage 讀取會員資料時發生錯誤:", e);
   }
-});
 
+  // << 如果 URL 中有 orderId (例如從付款頁返回)，嘗試載入訂單資料 >>
+  const routeOrderId = router.currentRoute.value.query.orderId;
+  if (routeOrderId) {
+    // TODO: 實作載入現有訂單資料填充表單的邏輯
+    // loadExistingOrderData(routeOrderId);
+    console.log("偵測到 orderId，應載入訂單資料以供修改：", routeOrderId);
+    // 載入完成後，可能需要展開所有相關旅客區塊
+  } else {
+    // 如果是新訂單，展開第一個旅客資料區塊 (如果有的話)
+    watch(selectedOrderItems, (newItems) => {
+        if (newItems.length > 0) {
+            const firstItemWithTravelers = newItems.find(item => getItemParticipantCount(item) > 0);
+            if (firstItemWithTravelers && !activeCollapseNames.value.includes(`travelers-${firstItemWithTravelers.id}`)) {
+                activeCollapseNames.value.push(`travelers-${firstItemWithTravelers.id}`);
+            }
+        }
+    }, { immediate: true });
+  }
+});
 
 // --- 計算屬性 (Computed Properties) ---
 
 // 判斷付款方式是否已選擇
 const isPaymentMethodSelected = computed(() => !!formData.paymentMethod);
-
-// 追蹤信用卡表單自身的驗證狀態 (從 PaymentOptions 通過事件傳遞上來)
-// const isCreditCardFormValid = ref(false);
-// const handleCreditCardFormValidityChange = (isValid) => {
-//   isCreditCardFormValid.value = isValid;
-// };
-
 
 // 計算訂單商品總 "單位" 數量 (例如總票數)
 const selectedItemsTotalQuantity = computed(() => {
@@ -376,7 +354,7 @@ const participantsStatusMessage = computed(() => {
 // 判斷結帳按鈕是否應禁用 (包含更完整的簡易檢查)
 const isCheckoutButtonDisabled = computed(() => {
     // 基礎檢查：是否正在提交、是否有選中商品、是否選了付款方式
-    if (isSubmitting.value || selectedOrderItems.value.length === 0 || !isPaymentMethodSelected.value) {
+    if (isSubmitting.value || selectedOrderItems.value.length === 0) {
         // console.log("禁用原因: 基礎檢查失敗");
         return true;
     }
@@ -395,13 +373,6 @@ const isCheckoutButtonDisabled = computed(() => {
         // console.log("禁用原因: 旅客資料驗證失敗");
         return true;
     }
-     // 如果選擇了信用卡支付，則信用卡表單必須有效 (從 PaymentOptions 通過事件傳遞狀態)
-    //  if (formData.paymentMethod && formData.paymentMethod.endsWith('CreditCard')) {
-    //    if (!isCreditCardFormValid.value) {
-    //      // console.log("禁用原因: 信用卡表單無效");
-    //      return true;
-    //    }
-    //  }
 
     // 只有當以上所有簡易檢查都通過，按鈕才不被禁用 (但最終提交前仍需要呼叫所有子組件的 validate 方法來執行嚴謹驗證)
     // console.log("禁用狀態: false (通過簡易檢查)");
@@ -435,11 +406,6 @@ const scrollToSection = (sectionName) => {
 // 滾動到訂單商品區塊並展開 (使用通用滾動方法)
 const scrollToItemsSection = () => {
     scrollToSection('items');
-};
-
-// 滾動到付款方式區塊並展開 (使用通用滾動方法)
-const scrollToPaymentOptions = () => {
-    scrollToSection('payment');
 };
 
 // 處理 ItemParticipantForm 發出的 validity-changed 事件
@@ -491,420 +457,220 @@ const loadOrderItems = () => {
 };
 
 // 提交訂單 - **重要：在提交前需要觸發所有子表單的驗證**
-const submitOrder = async () => {
+const handleGoToPayment = async () => {
     // 檢查按鈕是否已被禁用 (避免重複點擊)
     if (isCheckoutButtonDisabled.value || isSubmitting.value) {
         console.warn("提交按鈕被禁用或正在提交中。");
-        // ElMessage.warning("請檢查表單是否填寫完整或正在提交中。");
+        ElMessage.warning("請檢查表單是否填寫完整或正在提交中。");
         return;
     }
 
     isSubmitting.value = true; // 設定提交狀態
     submitError.value = null; // 清除上次的提交錯誤
+    let isFormValid = true; // 總體表單驗證結果
 
-    console.log("開始訂單提交前嚴謹驗證...");
+    // --- **觸發所有子表單的嚴謹驗證** ---
 
-        let isFormValid = true; // 總體表單驗證結果
-
-        // --- **觸發所有子表單的嚴謹驗證** ---
-
-        // 1. 訂購人表單驗證 (ParticipantForm 暴露了 validateForm 方法)
-        if (ordererFormRef.value && ordererFormRef.value.validateForm) {
-             const ordererValid = await ordererFormRef.value.validateForm();
-             if (!ordererValid) {
-                 console.log("訂購人表單驗證失敗");
-                 isFormValid = false;
-                 // 滾動到訂購人區塊並展開
-                 scrollToSection('ordererInfo');
-                 // 可以添加提示給用戶
-                 // ElMessage.error("請檢查訂購人資料。");
-             }
-        } else {
-             // 如果 ParticipantForm 引用不存在或未暴露 validateForm 方法，視為驗證失敗
-             console.error("無法獲取 ParticipantForm 引用或其 validateForm 方法。訂購人驗證失敗。");
-             isFormValid = false; // 訂購人驗證是必須的
-        }
-
-        // 如果訂購人驗證失敗，停止後續驗證和提交
-        if (!isFormValid) {
-             isSubmitting.value = false;
-             return;
-        }
-        console.log("訂購人表單驗證通過");
-
-
-        // 2. 所有商品旅客資料表單驗證 (ItemParticipantForm 暴露了 validateAll 方法)
-        // 遍歷 itemTravelerFormRefs.value 物件中所有 ItemParticipantForm 實例的引用
-        const itemTravelerFormInstances = Object.values(itemTravelerFormRefs.value); // 獲取所有 ItemParticipantForm 實例的陣列
-        for (const formInstance of itemTravelerFormInstances) {
-            // 檢查引用是否存在且暴露了 validateAll 方法
-            // 並且只有當這個 ItemParticipantForm 應該顯示時才進行驗證 (由模板中的 v-if 控制)
-            // 這裡可以再加一層檢查，確保這個 ItemParticipantForm 對應的商品確實需要旅客資料
-            const relatedItem = selectedOrderItems.value.find(item => item.id === formInstance.orderItem?.id);
-            // 如果商品需要旅客且 ItemParticipantForm 引用存在並暴露了 validateAll
-            if (relatedItem && getItemParticipantCount(relatedItem) > 0 && formInstance && formInstance.validateAll) {
-                 console.log(`觸發商品旅客資料表單 (${relatedItem.id}) 驗證...`);
-                 const valid = await formInstance.validateAll(); // validateAll 應返回 Promise<boolean>
-                 if (!valid) {
-                     const itemId = formInstance.orderItem?.id; // 嘗試從 ItemParticipantForm 獲取商品 ID
-                     console.log(`商品旅客資料表單 (${itemId || '未知'}) 驗證失敗`);
-                     isFormValid = false;
-                     // 滾動到對應的旅客區塊並展開
-                     scrollToSection(`travelers-${itemId}`);
-                     // ElMessage.error(`請檢查商品 "${formInstance.orderItem?.name || '未知商品'}" 的旅客資料。`);
-                     break; // 通常找到第一個錯誤就停止後續旅客表單的驗證
-                 }
-            } else if (relatedItem && getItemParticipantCount(relatedRelatedItem) > 0) {
-                 // 如果這個商品需要旅客資料，但無法獲取 ItemParticipantForm 引用或其 validateAll 方法
-                 console.error(`無法獲取 ItemParticipantForm 引用或其 validateAll 方法 (${relatedItem.id})。旅客驗證失敗。`);
-                 isFormValid = false; // 旅客驗證是必須的
-                 // 可選：滾動到對應區塊提示用戶
-                 scrollToSection(`travelers-${relatedItem.id}`);
-                 // ElMessage.error(`無法驗證商品 "${relatedItem.name}" 的旅客資料。請檢查。`);
-                 break; // 停止驗證
-            }
-             // 如果商品不需要旅客資料 (getItemParticipantCount <= 0)，則跳過此 ItemParticipantForm 的驗證
-        }
-
-         // 如果旅客驗證失敗，停止後續驗證和提交
-        if (!isFormValid) {
-             isSubmitting.value = false;
-             return;
-        }
-        console.log("所有商品旅客資料表單驗證通過");
-
-
-         // 3. 電子發票表單驗證 (EInvoiceForm 暴露了 validate 方法)
-         // 檢查 einvoiceFormRef 引用是否存在且暴露了 validate 方法
-         // 並且只有當電子發票區塊不是禁用狀態時才進行驗證
-         const isEinvoiceSectionDisabled = computed(() => !isPaymentMethodSelected.value); // 定義電子發票區塊的禁用狀態
-         if (!isEinvoiceSectionDisabled.value) { // 如果電子發票區塊未禁用
-             if (einvoiceFormRef.value && einvoiceFormRef.value.validate) {
-                console.log("觸發電子發票表單驗證...");
-                const valid = await einvoiceFormRef.value.validate();
-                if (!valid) {
-                    console.log("電子發票表單驗證失敗");
-                    isFormValid = false;
-                    // 滾動到發票區塊並展開
-                    scrollToSection('einvoice');
-                    // ElMessage.error("請檢查電子發票資料。");
-                }
-             } else {
-                  // 如果電子發票區塊未禁用，但無法獲取引用或其 validate 方法
-                  console.error("無法獲取 EInvoiceForm 引用或其 validate 方法。電子發票驗證失敗。");
-                  isFormValid = false; // 發票驗證是必須的 (當未禁用時)
-                  // 可選：滾動到發票區塊提示用戶
-                  scrollToSection('einvoice');
-                  // ElMessage.error("無法驗證電子發票資料。請檢查。");
-             }
-         } else {
-             // 如果電子發票區塊是禁用狀態，則視為驗證通過
-             console.log("電子發票區塊已禁用，跳過驗證。");
-         }
-
-
-         // 如果電子發票驗證失敗，停止後續驗證和提交
-        if (!isFormValid) {
-             isSubmitting.value = false;
-             return;
-        }
-        console.log("電子發票表單驗證通過");
-
-
-         // 4. 付款方式/信用卡表單驗證 (PaymentOptions 暴露 validate 方法，或直接檢查狀態)
-        if (!formData.paymentMethod) {
-            console.log("付款方式未選擇");
+    // 1. 訂購人表單驗證 (ParticipantForm 暴露了 validateForm 方法)
+    if (ordererFormRef.value && ordererFormRef.value.validateForm) {
+          const ordererValid = await ordererFormRef.value.validateForm();
+          if (!ordererValid) {
             isFormValid = false;
-            scrollToSection('payment');
-            ElMessage.error("請選擇付款方式。");
+            scrollToSection('ordererInfo');
+            ElMessage.error("請檢查訂購人資料。");
+          }
+    } else {
+          console.error("無法獲取 ParticipantForm 引用或其 validateForm 方法。訂購人驗證失敗。");
+          isFormValid = false; // 訂購人驗證是必須的
+    }
+
+    // 如果訂購人驗證失敗，停止後續驗證和提交
+    if (!isFormValid) {
+      isSubmitting.value = false;
+      return;
+    }
+
+    // 2. 所有商品旅客資料表單驗證
+    const itemTravelerFormInstances = Object.values(itemTravelerFormRefs.value);
+    for (const formInstance of itemTravelerFormInstances) {
+      const relatedItem = selectedOrderItems.value.find(item => item.id === formInstance.orderItem?.id);
+      if (relatedItem && getItemParticipantCount(relatedItem) > 0 && formInstance && formInstance.validateAll) {
+        const valid = await formInstance.validateAll();
+        if (!valid) {
+          isFormValid = false;
+          scrollToSection(`travelers-${formInstance.orderItem?.id}`);
+          ElMessage.error(`請檢查商品 "${formInstance.orderItem?.name || '未知商品'}" 的旅客資料。`);
+          break;
         }
+      } else if (relatedItem && getItemParticipantCount(relatedItem) > 0) {
+          console.error(`無法獲取 ItemParticipantForm 引用或其 validateAll 方法 (${relatedItem.id})。`);
+          isFormValid = false;
+          break;
+      }
+    }
+    if (!isFormValid) {
+      isSubmitting.value = false;
+      return;
+    }      
 
-        // 如果付款方式驗證失敗，停止後續提交
-        if (!isFormValid) {
-             isSubmitting.value = false;
-             return;
+    console.log("所有表單嚴謹驗證通過。準備提交數據...");
+
+    // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
+    // --- 準備要傳給後端的購物車項目 ---
+    const cartItemsForApi = [];
+    cartStore.selectedItems.forEach(item => {
+        if (item.options && item.options.length > 0) {
+            item.options.forEach(option => {
+                if (option.quantity > 0) { // 只處理數量大於0的選項
+                    cartItemsForApi.push({
+                        productId: parseInt(item.productId), // GroupTravelId 或 CustomTravelId
+                        productType: item.productType, // "GroupTravel", "CustomTravel"
+                        optionType: option.type, // "成人", "兒童", "嬰兒"
+                        quantity: option.quantity,
+                    });
+                }
+            });
+        } else if (item.quantity > 0) { // 如果商品沒有 options，但有直接的 quantity
+            cartItemsForApi.push({
+                productId: parseInt(item.productId),
+                productType: item.productType,
+                optionType: "Standard", // 或其他預設值，後端需要能處理這種情況的定價
+                quantity: item.quantity,
+            });
         }
-        console.log("付款方式/信用卡表單驗證通過");
+    });
+    if (cartItemsForApi.length === 0) {
+        ElMessage.error("購物車中沒有選擇任何有效的商品項目。");
+        isSubmitting.value = false;
+        return;
+    }        
+
+    // 1. 準備訂購人資訊
+    const preparedOrdererInfo = {
+        Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
+        MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
+        Email: formData.ordererInfo.email || null,
+    };
 
 
-        // --- 執行嚴謹驗證後的最終判斷 ---
-        // 如果所有子表單驗證都通過 (isFormValid 仍然是 true)
-        if (!isFormValid) {
-             console.error("總體表單驗證失敗，停止提交。");
-             ElMessage.error("請檢查所有必填欄位和格式是否正確。");
-             isSubmitting.value = false;
-             return;
+    // 2. 準備會員更新專用的完整個人資料 (只有當用戶勾選時才準備)
+    let memberProfileToUpdate = null; // 需與後端確認此物件的欄位名和結構
+    if (formData.ordererInfo.updateProfile) {
+        let backendOrdererDocumentType = null;
+        switch (formData.ordererInfo.documentType) {
+            case 'ID_CARD_TW': backendOrdererDocumentType = 0; break;
+            case 'PASSPORT':   backendOrdererDocumentType = 1; break;
+            case 'ARC':        backendOrdererDocumentType = 2; break;
+            case 'ENTRY_PERMIT': backendOrdererDocumentType = 3; break;
+            default: backendOrdererDocumentType = null;
         }
-
-        console.log("所有表單嚴謹驗證通過。準備提交數據...");
-
-        // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
-        // --- 準備要傳給後端的購物車項目 ---
-        const cartItemsForApi = [];
-        cartStore.selectedItems.forEach(item => {
-            if (item.options && item.options.length > 0) {
-                item.options.forEach(option => {
-                    if (option.quantity > 0) { // 只處理數量大於0的選項
-                        cartItemsForApi.push({
-                            productId: parseInt(item.productId), // GroupTravelId 或 CustomTravelId
-                            productType: item.productType, // "GroupTravel", "CustomTravel"
-                            optionType: option.type, // "成人", "兒童", "嬰兒"
-                            quantity: option.quantity,
-                            // Description 由後端生成
-                        });
-                    }
-                });
-            } else if (item.quantity > 0) { // 如果商品沒有 options，但有直接的 quantity
-                cartItemsForApi.push({
-                    productId: parseInt(item.productId),
-                    productType: item.productType,
-                    optionType: "Standard", // 或其他預設值，後端需要能處理這種情況的定價
-                    quantity: item.quantity,
-                });
-            }
-        });
-        if (cartItemsForApi.length === 0) {
-            ElMessage.error("購物車中沒有選擇任何有效的商品項目。");
-            isSubmitting.value = false;
-            return;
-        }        
-
-        // 1. 準備訂購人資訊
-        const preparedOrdererInfo = {
+        memberProfileToUpdate = {
             Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
             MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
             Email: formData.ordererInfo.email || null,
+            Nationality: formData.ordererInfo.country,
+            DocumentType: backendOrdererDocumentType,
+            DocumentNumber: formData.ordererInfo.documentNumber || null,
         };
-
-
-        // 2. 準備會員更新專用的完整個人資料 (只有當用戶勾選時才準備)
-        let memberProfileToUpdate = null; // 需與後端確認此物件的欄位名和結構
-        if (formData.ordererInfo.updateProfile) {
-            let backendOrdererDocumentType = null;
-            switch (formData.ordererInfo.documentType) {
-                case 'ID_CARD_TW': backendOrdererDocumentType = 0; break;
-                case 'PASSPORT':   backendOrdererDocumentType = 1; break;
-                case 'ARC':        backendOrdererDocumentType = 2; break;
-                case 'ENTRY_PERMIT': backendOrdererDocumentType = 3; break;
-                default: backendOrdererDocumentType = null;
-            }
-            memberProfileToUpdate = {
-                Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
-                MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
-                Email: formData.ordererInfo.email || null,
-                Nationality: formData.ordererInfo.country,
-                DocumentType: backendOrdererDocumentType,
-                DocumentNumber: formData.ordererInfo.documentNumber || null,
-            };
+    }
+    // 3. 準備旅客列表 (此處邏輯與會員更新無關，保持原樣)
+    const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
+        let backendDocumentType; // 這是旅客的證件類型
+        switch (paxData.documentType) {
+            case 'ID_CARD_TW': backendDocumentType = 0; break;
+            case 'PASSPORT': backendDocumentType = 1; break;
+            case 'ARC': backendDocumentType = 2; break;
+            case 'ENTRY_PERMIT': backendDocumentType = 3; break;
         }
-        // 3. 準備旅客列表 (此處邏輯與會員更新無關，保持原樣)
-        const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
-            let backendDocumentType; // 這是旅客的證件類型
-            switch (paxData.documentType) {
-                case 'ID_CARD_TW': backendDocumentType = 0; break;
-                case 'PASSPORT': backendDocumentType = 1; break;
-                case 'ARC': backendDocumentType = 2; break;
-                case 'ENTRY_PERMIT': backendDocumentType = 3; break;
-            }
-            let backendGender = null;
-            switch (paxData.gender) {
-                case 'male': backendGender = 0; break;
-                case 'female': backendGender = 1; break;
-                case 'other': backendGender = 2; break;
-            }
-            let backendIdNumber = null;
-            let backendPaxDocumentNumber = null; // 改名以區分訂購人的 documentNumber
-
-            if (paxData.documentType === 'ID_CARD_TW') {
-                backendIdNumber = paxData.idNumber || null;
-            } else {
-                backendPaxDocumentNumber = paxData.documentNumber || null;
-            }
-            return {
-                Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(),
-                BirthDate: paxData.birthDate,
-                IdNumber: backendIdNumber,
-                Gender: backendGender,
-                Phone: paxData.phoneNumber || null,
-                Email: paxData.email || null,
-                DocumentType: backendDocumentType, // 旅客的證件類型
-                DocumentNumber: backendPaxDocumentNumber, // 旅客的證件號碼
-                PassportSurname: paxData.lastNameEn || null,
-                PassportGivenName: paxData.firstNameEn || null,
-                PassportExpireDate: paxData.passportExpiryDate || null,
-                Nationality: paxData.country,
-                Note: paxData.remarks || ''
-            };
-        });
-
-        // 4. 準備發票請求資訊
-        let backendInvoiceOption = 0; // 預設個人
-        switch (formData.eInvoiceInfo.type) {
-            case 'personal': backendInvoiceOption = 0; break;
-            case 'company': backendInvoiceOption = 1; break;
+        let backendGender = null;
+        switch (paxData.gender) {
+            case 'male': backendGender = 0; break;
+            case 'female': backendGender = 1; break;
+            case 'other': backendGender = 2; break;
         }
+        let backendIdNumber = null;
+        let backendPaxDocumentNumber = null; // 改名以區分訂購人的 documentNumber
 
-        const preparedInvoiceRequestInfo = {
-            // 確保這裡的欄位名稱和數據格式與後端 API 要求的 OrderInvoiceRequestDto 一致
-            InvoiceOption: backendInvoiceOption,
-            InvoiceDeliveryEmail: formData.eInvoiceInfo.deliveryEmail || formData.ordererInfo.email, // 使用 EInvoiceForm 中的 deliveryEmail 或訂購人 email
-            InvoiceUniformNumber: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.taxId : null,
-            InvoiceTitle: formData.eInvoiceInfo.type === 'company' ? formData.eInvoiceInfo.companyTitle : null,
-            InvoiceAddBillingAddr: formData.eInvoiceInfo.addBillingAddress || false, // 如果有這個欄位
-            InvoiceBillingAddress: formData.eInvoiceInfo.addBillingAddress ? (formData.eInvoiceInfo.billingAddress || null) : null // 如果有這個欄位
+        if (paxData.documentType === 'ID_CARD_TW') {
+            backendIdNumber = paxData.idNumber || null;
+        } else {
+            backendPaxDocumentNumber = paxData.documentNumber || null;
+        }
+        return {
+            Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(),
+            BirthDate: paxData.birthDate,
+            IdNumber: backendIdNumber,
+            Gender: backendGender,
+            Phone: paxData.phoneNumber || null,
+            Email: paxData.email || null,
+            DocumentType: backendDocumentType, // 旅客的證件類型
+            DocumentNumber: backendPaxDocumentNumber, // 旅客的證件號碼
+            PassportSurname: paxData.lastNameEn || null,
+            PassportGivenName: paxData.firstNameEn || null,
+            PassportExpireDate: paxData.passportExpiryDate || null,
+            Nationality: paxData.country,
+            Note: paxData.remarks || ''
         };
+    });
 
-        // 5. 準備選擇的付款方式
-         let backendSelectedPaymentMethod = 0; // 預設一個值
-         switch (formData.paymentMethod) {
-             // 確保這裡的 case 值與 PaymentOptions.vue 中定義的 value 對應
-             // 確保後端 Enum 值正確
-             case 'ECPay_CreditCard': backendSelectedPaymentMethod = 0; break; // 如果後端不區分具體信用卡金流，可以都映射到信用卡 Enum
-             case 'LINEPay': backendSelectedPaymentMethod = 1; break; // 2 是 LINE Pay
-         }
-
-
-        // 組合最終 API Payload
-        const orderPayload = {
-            memberId: formData.memberId, 
-            totalAmount: totalAmount.value,
-            orderNotes: formData.note,
-            ordererInfo: preparedOrdererInfo,
-            participants: preparedParticipants, // 扁平化的旅客陣列
-            invoiceRequestInfo: preparedInvoiceRequestInfo,
-            selectedPaymentMethod: backendSelectedPaymentMethod,
-            cartItems: cartItemsForApi, // 從 Pinia Store 獲取的 cartItems
-
-            updateMemberProfile: formData.ordererInfo.updateProfile,
-        };
-        console.log("即將用於創建訂單的 MemberId:", formData.memberId);
-        console.log("準備提交的訂單 Payload:", JSON.stringify(orderPayload, null, 2));
+    // 組合最終 API Payload
+    const orderDetailsPayload = {
+        memberId: formData.memberId, 
+        totalAmount: totalAmount.value,
+        orderNotes: formData.note,
+        ordererInfo: preparedOrdererInfo,
+        participants: preparedParticipants, // 扁平化的旅客陣列
+        cartItems: cartItemsForApi, // 從 Pinia Store 獲取的 cartItems
+    };
+    console.log("準備提交的初步訂單 Payload:", JSON.stringify(orderDetailsPayload, null, 2));
 
     try {
-        // --- 第一步：呼叫後端 API 建立訂單 ---
-        const createOrderResponse = await createOrder(orderPayload);
-        console.log('createOrder API 成功，回應:', createOrderResponse);
+      // --- 第一步：呼叫後端 API 建立訂單 ---
+      const response = await initiateOrder(orderDetailsPayload);
+      console.log('初步訂單建立成功，回應:', response);
 
-        if (createOrderResponse && createOrderResponse.data && createOrderResponse.data.orderId) {
-            const orderId = createOrderResponse.data.orderId;
-            ElMessage.success(`訂單 #${orderId} 已成功建立！正在準備前往付款...`);
+      if (response && response.data && response.data.orderId) {
+        const { orderId, merchantTradeNo, expiresAt } = response.data;
+        ElMessage.success(`訂單資料已儲存 (ID: ${orderId})！正在前往付款設定頁面...`);
 
-            // 清理購物車中已提交的商品
-            const successfullySubmittedItemUuids = cartStore.selectedItems.map(i => i.id);
-            if (successfullySubmittedItemUuids.length > 0) {
-                cartStore.removeItemsByIds(successfullySubmittedItemUuids);
-            }
-
-            // --- 第二步：根據選擇的支付方式，呼叫對應的後端支付準備 API ---
-            if (formData.paymentMethod === 'ECPay_CreditCard') {
-                console.log(`準備為訂單 ${orderId} 請求 ECPay 信用卡支付...`);
-                try {
-                    const ecpayResponse = await fetch(`/api/ECPay/Checkout/${orderId}`, { method: 'POST' });
-
-                    if (ecpayResponse.ok) {
-                        const responseData = await ecpayResponse.json(); // 解析 JSON
-                        console.log("後端 API 回應的 responseData:", responseData); // 您已確認這行能正確打印
-
-                        // ***** 重點修改開始 *****
-                        // 檢查 responseData 是否有效，並且包含我們需要的屬性
-                        if (responseData && responseData.ecPayAioCheckOutUrl && responseData.parameters) {
-                            console.log("條件判斷通過，收到 ECPay 參數，準備動態提交表單...");
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = responseData.ecPayAioCheckOutUrl; // 使用後端回傳的綠界 URL
-
-                            for (const key in responseData.parameters) {
-                                if (responseData.parameters.hasOwnProperty(key)) {
-                                    const input = document.createElement('input');
-                                    input.type = 'hidden';
-                                    input.name = key;
-                                    input.value = responseData.parameters[key]; // 使用後端回傳的參數
-                                    form.appendChild(input);
-                                }
-                            }
-                            document.body.appendChild(form); // 將表單加入到 DOM 中
-                            console.log("表單已建立並準備提交至:", form.action);
-                            console.log("表單內容 (HTML):", form.outerHTML); // 查看將要提交的表單結構
-
-                            try {
-                                form.submit(); // 自動提交表單，導向綠界
-                                console.log("form.submit() 已調用。");
-                                // 頁面即將跳轉，後續的 isSubmitting.value = false; 在 finally 中處理即可
-                                // 這裡不需要再 return，因為 finally 會執行
-                            } catch (submitFormError) {
-                                console.error("調用 form.submit() 時發生錯誤:", submitFormError);
-                                submitError.value = `提交到 ECPay 時發生錯誤: ${submitFormError.message}`;
-                                ElMessage.error(submitError.value);
-                                // 如果 form.submit() 失敗，需要重置 isSubmitting
-                                isSubmitting.value = false;
-                            }
-                            // ***** 重點修改結束 *****
-
-                        } else {
-                            // 後端回傳的 JSON 結構不符合預期
-                            console.error('ECPay 支付準備 API 回應格式不正確或缺少必要欄位:', responseData);
-                            submitError.value = 'ECPay 支付參數格式錯誤，無法繼續。';
-                            ElMessage.error(submitError.value);
-                            isSubmitting.value = false; // 重置提交狀態
-                        }
-                    } else {
-                        // HTTP 請求失敗的處理 (例如 4xx, 5xx 錯誤)
-                        let errorText = `HTTP 錯誤 ${ecpayResponse.status}: ${ecpayResponse.statusText}`;
-                        try {
-                            const errorData = await ecpayResponse.json(); // 嘗試解析錯誤回應的 JSON
-                            errorText = errorData.message || errorData.title || errorText;
-                            console.error('準備 ECPay 支付失敗 (HTTP Status):', ecpayResponse.status, errorData);
-                        } catch (e) {
-                            // 如果錯誤回應不是 JSON，直接使用 text
-                            const rawErrorText = await ecpayResponse.text();
-                            errorText = rawErrorText || errorText;
-                            console.error('準備 ECPay 支付失敗 (HTTP Status):', ecpayResponse.status, rawErrorText);
-                        }
-                        submitError.value = `準備ECPay支付失敗: ${errorText}`;
-                        ElMessage.error(submitError.value);
-                        isSubmitting.value = false; // 重置提交狀態
-                    }
-                } catch (ecpayNetworkErr) { // 捕獲 fetch 本身的網路錯誤或其他客戶端錯誤
-                    console.error("請求 ECPay 支付準備時發生網路或客戶端錯誤:", ecpayNetworkErr);
-                    submitError.value = `請求ECPay支付時發生網路或客戶端錯誤: ${ecpayNetworkErr.message}`;
-                    ElMessage.error(submitError.value);
-                    isSubmitting.value = false; // 重置提交狀態
-                }
-            } else if (formData.paymentMethod === 'LINEPay') {
-                console.log(`訂單 ${orderId} 選擇 LINE Pay，導向 LINE Pay 處理流程...`);
-                // router.push({ path: '/linepay-checkout', query: { orderId: orderId } });
-                // 或者呼叫後端的 LINE Pay 準備 API
-                ElMessage.info("LINE Pay 流程尚未實作。");
-            } else {
-                // 理論上不應該到這裡，因為前面已經檢查過 formData.paymentMethod
-                ElMessage.error("未知的支付方式，無法繼續。");
-            }
-        } else {
-            console.error('訂單建立失敗 - API 回應無效或指示錯誤:', createOrderResponse);
-            submitError.value = createOrderResponse?.data?.message || '訂單建立失敗，請稍後再試。 (回應異常)';
-            ElMessage.error(submitError.value);
+        // 清理購物車中已提交的商品 (這部分邏輯可以保留)
+        const successfullySubmittedItemUuids = cartStore.selectedItems.map(i => i.id);
+        if (successfullySubmittedItemUuids.length > 0) {
+            cartStore.removeItemsByIds(successfullySubmittedItemUuids);
         }
+
+        // 導向到新的付款頁面，並傳遞必要參數
+        router.push({
+          name: 'OrderPayment',
+          query: {
+            orderId: orderId,
+            mtn: merchantTradeNo, // MerchantTradeNo
+            exp: expiresAt, // 過期時間 (ISO String)
+            ordererEmail: orderDetailsPayload.ordererInfo.Email
+          }
+        });
+
+      } else {
+        console.error('初步訂單建立失敗 - API 回應無效:', response);
+        submitError.value = response?.data?.message || response?.message || '儲存訂單資料失敗，請稍後再試。';
+        ElMessage.error(submitError.value);
+      }
     } catch (err) {
-        // ... (原有的錯誤處理邏輯) ...
         console.error("訂單提交過程中發生錯誤:", err);
-        if (err.response) {
-            console.error("後端錯誤回應:", err.response.data);
-            submitError.value = err.response.data.message || err.response.data.title || '訂單提交失敗，伺服器返回錯誤。';
-        } else if (err.request) {
-            console.error("請求已發出但無回應:", err.request);
-            submitError.value = '無法連接到伺服器，請檢查您的網路連線。';
-        } else {
-            console.error("JS錯誤或請求設置錯誤:", err.message);
-            submitError.value = err.message || '提交訂單時發生未知錯誤，請檢查控制台。';
-        }
-        ElMessage.error(`訂單提交失敗: ${submitError.value}`);
+      if (err.response) {
+          submitError.value = err.response.data?.message || err.response.data?.title || '訂單提交失敗，伺服器返回錯誤。';
+      } else if (err.request) {
+          submitError.value = '無法連接到伺服器，請檢查您的網路連線。';
+      } else {
+          submitError.value = err.message || '提交訂單時發生未知錯誤。';
+      }
+      ElMessage.error(`訂單提交失敗: ${submitError.value}`);
     } finally {
-        isSubmitting.value = false;
+      isSubmitting.value = false;
     }
 };
 
 // 在組件更新之前清理 ItemParticipantForm 的 refs
-// 這是因為 v-for 中的元素可能會被移除，舊的 ref 引用需要清理
 onBeforeUpdate(() => {
   // 清空 refs 物件
   itemTravelerFormRefs.value = {};
@@ -999,32 +765,6 @@ watch(selectedOrderItems, (newItems) => {
     activeCollapseNames.value = Array.from(currentActiveNamesSet);
 
 }, { immediate: true, deep: true }); // immediate 在組件掛載時立即執行一次，deep 監聽陣列內部變化
-
-
-// 監聽付款方式變化，自動展開/收起電子發票區塊 (使用通用滾動方法)
-watch(() => formData.paymentMethod, (newValue) => {
-    const einvoiceSectionName = 'einvoice';
-    if (newValue) { // 只要選擇了任何付款方式
-        // 自動展開電子發票區塊
-        if (!activeCollapseNames.value.includes(einvoiceSectionName)) {
-           nextTick(() => {
-               activeCollapseNames.value.push(einvoiceSectionName);
-           });
-        }
-         // 可選：滾動到發票區塊
-         // scrollToSection(einvoiceSectionName);
-    } else {
-        // 如果取消選擇付款方式，收起發票區塊
-        const index = activeCollapseNames.value.indexOf(einvoiceSectionName);
-        if (index > -1) {
-             activeCollapseNames.value.splice(index, 1);
-        }
-         // 可選：清除發票區塊的數據 (如果取消支付方式意味著發票信息也無效)
-         // formData.eInvoiceInfo = { type: 'personal', taxId: '', companyTitle: '', deliveryEmail: '' };
-    }
-});
-
-
 
 </script>
 

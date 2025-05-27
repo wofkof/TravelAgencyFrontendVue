@@ -11,12 +11,19 @@
       ref="itemFormRef"
     >
       <div v-for="(participant, pIndex) in participantsData" :key="participant.id || pIndex" class="participant-entry">
-        <h4>
-          旅客 {{ pIndex + 1 }} 
-          <span v-if="getParticipantType(pIndex)" class="participant-type">
-            ({{ getParticipantType(pIndex) }})
-          </span>
-        </h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h4 style="margin-bottom: 0; margin-right: 10px;">旅客 {{ pIndex + 1 }} 
+            <span v-if="getParticipantType(pIndex)" class="participant-type">
+                ({{ getParticipantType(pIndex) }})
+            </span>
+            </h4>
+            <el-checkbox
+                :model-value="participant.updateThisTravelerProfile"
+                @update:modelValue="updateParticipantField(pIndex, 'updateThisTravelerProfile', $event)"
+                label="更新旅客資料"
+                size="small"
+            />
+        </div>
 
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12">
@@ -176,7 +183,7 @@
             @update:modelValue="updateParticipantField(pIndex, 'remarks', $event)"
             placeholder="請在此輸入旅客的特殊需求或注意事項"
             clearable
-            maxlength="300" show-word-limit
+            maxlength="200" show-word-limit
           />
         </el-form-item>
 
@@ -300,11 +307,14 @@ const calculateAge = (birthDateStr, referenceDateStr) => {
         const refDay = parseInt(refParts[2]);
         const birth = new Date(birthYear, birthMonth, birthDay);
         const reference = new Date(refYear, refMonth, refDay);
-        if (birth.getFullYear() !== birthYear || birth.getMonth() !== birthMonth || birth.getDate() !== birthDay ||
+
+        if (isNaN(birth.getTime()) || isNaN(reference.getTime()) ||
+            birth.getFullYear() !== birthYear || birth.getMonth() !== birthMonth || birth.getDate() !== birthDay ||
             reference.getFullYear() !== refYear || reference.getMonth() !== refMonth || reference.getDate() !== refDay) {
             console.warn(`[calculateAge] 無效的日期值: BirthDate=${birthDateStr}, ReferenceDate=${referenceDateStr}`);
-            return null; 
+            return null;
         }
+
         let age = reference.getFullYear() - birth.getFullYear();
         const monthDiff = reference.getMonth() - birth.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && reference.getDate() < birth.getDate())) {
@@ -343,6 +353,7 @@ const validateAgeBasedOnType = (rule, value, callback) => {
     } else { 
         isValidAge = true;
     }
+
     if (isValidAge) {
         callback(); 
     } else {
@@ -353,6 +364,7 @@ const validateAgeBasedOnType = (rule, value, callback) => {
 const validatePassportExpiryDate = (rule, value, callback) => {
     const pIndex = parseInt(rule.field.split('[')[1].split(']')[0]);
     const participant = participantsData.value[pIndex];
+
     if (isInternationalTravel.value && participant && participant.documentType === 'PASSPORT' && !value) {
         return callback(new Error(getLabelForField('passportExpiryDate') + '為必填 (護照適用)'));
     }
@@ -368,6 +380,7 @@ const validatePassportExpiryDate = (rule, value, callback) => {
         const expiryMonth = parseInt(expiryParts[1]) -1;
         const expiryDay = parseInt(expiryParts[2]);
         const expiryDate = new Date(expiryYear, expiryMonth, expiryDay);
+        
         if (expiryDate.getFullYear() !== expiryYear || expiryDate.getMonth() !== expiryMonth || expiryDate.getDate() !== expiryDay) {
              return callback(new Error('無效的護照效期日期'));
         }
@@ -387,6 +400,7 @@ const validatePassportExpiryDate = (rule, value, callback) => {
             const endMonth = parseInt(endParts[1]) - 1;
             const endDay = parseInt(endParts[2]);
             const tripEndDate = new Date(endYear, endMonth, endDay);
+
             if (tripEndDate.getFullYear() !== endYear || tripEndDate.getMonth() !== endMonth || tripEndDate.getDate() !== endDay) {
                 console.warn(`[validatePassportExpiryDate] 無效的行程結束日期值: ${tripEndDateStr}`);
                 if (expiryDate < today) { 
@@ -397,6 +411,7 @@ const validatePassportExpiryDate = (rule, value, callback) => {
             const requiredExpiryDate = new Date(tripEndDate);
             const monthsToAdd = 6; 
             requiredExpiryDate.setMonth(requiredExpiryDate.getMonth() + monthsToAdd);
+
             if (expiryDate < requiredExpiryDate) {
                 return callback(new Error(`護照效期至少需在行程結束 (${tripEndDate.toLocaleDateString('zh-TW')}) 後 ${monthsToAdd} 個月 (即 ${requiredExpiryDate.toLocaleDateString('zh-TW')} 或之後)`));
             }
@@ -424,6 +439,7 @@ const validateDocumentValue = (rule, value, callback, targetField) => {
     if (!participant) {
         return callback(new Error('系統錯誤：無法獲取旅客資料'));
     }
+    
     const documentType = participant.documentType;
     const docValue = value; 
 
@@ -571,7 +587,7 @@ const getRulesForField = (pIndex, fieldName) => {
     }
 
     if (fieldName === 'remarks') {
-        baseRules.push({ max: 300, message: '備註內容不得超過 300 字', trigger: 'blur' });
+        baseRules.push({ max: 200, message: '備註內容不得超過 200 字', trigger: 'blur' });
     }
     return baseRules;
 };
@@ -628,7 +644,8 @@ watch([() => props.participants, numberOfParticipants], ([newParticipantsProp, n
         newArray.push({
             id: propData.id || `pax-${props.orderItem.id}-${i}-${Date.now()}`,
             selectedFrequentTraveler: propData.selectedFrequentTraveler || null,
-            favoriteTravelerId: propData.favoriteTravelerId || null, // 新增 favoriteTravelerId
+            favoriteTravelerId: propData.favoriteTravelerId || null, // 【新增/確認】確保 favoriteTravelerId 被初始化
+            updateThisTravelerProfile: propData.updateThisTravelerProfile || false, // 【新增】初始化 updateThisTravelerProfile
             lastNameZh: propData.lastNameZh || '',
             firstNameZh: propData.firstNameZh || '',
             gender: propData.gender || null,
@@ -713,10 +730,10 @@ const updateParticipantField = (index, field, value) => {
     }
 
     // 如果更新的是UI上的主要證件號碼輸入框 (現在是 idNumber 或 documentNumber)
-    if (field === 'idNumber') { // 來自台灣身分證輸入框
+    if (field === 'idNumber') { 
         if (updatedParticipant.documentType === 'ID_CARD_TW') {
             updatedParticipant.idNumber = processedValue;
-            updatedParticipant.documentNumber = ''; // 確保 documentNumber 為空
+            updatedParticipant.documentNumber = ''; // documentNumber 為空
         } else {
             // 理論上 documentType 非 ID_CARD_TW 時，idNumber 輸入框不應觸發更新
             // 但為防禦性編程，若發生，則清空 idNumber
@@ -731,7 +748,7 @@ const updateParticipantField = (index, field, value) => {
                 updatedParticipant.passportNumber = processedValue; // 同步到專用護照號碼欄位
             }
         } else {
-             updatedParticipant.documentNumber = '';
+            updatedParticipant.documentNumber = '';
         }
     }
     
@@ -753,7 +770,7 @@ const updateParticipantField = (index, field, value) => {
 };
 
 const handleFrequentTravelerSelect = (index, selectedId) => {
-    const currentParticipant = { ...participantsData.value[index] };
+    const currentParticipantRaw = participantsData.value[index];
     let travelerDataToFill = { 
         lastNameZh: '', firstNameZh: '', gender: null, country: 'TW',
         birthDate: null, 
@@ -761,16 +778,20 @@ const handleFrequentTravelerSelect = (index, selectedId) => {
         idNumber: '',  // 台灣身分證號碼
         documentNumber: '', // 其他證件號碼 (例如護照)
         favoriteTravelerId: null, // 後端常用旅客ID
-        lastNameEn: '', firstNameZhEn: '', // Typo: firstNameEn
+        // updateThisTravelerProfile: currentParticipantRaw.updateThisTravelerProfile || false, // 【修改】保留當前 checkbox 狀態
+        lastNameEn: '', firstNameEn: '', // Typo: firstNameEn
         passportNumber: '', passportExpiryDate: null,
         remarks: '',
     };
+     // 【新增】選擇常用旅客時，預設勾選「更新旅客資料」，手動填寫則不勾選（或維持原樣）
+    let newUpdateProfileState = false;
 
     if (selectedId) {
         const selectedTraveler = frequentTravelers.value.find(ft => ft.id === selectedId);
         if (selectedTraveler && selectedTraveler.data) {
             travelerDataToFill = { ...travelerDataToFill, ...selectedTraveler.data };
             travelerDataToFill.favoriteTravelerId = selectedTraveler.dbId || null; // 填充後端ID
+            newUpdateProfileState = true; // 【新增】選擇常用旅客時，預設勾選
 
             // 根據選擇的 documentType，校正 idNumber 和 documentNumber
             if (travelerDataToFill.documentType === 'ID_CARD_TW') {
@@ -803,15 +824,18 @@ const handleFrequentTravelerSelect = (index, selectedId) => {
             }
         } else { // 若 selectedId 但找不到旅客，清空 favoriteTravelerId
             travelerDataToFill.favoriteTravelerId = null;
+            newUpdateProfileState = currentParticipantRaw.updateThisTravelerProfile || false; // 維持原 checkbox 狀態
         }
     } else { // 若選擇 "自行填寫" (selectedId is null)
          travelerDataToFill.favoriteTravelerId = null;
+          newUpdateProfileState = false; // 【修改】自行填寫時，預設不勾選更新                           
     }
 
     const updatedParticipant = {
-        id: currentParticipant.id,
+        id: currentParticipantRaw.id,
         ...travelerDataToFill,   
         selectedFrequentTraveler: selectedId, 
+        updateThisTravelerProfile: newUpdateProfileState // 【新增】應用新的勾選狀態
     };
 
     participantsData.value.splice(index, 1, updatedParticipant);
@@ -918,9 +942,24 @@ watch(() => props.tripDestinationCountry, (newCountry, oldCountry) => {
                         }
                     }
                 }
+                // 【新增】如果從非國際變國際，且證件不是護照，但之前有填護照號，則保留
+                // 【新增】如果從國際變非國際，則清空護照相關欄位
+                let newLastNameEn = participant.lastNameEn;
+                let newFirstNameEn = participant.firstNameEn;
+                let newPassportExpiryDate = participant.passportExpiryDate;
+
+                if (!newIsInternational) {
+                    if (newLastNameEn !== '') { newLastNameEn = ''; modifiedThisParticipant = true;}
+                    if (newFirstNameEn !== '') { newFirstNameEn = ''; modifiedThisParticipant = true;}
+                    if (newPassportExpiryDate !== null) { newPassportExpiryDate = null; modifiedThisParticipant = true;}
+                     // passportNumber 的清空已在上面 documentType === 'PASSPORT' 的 else 處理
+                }
+
                 if (modifiedThisParticipant) {
                     participantsModified = true;
-                    return { ...participant, passportNumber: newPassportNumberValue };
+                    return { ...participant, passportNumber: newPassportNumberValue, 
+                        lastNameEn: newLastNameEn, firstNameEn: newFirstNameEn, 
+                        passportExpiryDate: newPassportExpiryDate };
                 }
                 return participant;
             });
@@ -987,7 +1026,7 @@ defineExpose({
 </script>
 
 <style scoped>
-/* ... (樣式保持不變) ... */
+
 .item-participant-form {
   padding-top: 10px; 
 }

@@ -16,7 +16,7 @@ import ShoppingCart from "@/views/ShoppingCart.vue";
 import OrderForm from "@/views/OrderForm.vue";
 import VisaPage from "@/views/VisaPage.vue";//富成
 import OrderComplete from "@/views/OrderComplete.vue";
-
+import OrderPayment from "@/views/OrderPayment.vue";
 
 
 
@@ -46,14 +46,14 @@ const routes = [
   },
 
   {
-    path: "/ShoppingCart", // 購物車頁面的路徑
+    path: "/ShoppingCart",
     name: "ShoppingCart",
-    component: ShoppingCart, // 對應到 ShoppingCart 組件
+    component: ShoppingCart, 
   },
   {
-    path: "/order-form", // 訂單表單頁面的路徑
+    path: "/order-form",
     name: "OrderForm",
-    component: OrderForm, // 對應到 OrderForm 組件
+    component: OrderForm,
     meta: { simpleNavbar: true }
   },
   {
@@ -61,7 +61,18 @@ const routes = [
     name: "Ordercomplete",
     component: OrderComplete,
     meta: { simpleNavbar: true },
-    props: true // 將路由參數作為 props 傳遞給元件
+    props: true
+  },
+  {
+    path: "/order-payment",
+    name: "OrderPayment",
+    component: OrderPayment,
+    props: route => ({
+        orderId: route.query.orderId,
+        mtn: route.query.mtn,
+        exp: route.query.exp
+    }),
+    meta: { simpleNavbar: true }
   },
   {
     path: "/CustomtravelCreate",

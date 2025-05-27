@@ -1,45 +1,20 @@
 // src/utils/orderapi.js
 
-import axios from "axios";
+import api from './api'; // 你的 axios 實例
 
-// 建立一個專門用於訂單 API 的 Axios 實例
-// 這樣可以為訂單相關的請求設定特定的 baseURL 或攔截器 (如果需要)
-const orderApiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // 從 .env 檔案讀取 API 基礎路徑
-  withCredentials: true, // 如果您的 API 需要 cookie 進行身份驗證
-});
-
-/**
- * 創建訂單的 API 請求函式
- * @param {object} orderPayload - 包含訂單所有資訊的物件 (需符合後端 API 的 DTO 結構)
- * @returns {Promise} - Axios 的 Promise 物件，解析後為 API 的回應
- */
-const createOrder = (orderPayload) => {
-  console.log("在 orderApi.js 中準備提交到 /Orders 的 Payload:", orderPayload);
-  return orderApiClient.post('/Order', orderPayload);
+// 第一階段：建立初步訂單
+export const initiateOrder = (orderData) => {
+  // orderData 應只包含訂單明細、旅客資訊等，不含付款和發票
+  return api.post('/Order/initiate', orderData);
 };
 
-// 您也可以在這裡加入其他訂單相關的 API 函式，例如：
-// const getOrderById = (orderId) => {
-//   return orderApiClient.get(`/Orders/${orderId}`);
-// };
-
-// const cancelOrder = (orderId) => {
-//   return orderApiClient.post(`/Orders/${orderId}/cancel`);
-// };
-
-// 導出您定義的 API 函式
-// 這樣在其他地方可以 import { createOrder } from '@/utils/orderApi';
-export {
-  createOrder,
-  // getOrderById, // 如果您加入了其他函式
-  // cancelOrder,
+// 第二階段：最終確認付款方式和發票資訊
+export const finalizeOrderPayment = (orderId, paymentFinalizationData) => {
+  // paymentFinalizationData 包含 selectedPaymentMethod 和 invoiceRequestInfo
+  return api.put(`/Order/${orderId}/finalize-payment`, paymentFinalizationData);
 };
 
-// 或者，如果您偏好預設導出一個包含所有方法的物件：
-// const orderApi = {
-//   createOrder,
-//   // getOrderById,
-//   // cancelOrder,
-// };
-// export default orderApi;
+// 獲取訂單詳情 (例如用於“返回訂單明細”或付款頁面載入時確認訂單)
+export const getOrderDetails = (orderId, memberId) => {
+  return api.get(`/Order/${orderId}`, { params: { memberId } });
+};
