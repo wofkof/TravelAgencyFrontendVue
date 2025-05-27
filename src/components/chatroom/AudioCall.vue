@@ -94,14 +94,19 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
     console.warn(`[CallLog] 已記錄過，略過 ${status}`);
     return;
   }
-  callLogAlreadyRecorded = true;
-  try {
-    const safeStartTime = callStartTime ?? new Date();
-    const now = new Date();
-    const duration = Math.floor(
-      (now.getTime() - safeStartTime.getTime()) / 1000
-    );
 
+  const now = new Date();
+  const safeStartTime = callStartTime ?? now;
+  const duration = Math.floor((now.getTime() - safeStartTime.getTime()) / 1000);
+
+  if (status === "completed" && duration <= 0) {
+    console.warn("[CallLog] duration 為 0，不記錄 completed 通話");
+    return;
+  }
+
+  callLogAlreadyRecorded = true;
+
+  try {
     await createCallLog({
       chatRoomId: chatStore.currentChatRoomId,
       callerType,
@@ -219,10 +224,10 @@ const hangupCall = async () => {
   }
 
   callStatus.value = "📴 通話已結束";
-  stopTimer();
-
   // 記錄通話
   await recordCallLog("completed");
+  stopTimer();
+
 
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
@@ -249,6 +254,7 @@ const endSession = () => {
 
 const startTimer = () => {
   callStartTime = new Date();
+  console.log("[Timer] callStartTime 設定為", callStartTime);
   updateTimer();
   timer = setInterval(updateTimer, 1000);
 };
@@ -299,18 +305,14 @@ onMounted(() => {
   const conn = getConnection();
   conn?.on("ReceiveEndCall", async () => {
     callStatus.value = "📴 對方已掛斷";
-    stopTimer();
-
     await recordCallLog("completed");
-
+    stopTimer();
     setTimeout(() => endSession(), 3000);
   });
   conn?.on("CallRejected", async () => {
     callStatus.value = "📴 對方已拒接";
-    stopTimer();
-
     await recordCallLog("missed");
-
+    stopTimer();
     setTimeout(() => endSession(), 3000);
   });
 });
