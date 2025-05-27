@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { reactive, ref, computed } from "vue";
 //舒婷
-import { useAuthStore } from '@/stores/authStore';
-import { storeToRefs } from 'pinia';
+import { useAuthStore } from "@/stores/authStore";
+import { storeToRefs } from "pinia";
 
 export const useChatStore = defineStore("chat", () => {
   //舒婷
@@ -70,7 +70,7 @@ export const useChatStore = defineStore("chat", () => {
     Object.keys(chatRooms).forEach((k) => delete chatRooms[k]);
     Object.keys(unreadCountMap).forEach((k) => delete unreadCountMap[k]);
     showChat.value = false;
-    //舒婷this.memberId = null;
+    this.memberId = null;
   }
 
   return {
@@ -85,7 +85,7 @@ export const useChatStore = defineStore("chat", () => {
     totalUnreadCount,
     toggleChatPopup,
     showChat,
-    //舒婷memberId,
+    memberId,
     memberType,
     getTargetUserId,
     reset,
