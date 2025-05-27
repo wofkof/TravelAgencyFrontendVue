@@ -234,35 +234,41 @@ const toggleRemarks = () => {
 
 // 監聽父組件傳來的 modelValue 變化，同步到本地狀態
 watch(() => props.modelValue, (newValue) => {
-  // 執行深層同步，確保本地狀態與父組件一致
-  // 使用 Object.assign 或逐個賦值來確保 reactive 對象的響應性不丟失
-  Object.assign(form, newValue);
-  // 手動同步 ref 狀態
-  invoiceType.value = newValue.type;
-  showRemarks.value = !!newValue.remarks; // 如果父組件傳來的 remarks 有值，則展開
+  if (newValue && typeof newValue === 'object') { // << 新增保護：確保 newValue 是有效的物件 >>
+    Object.assign(form, newValue); 
+    invoiceType.value = newValue.type || 'personal'; // 提供預設值以防 type 不存在
+    showRemarks.value = !!newValue.remarks;
 
-  // 同步後，如果當前是公司類型，可能需要清除舊的驗證狀態，或者觸發一次驗證
-  if (invoiceType.value === 'company') {
-       nextTick(() => {
+    // 同步後，如果當前是公司類型，可能需要清除舊的驗證狀態，或者觸發一次驗證
+    if (invoiceType.value === 'company') {
+        nextTick(() => {
             if (companyFormRef.value) {
-                // 清除所有驗證狀態 (簡單粗暴但有效)
                 companyFormRef.value.clearValidate();
-                console.log("EInvoiceForm: Cleared company form validation after modelValue sync.");
-                // 或者觸發所有欄位驗證 (更精確)
-                // companyFormRef.value.validate(() => {});
             }
-       });
-  } else {
-       // 如果同步後是非公司類型，確保公司表單的驗證狀態被清除
-       nextTick(() => {
+        });
+    } else {
+        nextTick(() => {
             if (companyFormRef.value) {
-               companyFormRef.value.clearValidate();
-               console.log("EInvoiceForm: Cleared company form validation after modelValue sync (non-company).");
+                companyFormRef.value.clearValidate();
             }
-       });
+        });
+    }
+  } else {
+    // 如果父組件傳來了 null 或非物件，這是一個問題，需要決定如何處理
+    // 選項1: 重置為預設狀態
+    console.warn("EInvoiceForm received a null or invalid modelValue. Resetting to default.");
+    const defaultValue = { 
+        type: 'personal', taxId: '', companyTitle: '', 
+        addBillingAddress: false, billingAddress: '', 
+        remarks: '', deliveryEmail: form.deliveryEmail // 保留可能的 deliveryEmail
+    };
+    Object.assign(form, defaultValue);
+    invoiceType.value = defaultValue.type;
+    showRemarks.value = !!defaultValue.remarks;
+    emit('update:modelValue', { ...defaultValue }); // << 通知父組件已重設 >>
   }
 
-}, { deep: true }); // 使用 deep watch 監聽 modelValue 物件內部屬性變化
+}, { deep: true, immediate: true }); // 使用 deep watch 監聽 modelValue 物件內部屬性變化
 
 
 // --- **新增：暴露驗證方法給父組件** ---
