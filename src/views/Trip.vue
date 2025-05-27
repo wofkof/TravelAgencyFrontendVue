@@ -2,74 +2,75 @@
 
   <div class="max-w-7xl mx-auto p-4">
     <!-- 最外層容器 -->
+    <!-- 最後加上skeleton -->
+    <div class="bg-white rounded-xl p-4 shadow-lg mb-6">
+      <!-- 行程資訊大矩形 -->
 
-<div class="bg-white rounded-xl p-4 shadow-lg mb-6">
-  <!-- 行程資訊大矩形 -->
-
-  <!-- 標題區塊 -->
-  <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
-    {{ mainInfo.title }}
-  </div>
-
-  <div class="flex h-96">
-    <!-- 二等分區塊 -->
-     
-
-    <div class="w-1/2 flex gap-2 p-4 text-left relative">
-      <div class="w-1/2 rounded-md">
-        <img :src="mainInfo.cover" alt="" class="h-56 w-max" >
+      <!-- 標題區塊 -->
+      <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
+        {{ mainInfo.title }}
       </div>
-      <div class="text-lg font-bold my-2">
-          <p>行程 {{mainInfo.number}}</p>
-          <p>可賣： {{mainInfo.availableSeats}} 席次：{{ mainInfo.totalSeats }}</p>
-          <p>去程：{{ formattedDepartureDate }}</p>
-          <p>回程：{{ formattedReturnDate }}</p>
-          <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
-          <p>{{ mainInfo.price }}</p>
-      </div>
-      
-      
-      <normalButton class="absolute bottom-5 right-8 shadow"/>
-    </div>
 
-    <div class="w-1/2 bg-green-100 rounded-lg p-4">
-      <!-- 資訊 03：出團日期表格 -->
-       <!-- <div class="mb-2 p-2 border border-solid rounded-md border-gray-400">
-            <p class="mb-4">選擇行程</p>
-            <div class="grid grid-cols-5 gap-x-2">
-                <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">全部</button>
-                <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">行程1</button>
-            </div>
-        </div> -->
-          <div class="mb-2 border border-solid rounded-md border-gray-400">
-              <table class="w-full text-sm text-center border-separate border-spacing-y-2">
-                  <thead>
-                      <tr>
-                          <th class="border-b pb-1">出發日期</th>
-                          <th class="border-b pb-1">行程</th>
-                          <th class="border-b pb-1">可賣</th>
-                          <th class="border-b pb-1">席次</th>
-                          <th class="border-b pb-1">成行狀態</th>
-                          <th class="border-b pb-1">價格</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="g in groupList" :key="groupList.groupId">
-                      <td>{{ formatDateTime(g.departure, { type: 'date' })}}</td>
-                      <td>{{g.number}}</td>
-                      <td>{{g.availableSeats}}</td>
-                      <td>{{g.totalSeats}}</td>
-                      <td>{{g.groupStatus}}</td>
-                      <td>{{g.price}} 元</td>
-                    </tr>
-                  </tbody>
-                
-              </table>
+      <div class="flex h-96 bg-gray-100">
+        <!-- 二等分區塊 -->
+        
+
+        <div class="w-1/2 flex gap-2 p-4 text-left relative">
+          <div class="w-1/2 rounded-md">
+            <img :src="mainInfo.cover" alt="" class="h-56 w-full object-cover rounded"  >
           </div>
-    </div>
-  </div>
+          <div class="text-lg font-bold my-2">
+              <p>行程 {{mainInfo.number}}</p>
+              <p>可賣： {{mainInfo.availableSeats}} 席次：{{ mainInfo.totalSeats }}</p>
+              <p>去程：{{ formattedDepartureDate }}</p>
+              <p>回程：{{ formattedReturnDate }}</p>
+              <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
+              <p>{{ mainInfo.price }}</p>
+          </div>
+          
+          <button type="button" class="bg-blue-400 w-24 text-center font-semibold text-xl rounded-lg text-white m-0 p-1 absolute bottom-5 right-8 shadow">
+          報名<!-- 之後加一個邏輯判斷，如果額滿顯示候補，特殊情況顯示聯絡專人，或是 disable按鈕-->
+          </button>
+        </div>
 
-</div>
+        <div class="w-1/2 rounded-lg p-4">
+          <!-- 資訊 03：出團日期表格 -->
+          <!-- <div class="mb-2 p-2 border border-solid rounded-md border-gray-400">
+                <p class="mb-4">選擇行程</p>
+                <div class="grid grid-cols-5 gap-x-2">
+                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">全部</button>
+                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">行程1</button>
+                </div>
+            </div> -->
+              <div class="mb-2">
+                  <el-table
+                    :data="groupList"
+                    height="100%"
+                    border
+                    style="width: 100%;"
+                  >
+                    <el-table-column prop="departure" label="出發日期" width="120" >
+                      <template #default="{ row }">
+                        {{ formatDateTime(row.departure, { type: 'date' }) }}
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column prop="number" label="行程" width="80" />
+                    <el-table-column prop="availableSeats" label="可賣" width="80" />
+                    <el-table-column prop="totalSeats" label="席次" width="80" />
+                    <el-table-column prop="groupStatus" label="成行狀態" width="100" />
+                    
+                    <el-table-column prop="price" label="價格">
+                      <template #default="{ row }">
+                        {{ row.price }} 元
+                      </template>
+                    </el-table-column>
+                  </el-table>
+              </div>
+        </div>
+      </div>
+
+    </div>
 
 <div class="bg-white rounded-xl p-4 shadow mb-6 text-xl font-medium">
 {{ mainInfo.description }}
@@ -81,21 +82,26 @@
   <div class="bg-white rounded-xl p-4 shadow mb-6">
     <div class="demo-collapse">
         <el-collapse >
-          <el-collapse-item v-for="s in scheduleList" :key="scheduleList.scheduleId">
+          <el-collapse-item v-for="s in scheduleList" :key="s.scheduleId">
             <template #title="{ isActive }">
-              <div :class="['title-wrapper']" class="text-xl font-medium">
+              <div :class="['title-wrapper']" class="text-xl font-bold">
                 第{{s.day}}天
               </div>
             </template>
             <div class="text-lg text-gray-900 leading-relaxed">
-              <p>{{ s.description }}</p>
-              <p>{{ s.breakfast }}  {{ s.lunch }}  {{ s.dinner }}</p>
+              <p class="text-xl">{{ s.description }}</p>
+              <p>早餐: {{ s.breakfast }}</p>
+              <p>午餐: {{ s.lunch }}</p>
+              <p>晚餐: {{ s.dinner }}</p>
               <p>{{ s.hotel }}</p>
-              <p>{{ s.attraction1 }}</p>
-              <p>{{ s.attraction2 }}</p>
-              <p>{{ s.attraction3 }}</p>
-              <p>{{ s.attraction4 }}</p>
-              <p>{{ s.attraction5 }}</p>
+              <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="text-blue-800">
+                <p>
+                  {{ a.name }} - {{ a.description }}
+                </p>
+                <!-- 使用唯一 map ID -->
+                <div :id="`map-${s.scheduleId}-${a.attractionId}`" style="height: 150px; width: 100%; margin-bottom: 1rem;"></div>
+                <!-- 排版優化，製成元件，element-popover -->
+              </div>
             </div>
           </el-collapse-item>
     </el-collapse>
@@ -113,7 +119,9 @@
     import { useRoute } from 'vue-router';
     import api from '@/utils/api';
     import { formatDateTime } from '@/utils/formatDateTime';
-    import normalButton from "@/components/official/normalButton.vue";
+    import L from 'leaflet';
+    import 'leaflet/dist/leaflet.css';
+    
 
     const mainInfo = ref(
     {
@@ -161,9 +169,19 @@
           "attraction2": 0,
           "attraction3": 0,
           "attraction4": 0,
-          "attraction5": 0
+          "attraction5": 0,
+          "attractions": []
         }
       ]
+    )
+
+    const attraction = ref(
+    { "attractionId": 0,
+      "name": "",
+      "description": "",
+      "longitude": 0,
+      "latitude": 0
+    }
     )
 
   const formattedDepartureDate = computed(() =>
@@ -174,6 +192,16 @@
   );
 const route = useRoute();
 
+const getAttractionById = async (attractionId) => {
+      if (!attractionId || attractionId === 0) return null;
+
+      try {
+        const attrlist = await api.get(`/OfficialSearch/getAttraction/${attractionId}`);
+        return attrlist.data;
+      } catch (err) {
+        console.error("取得景點失敗", err);
+      }
+    };
 
 onMounted(async () => {
   const projectId = route.params.projectId;
@@ -198,9 +226,49 @@ onMounted(async () => {
     const slist = await api.get(`/OfficialSearch/getSchedulelist/${detailId}`);
     scheduleList.value = slist.data;
     console.log(slist.data)
+    for (const schedule of scheduleList.value) {
+    const ids = [
+      schedule.attraction1,
+      schedule.attraction2,
+      schedule.attraction3,
+      schedule.attraction4,
+      schedule.attraction5
+    ];
+
+    schedule.attractions = [];
+
+    for (const id of ids) {
+      const attr = await getAttractionById(id);
+      if (attr) schedule.attractions.push(attr);
+      console.log(attr);
+    }
+  }
+    setTimeout(() => {
+        for (const s of scheduleList.value) {
+          for (const a of s.attractions) {
+            const mapId = `map-${s.scheduleId}-${a.attractionId}`;
+            const el = document.getElementById(mapId);
+            if (el) {
+              const map = L.map(mapId).setView([a.latitude, a.longitude], 13);
+
+              L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              }).addTo(map);
+
+              L.marker([a.latitude, a.longitude]).addTo(map)
+                .bindPopup(`<b>${a.name}</b><br>${a.description}`).openPopup();
+            }
+          }
+        }
+      }, 500); // 等待 DOM 完成渲染
   } catch (err) {
     console.error("取得行程scheduleList失敗", err);
   }
 
 });
   </script>
+
+  <!-- <script>
+        
+  </script> -->

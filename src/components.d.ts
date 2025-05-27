@@ -26,6 +26,7 @@ declare module 'vue' {
     CardFooter: typeof import('./components/ui/card/CardFooter.vue')['default']
     CardHeader: typeof import('./components/ui/card/CardHeader.vue')['default']
     CardTitle: typeof import('./components/ui/card/CardTitle.vue')['default']
+    Carousel: typeof import('./components/travellian/Carousel.vue')['default']
     CartPreviewIcon: typeof import('./components/tools/CartPreviewIcon.vue')['default']
     ChatRoomList: typeof import('./components/chatroom/ChatRoomList.vue')['default']
     ChatSearchBar: typeof import('./components/chatroom/ChatSearchBar.vue')['default']
@@ -88,6 +89,8 @@ declare module 'vue' {
     ElStep: typeof import('element-plus/es')['ElStep']
     ElSteps: typeof import('element-plus/es')['ElSteps']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
+    ElTable: typeof import('element-plus/es')['ElTable']
+    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
@@ -180,5 +183,8 @@ declare module 'vue' {
     VisaTotalAmount: typeof import('./components/Visa/VisaTotalAmount.vue')['default']
     VoiceUploader: typeof import('./components/chatroom/VoiceUploader.vue')['default']
     VueWorldMap: typeof import('./components/Visa/VueWorldMap.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
