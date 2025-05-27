@@ -1,11 +1,9 @@
 import { defineStore } from "pinia";
 import { reactive, ref, computed } from "vue";
-//舒婷
 import { useAuthStore } from "@/stores/authStore";
 import { storeToRefs } from "pinia";
 
 export const useChatStore = defineStore("chat", () => {
-  //舒婷
   const authStore = useAuthStore();
   const { memberId } = storeToRefs(authStore);
   const chatRooms = reactive({});
@@ -13,9 +11,6 @@ export const useChatStore = defineStore("chat", () => {
   const currentChatRoomId = ref(null);
   const unreadCountMap = reactive({});
   const showChat = ref(false);
-
-  //舒婷const rawId = localStorage.getItem("memberId");
-  //舒婷const memberId = rawId ? Number(rawId) : null;
   const memberType = "Member";
 
   const setCurrentChatRoom = (chatRoomId) => {
