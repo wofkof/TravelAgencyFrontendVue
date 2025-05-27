@@ -31,9 +31,8 @@
                 id="password"
                 placeholder="請輸入6~12位數密碼，且包含大、小寫英文的密碼"
               />
+              
 
-              <!-- 加法驗證 -->           
-                <MathCaptcha v-model:isValid="isCaptchaPassed" />              
               <!-- 記住我 + 忘記密碼 -->
               <div
                 class="flex items-center justify-between text-sm text-muted-foreground"
@@ -49,7 +48,11 @@
                   忘記密碼？
                 </button>
               </div>
-              
+              <!-- Google reCAPTCHA 框 -->
+              <div class="flex justify-center">
+              <div class="scale-[0.95] sm:scale-100" v-html="recaptchaHtml"></div>
+            </div>
+
               <!-- 登入按鈕 -->
               <Button type="submit" class="w-full"> 登入 </Button>
               <!-- 分隔線文字 -->
@@ -103,7 +106,19 @@
 
 <script setup>
 import api from '@/utils/api'
-import { reactive, computed, ref } from "vue";
+import { reactive, computed, ref,onMounted } from "vue";
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter, useRoute } from 'vue-router'
+import { defineEmits } from 'vue'
+import { ElMessage } from 'element-plus'
+import PasswordInput from "./PasswordInput.vue";
+const siteKey = '6LcVekgrAAAAAGl9ArUfrJjLffkSNTWtvMQlHBTo'
+const recaptchaHtml = `<div class="g-recaptcha" data-sitekey="${siteKey}"></div>`;
+const getRecaptchaToken = () => {
+  return grecaptcha.getResponse()
+}
+const emit = defineEmits(["close", "login-success", 'switch-to-sign-up', 'switch-to-forget'])
+const authStore = useAuthStore()
 const form = reactive({
   account: "",
   password: "",
@@ -113,47 +128,55 @@ const isValidAccount = computed(() => {
   const account = String(form.account).trim();
   return /^09\d{8}$/.test(account) || /^\S+@\S+\.\S+$/.test(account);
 });
-
+//驗證密碼格式
+const isValidPassword = computed(() => {
+  return /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/.test(form.password);
+});
 const rememberMe = ref(false);
 const touched = ref(false);
-import { ElMessage } from 'element-plus'
-import MathCaptcha from "./MathCaptcha.vue";
-import PasswordInput from "./PasswordInput.vue";
-const isCaptchaPassed = ref(false)
+const router = useRouter()
+const route = useRoute()
+const isPageMode = computed(() => route.name === "LoginPage")
+onMounted(() => {
+  const el = document.querySelector('.g-recaptcha')
+  if (window.grecaptcha && el) {
+    grecaptcha.render(el, {
+      sitekey: siteKey
+    });
+  } else {
+    console.warn('⚠️ grecaptcha 或 reCAPTCHA element 尚未就緒');
+  }
+});
 
 async function handleLogin() {
   form.account = form.account.trim();
   form.password = form.password.trim();
   touched.value = true;
-
   if (!isValidAccount.value) {
     ElMessage({
       message: '請輸入有效的手機號碼或信箱格式',
       type: 'warning',
-      duration: 3000
+      duration: 2500
     });
     return;
   }
-
-  if (!form.password || form.password.length < 6 || form.password.length > 12) {
-     ElMessage({
-      message: '密碼長度為 6~12 位，且包含大、小寫英文',
-      type: 'warning',
-      duration: 3000
-    });
-    return;
-  }
-
-  if (!isCaptchaPassed.value) {
+if (!isValidPassword.value) {
   ElMessage({
-    message: '驗證欄位輸入有誤，請再次確認',
+    message: '密碼需包含大小寫英文，長度為6~12字元',
     type: 'warning',
-    duration: 3000
+    duration: 2500
+  });
+  return;
+}
+const recaptchaToken = getRecaptchaToken()
+if (!recaptchaToken) {
+  ElMessage({
+    message: '請先通過「我不是機器人」驗證',
+    type: 'warning',
+    duration: 2500
   })
   return
 }
-
-
   try {
     // ✅ 呼叫後端登入 API
     const response = await api.post(
@@ -161,41 +184,48 @@ async function handleLogin() {
       {
         account: form.account,
         password: form.password,
+         recaptchaToken: recaptchaToken
       }
     );
+    
     //將會員名稱及ID存入 localStorage
     const memberName = response.data.name;
     const memberId = response.data.id;
-    localStorage.setItem("memberId", memberId);
-    localStorage.setItem("memberName", memberName);
+    authStore.login(memberName, memberId, rememberMe.value)
+      emit("login-success")
+    console.log(" Pinia 中的會員資訊：", authStore.$state)
 
-      ElMessage({
-      message: '登入成功！將自動跳轉至首頁',
-      type: 'success',
-      duration: 2000
-    });
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 2000);
-
+    if (isPageMode.value) {
+      router.push("/")
+    } else {
+      emit("close")
+    }
+    grecaptcha.reset();
   } catch (error) {
+     authStore.reset() 
     if (error.response && error.response.status === 401) {
       ElMessage({
         message: '帳號或密碼錯誤',
         type: 'error',
-        duration: 3000
+        duration: 2500
       });
+      grecaptcha.reset();
     } else {
       // 其他錯誤
       ElMessage({
         message: '登入失敗，請稍後再試',
         type: 'error',
-        duration: 3000
+        duration: 2500
       });
       console.error(error);
     }
   }
 }
+function resetForm() {
+  form.account = "";
+  form.password = "";
+  touched.value = false;
+}
+defineExpose({ resetForm });
 
 </script>

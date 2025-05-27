@@ -6,20 +6,31 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import PasswordInput from "./PasswordInput.vue";
+import api from '@/utils/api'
 
 const name = ref('')
 const phone = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-
 const errors = ref({})
+const isValidPhone = computed(() => /^09\d{8}$/.test(phone.value.trim()))
+const isValidPassword = computed(() =>
+  /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/.test(password.value)
+)
 
 // 提交註冊表單的函式
 const submit = async () => {
   errors.value = {} // reset
+if (!isValidPhone.value) {
+  ElMessage.warning('請輸入有效的台灣手機號碼（需為09開頭10碼數字）')
+  return
+}
+if (!isValidPassword.value) {
+  ElMessage.warning('密碼需包含大小寫英文，長度為6~12位數')
+  return
+}
 
-  // 先檢查所有欄位是否填寫
   if (!name.value || !phone.value || !email.value || !password.value || !confirmPassword.value || !emailCode.value) {
   alert('請完整填寫所有欄位')
   return
@@ -45,7 +56,7 @@ const submit = async () => {
     ElMessage({
       message: '註冊成功！將自動跳轉回登入頁面',
       type: 'success',
-      duration: 2000 
+      duration: 1500 
     })
     // 清空欄位再切換畫面
     name.value = ''
@@ -54,10 +65,10 @@ const submit = async () => {
     password.value = ''
     confirmPassword.value = ''
     emailCode.value = ''
-    // 延遲2秒再切換回登入頁
+    // 延遲1.5秒再切換回登入頁
     setTimeout(() => {
       emit('switch-to-login')
-    }, 2000)
+    }, 1500)
 
   } catch (error) {
     const resErrors = error.response?.data?.errors || {}
@@ -91,12 +102,6 @@ function handleClickOutside(event) {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-import api from '@/utils/api'
-
 //Email驗證倒數區
 const emailCode = ref('')
 const countdown = ref(0)
@@ -126,6 +131,13 @@ const sendVerificationCode = async () => {
     ElMessage.error('驗證碼發送失敗')
   }
 }
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+})
 </script>
 
 <template>
@@ -163,8 +175,8 @@ const sendVerificationCode = async () => {
                 <Label for="phone">聯絡手機</Label>
                 <Input id="phone" v-model="phone" placeholder="請輸入手機號碼" required autocomplete="off" maxlength="10" />
                 <span v-if="errors.Phone" class="text-red-500 text-sm">
-  <template v-for="(msg, i) in errors.Phone" :key="i">{{ msg }}<br /></template>
-</span>
+                <template v-for="(msg, i) in errors.Phone" :key="i">{{ msg }}<br /></template>
+              </span>
               </div>
 
 <!-- 新增發送驗證碼鈕 -->
@@ -184,10 +196,15 @@ const sendVerificationCode = async () => {
   <div class="grid gap-2">
   <Label for="email-code">Email 驗證碼</Label>
   <Input id="email-code" v-model="emailCode" placeholder="請輸入 Email 中收到的驗證碼" maxlength="6" required autocomplete="off" />
+  <p class="text-xs text-muted-foreground">
+  ※ 驗證碼 10 分鐘內有效
+</p>
+
   <span v-if="errors.EmailVerificationCode" class="text-red-500 text-sm">
     <template v-for="(msg, i) in errors.EmailVerificationCode" :key="i">{{ msg }}<br /></template>
   </span>
-  <PasswordInput
+</div>
+<PasswordInput
   id="password"
   v-model="password"
   label="密碼"
@@ -196,7 +213,6 @@ const sendVerificationCode = async () => {
 <span v-if="errors.Password" class="text-red-500 text-sm">
   <template v-for="(msg, i) in errors.Password" :key="i">{{ msg }}<br /></template>
 </span>
-</div>
 <PasswordInput
   id="confirm-password"
   v-model="confirmPassword"
@@ -242,7 +258,7 @@ const sendVerificationCode = async () => {
         </CardContent>
       </Card>
     </div>
-    <div ref="wrapperRef" class="text-center text-xs text-muted-foreground m-3 leading-relaxed">
+    <div ref="wrapperRef" class="text-center text-xs text-muted-foreground mt-4 leading-relaxed ">
     點擊「註冊」即表示您已閱讀並同意本旅行社之
 
     <span @click.stop="toggleTos" class="underline underline-offset-4 cursor-pointer relative">

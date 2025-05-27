@@ -11,7 +11,7 @@
       <ul>
         <li>
            <router-link to="/member/orders" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            📦 歷史訂單查詢
+            📦 訂單管理
           </router-link>
         </li>
          <li>
@@ -21,7 +21,7 @@
         </li>
         <li>
            <router-link to="/member/favorite-travelers" class="flex items-center py-2 px-3 rounded hover:bg-gray-100">
-            👥 常用旅客清單
+            👥 常用旅客名單
           </router-link>
         </li>
         <li>
@@ -50,5 +50,9 @@
 </template>
 
 <script setup>
-const memberName = localStorage.getItem('memberName') || 'XXX'
+import { useAuthStore } from '@/stores/authStore'
+import { computed } from 'vue'
+
+const authStore = useAuthStore()
+const memberName = computed(() => authStore.memberName || 'XXX')
 </script>

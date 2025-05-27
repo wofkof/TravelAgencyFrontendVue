@@ -38,7 +38,8 @@
   import { useCartStore } from '@/stores/ShoppingCart'
   import { ElMessage } from 'element-plus'
   import api from '@/utils/api'
-
+  import { useAuthStore } from '@/stores/authStore' // 舒婷加這行
+  const authStore = useAuthStore() // 舒婷建立 store
   const travelList = ref([])
   const router = useRouter()
   const cartStore = useCartStore()
@@ -55,7 +56,11 @@
 
 onMounted(async () => {
   try {
-    const memberId = localStorage.getItem('memberId')
+    //舒婷改const memberId = localStorage.getItem('memberId')
+    const memberId = authStore.memberId // ✅ 從 Pinia 拿 memberId
+    if (!memberId) {
+      throw new Error("尚未登入，無法載入資料")
+    }
     const res = await api.get(`/List?memberId=${memberId}`)
     travelList.value = res.data.map(item => ({
       customTravelId: item.customTravelId,
