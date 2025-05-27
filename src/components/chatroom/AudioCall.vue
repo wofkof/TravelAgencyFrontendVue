@@ -84,12 +84,20 @@ const incomingOffer = ref(null);
 const callDuration = ref("");
 const enableVideo = ref(false); // 控制是否為視訊通話
 const isVideoEnabled = ref(true);
+const isCaller = computed(() => !callStore.fromId);
+
 let timer = null;
 let callStartTime = null;
 let callLogAlreadyRecorded = false;
+let signalRBound = false;
+
 let ringtone = new Audio("/assets/sounds/incoming.mp3");
 
 const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
+  if (!isCaller.value) {
+    console.log("[CallLog] 本機不是發起者，不紀錄 call log");
+    return;
+  }
   const resolvedReceiverId = chatStore.getTargetUserId;
   console.log(
     "[CallLog] callerId:",
@@ -317,19 +325,25 @@ onMounted(() => {
     startTimer();
   });
 
-  const conn = getConnection();
-  conn?.on("ReceiveEndCall", async () => {
-    callStatus.value = "📴 對方已掛斷";
-    await recordCallLog("completed");
-    stopTimer();
-    setTimeout(() => endSession(), 3000);
-  });
-  conn?.on("CallRejected", async () => {
-    callStatus.value = "📴 對方已拒接";
-    await recordCallLog("missed");
-    stopTimer();
-    setTimeout(() => endSession(), 3000);
-  });
+  if (!signalRBound) {
+    const conn = getConnection();
+
+    conn?.on("ReceiveEndCall", async () => {
+      callStatus.value = "📴 對方已掛斷";
+      await recordCallLog("completed");
+      stopTimer();
+      setTimeout(() => endSession(), 3000);
+    });
+
+    conn?.on("CallRejected", async () => {
+      callStatus.value = "📴 對方已拒接";
+      await recordCallLog("missed");
+      stopTimer();
+      setTimeout(() => endSession(), 3000);
+    });
+
+    signalRBound = true;
+  }
 });
 
 onUnmounted(() => {
