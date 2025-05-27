@@ -27,10 +27,13 @@
               <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
               <p>{{ mainInfo.price }}</p>
           </div>
+          <cartButton 
+            class="absolute bottom-5 right-8 shadow" 
+            :availableSeats="selectedGroup?.availableSeats || mainInfo.availableSeats" 
+            :isSpecial="selectedGroup?.groupStatus === '特殊'"
+            :group="selectedGroup"
+          />
           
-          <button type="button" class="bg-blue-400 w-24 text-center font-semibold text-xl rounded-lg text-white m-0 p-1 absolute bottom-5 right-8 shadow">
-          報名<!-- 之後加一個邏輯判斷，如果額滿顯示候補，特殊情況顯示聯絡專人，或是 disable按鈕-->
-          </button>
         </div>
 
         <div class="w-1/2 rounded-lg p-4">
@@ -48,6 +51,7 @@
                     height="100%"
                     border
                     style="width: 100%;"
+                    @row-click="handleGroupClick"
                   >
                     <el-table-column prop="departure" label="出發日期" width="120" >
                       <template #default="{ row }">
@@ -134,6 +138,7 @@
     import { formatDateTime } from '@/utils/formatDateTime';
     import L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
+    import cartButton from '@/components/official/cartButton.vue';
     
 
     const mainInfo = ref(
@@ -148,8 +153,8 @@
       "price": 0,
       "country": "",
       "region": "",
-      "totalSeats": "",
-      "availableSeats": ""
+      "totalSeats": 0,
+      "availableSeats": 0
     }
   );
     const groupList = ref(
@@ -196,6 +201,7 @@
       "latitude": 0
     }
     )
+  const selectedGroup = ref(null);
 
   const formattedDepartureDate = computed(() =>
     formatDateTime(mainInfo.value.departure, { type: 'date' })
@@ -203,7 +209,64 @@
   const formattedReturnDate = computed(() =>
     formatDateTime(mainInfo.value.return, { type: 'date' })
   );
-const route = useRoute();
+  const route = useRoute();
+
+  const handleGroupClick = async (row) => {
+    selectedGroup.value = row;
+
+    mainInfo.value.departure = row.departure;
+    mainInfo.value.return = row.return;
+    mainInfo.value.number = row.number;
+    mainInfo.value.price = row.price;
+    mainInfo.value.totalSeats = row.totalSeats;
+    mainInfo.value.availableSeats = row.availableSeats;
+
+    try {
+      const detailId = row.detailId;
+
+      const slist = await api.get(`/OfficialSearch/getSchedulelist/${detailId}`);
+      scheduleList.value = slist.data;
+
+      for (const schedule of scheduleList.value) {
+        const ids = [
+          schedule.attraction1,
+          schedule.attraction2,
+          schedule.attraction3,
+          schedule.attraction4,
+          schedule.attraction5
+        ];
+
+        schedule.attractions = [];
+
+        for (const id of ids) {
+          const attr = await getAttractionById(id);
+          if (attr) schedule.attractions.push(attr);
+        }
+      }
+
+      setTimeout(() => {
+        for (const s of scheduleList.value) {
+          for (const a of s.attractions) {
+            const popoverMapId = `map-popover-${s.scheduleId}-${a.attractionId}`;
+            const popoverEl = document.getElementById(popoverMapId);
+            if (popoverEl) {
+              const popoverMap = L.map(popoverMapId).setView([a.latitude, a.longitude], 13);
+              L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+              }).addTo(popoverMap);
+              L.marker([a.latitude, a.longitude]).addTo(popoverMap)
+                .bindPopup(`<b>${a.name}</b><br>${a.description}`);
+            }
+          }
+        }
+      }, 500);
+
+    } catch (err) {
+      console.error("點擊行程後取得日程失敗", err);
+    }
+  };
+
 
 const getAttractionById = async (attractionId) => {
       if (!attractionId || attractionId === 0) return null;
