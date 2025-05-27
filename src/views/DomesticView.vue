@@ -11,7 +11,7 @@
       v-model="currentRegion"class="mb-6"/>
     </div>
     
-    <TripInfos/>
+    <TripInfos :category="category" :keyword="currentRegion" />
   
   </div>
   
