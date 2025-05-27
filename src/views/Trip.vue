@@ -95,12 +95,25 @@
               <p>晚餐: {{ s.dinner }}</p>
               <p>{{ s.hotel }}</p>
               <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="text-blue-800">
-                <p>
-                  {{ a.name }} - {{ a.description }}
-                </p>
+
                 <!-- 使用唯一 map ID -->
-                <div :id="`map-${s.scheduleId}-${a.attractionId}`" style="height: 150px; width: 100%; margin-bottom: 1rem;"></div>
-                <!-- 排版優化，製成元件，element-popover -->
+                <el-popover
+                  :width="300"
+                  trigger="hover"
+                  placement="top"
+                >
+                  <template #reference>
+                    <el-button type="primary" plain size="small">{{ a.name }}</el-button>
+                  </template>
+
+                  <template #default>
+                    <div>
+                      <p class="font-bold text-base mb-1">{{ a.name }}</p>
+                      <p class="text-sm text-gray-700 mb-2">{{ a.description }}</p>
+                      <div :id="`map-popover-${s.scheduleId}-${a.attractionId}`" class="w-full h-40 rounded" ></div>
+                    </div>
+                  </template>
+                </el-popover>
               </div>
             </div>
           </el-collapse-item>
@@ -244,24 +257,37 @@ onMounted(async () => {
     }
   }
     setTimeout(() => {
-        for (const s of scheduleList.value) {
-          for (const a of s.attractions) {
-            const mapId = `map-${s.scheduleId}-${a.attractionId}`;
-            const el = document.getElementById(mapId);
-            if (el) {
-              const map = L.map(mapId).setView([a.latitude, a.longitude], 13);
+      for (const s of scheduleList.value) {
+        for (const a of s.attractions) {
+          // 行程明細區域地圖
+          const mapId = `map-${s.scheduleId}-${a.attractionId}`;
+          const el = document.getElementById(mapId);
+          if (el) {
+            const map = L.map(mapId).setView([a.latitude, a.longitude], 13);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+              attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([a.latitude, a.longitude]).addTo(map)
+              .bindPopup(`<b>${a.name}</b><br>${a.description}`).openPopup();
+          }
 
-              L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              }).addTo(map);
-
-              L.marker([a.latitude, a.longitude]).addTo(map)
-                .bindPopup(`<b>${a.name}</b><br>${a.description}`).openPopup();
-            }
+          // popover 內部地圖
+          const popoverMapId = `map-popover-${s.scheduleId}-${a.attractionId}`;
+          const popoverEl = document.getElementById(popoverMapId);
+          if (popoverEl) {
+            const popoverMap = L.map(popoverMapId).setView([a.latitude, a.longitude], 13);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+              attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(popoverMap);
+            L.marker([a.latitude, a.longitude]).addTo(popoverMap)
+              .bindPopup(`<b>${a.name}</b><br>${a.description}`);
           }
         }
-      }, 500); // 等待 DOM 完成渲染
+      }
+    }, 500);
+
   } catch (err) {
     console.error("取得行程scheduleList失敗", err);
   }
