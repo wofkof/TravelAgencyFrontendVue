@@ -9,6 +9,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
+
 const props = defineProps({
   availableSeats: Number,
   isSpecial: Boolean,
@@ -27,4 +30,6 @@ const buttonClass = computed(() => {
   if (props.availableSeats === 0) return "bg-yellow-500";
   return "bg-blue-400 hover:bg-blue-500";
 });
+
 </script>
+

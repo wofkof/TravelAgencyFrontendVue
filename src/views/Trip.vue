@@ -31,7 +31,7 @@
             class="absolute bottom-5 right-8 shadow" 
             :availableSeats="selectedGroup?.availableSeats || mainInfo.availableSeats" 
             :isSpecial="selectedGroup?.groupStatus === '特殊'"
-            :group="selectedGroup"
+            @click="handleAddToCart"
           />
           
         </div>
@@ -136,6 +136,8 @@
     import { useRoute } from 'vue-router';
     import api from '@/utils/api';
     import { formatDateTime } from '@/utils/formatDateTime';
+    import { useCartStore } from '@/stores/ShoppingCart';
+    import { v4 as uuidv4 } from 'uuid';
     import L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
     import cartButton from '@/components/official/cartButton.vue';
@@ -193,14 +195,6 @@
       ]
     )
 
-    const attraction = ref(
-    { "attractionId": 0,
-      "name": "",
-      "description": "",
-      "longitude": 0,
-      "latitude": 0
-    }
-    )
   const selectedGroup = ref(null);
 
   const formattedDepartureDate = computed(() =>
@@ -209,8 +203,35 @@
   const formattedReturnDate = computed(() =>
     formatDateTime(mainInfo.value.return, { type: 'date' })
   );
+
+  const cartStore = useCartStore();
   const route = useRoute();
 
+  const handleAddToCart = () => {
+  console.log("Add to cart clicked");
+  if (!selectedGroup.value) {
+    alert("請先選擇一個出團日期！");
+    return;
+  }
+
+  const cartItem = {
+    id: uuidv4(), // 確保每筆都唯一
+    projectId: mainInfo.value.projectId,
+    title: mainInfo.value.title,
+    cover: mainInfo.value.cover,
+    departure: mainInfo.value.departure,
+    return: mainInfo.value.return,
+    number: mainInfo.value.number,
+    price: mainInfo.value.price,
+    groupId: selectedGroup.value.groupId,
+    detailId: selectedGroup.value.detailId,
+    selected: true,
+  };
+
+  cartStore.addItem(cartItem);
+  console.log("目前購物車：", cartStore.items);
+};
+        
   const handleGroupClick = async (row) => {
     selectedGroup.value = row;
 
@@ -355,7 +376,13 @@ onMounted(async () => {
     console.error("取得行程scheduleList失敗", err);
   }
 
+
+
+
+
 });
+
+  
   </script>
 
   <!-- <script>
