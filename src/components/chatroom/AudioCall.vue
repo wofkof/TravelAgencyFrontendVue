@@ -90,6 +90,22 @@ let callLogAlreadyRecorded = false;
 let ringtone = new Audio("/assets/sounds/incoming.mp3");
 
 const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
+  const resolvedReceiverId = chatStore.getTargetUserId;
+  console.log(
+    "[CallLog] callerId:",
+    callerId,
+    "receiverId:",
+    resolvedReceiverId
+  );
+
+  if (
+    !resolvedReceiverId ||
+    typeof resolvedReceiverId !== "number" ||
+    isNaN(resolvedReceiverId)
+  ) {
+    console.warn("[CallLog] 無效的 receiverId，取消記錄");
+    return;
+  }
   if (callLogAlreadyRecorded) {
     console.warn(`[CallLog] 已記錄過，略過 ${status}`);
     return;
@@ -112,7 +128,7 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
       callerType,
       callerId,
       receiverType,
-      receiverId,
+      receiverId: resolvedReceiverId,
       callType: enableVideo.value ? "video" : "audio",
       status,
       startTime: safeStartTime.toISOString(),
@@ -227,7 +243,6 @@ const hangupCall = async () => {
   // 記錄通話
   await recordCallLog("completed");
   stopTimer();
-
 
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
