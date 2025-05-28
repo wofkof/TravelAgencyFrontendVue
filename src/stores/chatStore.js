@@ -13,6 +13,7 @@ export const useChatStore = defineStore("chat", () => {
   const currentChatRoomId = ref(null);
   const unreadCountMap = reactive({});
   const showChat = ref(false);
+  const isChatRoomsLoaded = ref(false);
 
   //舒婷const rawId = localStorage.getItem("memberId");
   //舒婷const memberId = rawId ? Number(rawId) : null;
@@ -28,6 +29,7 @@ export const useChatStore = defineStore("chat", () => {
 
   const setChatRooms = (rooms) => {
     allChatRooms.value = rooms;
+    isChatRoomsLoaded.value = true;
   };
 
   const addMessage = (chatRoomId, message) => {
@@ -70,6 +72,7 @@ export const useChatStore = defineStore("chat", () => {
     Object.keys(chatRooms).forEach((k) => delete chatRooms[k]);
     Object.keys(unreadCountMap).forEach((k) => delete unreadCountMap[k]);
     showChat.value = false;
+    isChatRoomsLoaded.value = false;
     this.memberId = null;
   }
 
@@ -88,6 +91,7 @@ export const useChatStore = defineStore("chat", () => {
     memberId,
     memberType,
     getTargetUserId,
+    isChatRoomsLoaded,
     reset,
   };
 });
