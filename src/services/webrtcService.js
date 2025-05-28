@@ -1,7 +1,7 @@
 // webrtcService.js
 import { getConnection } from "@/utils/socket";
 import api from "@/utils/api";
-
+import { useChatStore } from "@/stores/chatStore";
 let peer;
 let localStream;
 let remoteStream;
@@ -9,7 +9,6 @@ let remoteConnectionId = null;
 let hasStartedListening = false;
 let incomingCallHandler = null;
 let onAnswerReceived = null;
-
 export function getLocalStream() {
   return localStream;
 }
@@ -43,25 +42,49 @@ export async function getConnectionId(userType, userId) {
 }
 
 export async function callUser(targetUserId, useVideo = false) {
+  const chatStore = useChatStore();
   const connectionId = await getConnectionId("Employee", targetUserId);
   if (!connectionId) {
     alert("對方未上線或無法通話");
     return;
   }
 
+  const conn = getConnection();
+  if (!conn || conn.state !== "Connected") {
+    console.warn("[WebRTC] 無法送出 offer，SignalR 尚未連線");
+    return;
+  }
   remoteConnectionId = connectionId;
   await createPeerConnection(connectionId, useVideo); // 傳入對方 ID
 
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
+  console.log("呼叫時聊天室ID:", chatStore.currentChatRoomId.value);
+  console.log("SendCallOffer params:", {
+    toConnectionId: connectionId,
+    offer,
+    roomId: currentChatRoomId,
+    callType: useVideo ? "video" : "audio",
+  });
 
-  const conn = getConnection();
-  if (conn?.state === "Connected") {
-    await conn.invoke("SendCallOffer", connectionId, offer);
-    console.log("[WebRTC] 已送出 offer 給", connectionId);
-  } else {
-    console.warn("[WebRTC] 無法送出 offer，SignalR 尚未連線");
+  if (!chatStore.currentChatRoomId.value) {
+    alert("錯誤：聊天室ID不存在，無法發起通話");
+    return;
   }
+  console.log("SendCallOffer params:", {
+    toConnectionId: connectionId,
+    offer,
+    roomId: chatStore.currentChatRoomId.value,
+    callType: useVideo ? "video" : "audio",
+  });
+  await conn.invoke(
+    "SendCallOffer",
+    connectionId,
+    offer,
+    chatStore.currentChatRoomId.value,
+    useVideo ? "video" : "audio"
+  );
+  console.log("[WebRTC] 已送出 offer 給", connectionId);
 }
 
 export function listenForCallEvents(onOffer) {
@@ -75,10 +98,10 @@ export function listenForCallEvents(onOffer) {
   hasStartedListening = true;
   incomingCallHandler = onOffer;
 
-  conn.on("ReceiveCallOffer", (fromId, offer) => {
-    console.log("[WebRTC] 收到 offer，來自", fromId);
+  conn.on("ReceiveCallOffer", ({ fromId, offer, roomId, callType }) => {
+    console.log("[WebRTC] 收到 offer，來自", fromId, "roomId:", roomId);
     if (typeof incomingCallHandler === "function") {
-      incomingCallHandler(fromId, offer);
+      incomingCallHandler({ fromId, offer, roomId, callType });
     }
   });
 
@@ -97,17 +120,33 @@ export function listenForCallEvents(onOffer) {
 }
 
 export async function acceptCall(fromId, offer, useVideo = false) {
+  if (!offer || !offer.type || !offer.sdp) {
+    console.error(
+      "[WebRTC] 無效的 offer，無法進行 setRemoteDescription",
+      offer
+    );
+    return;
+  }
+
   remoteConnectionId = fromId;
-  await createPeerConnection(fromId, useVideo);
-  await peer.setRemoteDescription(new RTCSessionDescription(offer));
 
-  const answer = await peer.createAnswer();
-  await peer.setLocalDescription(answer);
+  try {
+    await createPeerConnection(fromId, useVideo);
+    await peer.setRemoteDescription(new RTCSessionDescription(offer));
+    console.log("[WebRTC] 成功設定 remote description");
 
-  const conn = getConnection();
-  if (conn?.state === "Connected") {
-    await conn.invoke("SendCallAnswer", fromId, answer);
-    console.log("[WebRTC] 已送出 answer 給", fromId);
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+
+    const conn = getConnection();
+    if (conn?.state === "Connected") {
+      await conn.invoke("SendCallAnswer", fromId, answer);
+      console.log("[WebRTC] 已送出 answer 給", fromId);
+    } else {
+      console.warn("[WebRTC] SignalR 尚未連線，無法送出 answer");
+    }
+  } catch (err) {
+    console.error("[WebRTC] 接聽過程中發生錯誤", err);
   }
 }
 
@@ -185,7 +224,11 @@ export async function createPeerConnection(remoteId, useVideo = false) {
   }
 }
 
-export function endCall({ delayRelease = true } = {}) {
+export async function endCall({ delayRelease = true } = {}) {
+  const connection = getConnection();
+  if (connection && remoteConnectionId) {
+    await connection.invoke("EndCall", remoteConnectionId);
+  }
   if (peer) {
     peer.close();
     peer = null;

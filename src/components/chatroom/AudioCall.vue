@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch, toRaw } from "vue";
 import {
   callUser,
   endCall,
@@ -154,8 +154,6 @@ watch(
   () => callStore.showPopup,
   (show) => {
     if (show) {
-      incomingFromId.value = callStore.fromId;
-      incomingOffer.value = callStore.offer;
       remoteConnectionId.value = callStore.fromId;
       visible.value = true;
       isIncomingCall.value = true;
@@ -196,18 +194,28 @@ const startCall = async (useVideo = false) => {
 defineExpose({ startCall });
 
 const acceptIncomingCall = async () => {
+  const fromId = callStore.fromId;
+  const offer = toRaw(callStore.offer);
+
+  if (!fromId || !offer) {
+    console.error("[WebRTC] 接聽失敗，缺少 fromId 或 offer", { fromId, offer });
+    return;
+  }
+
   callStatus.value = "接通中...";
 
-  if (incomingOffer.value?.sdp?.includes("m=video")) {
+  if (offer?.sdp?.includes("m=video")) {
     enableVideo.value = true;
   }
   isVideoEnabled.value = enableVideo.value;
 
-  await acceptCall(
-    incomingFromId.value,
-    incomingOffer.value,
-    enableVideo.value
-  );
+  try {
+    await acceptCall(fromId, offer, enableVideo.value);
+  } catch (err) {
+    console.error("[WebRTC] 接聽過程中錯誤", err);
+    callStatus.value = "接聽失敗";
+    return;
+  }
 
   if (enableVideo.value) {
     const stream = getLocalStream();

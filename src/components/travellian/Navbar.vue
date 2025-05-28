@@ -95,10 +95,10 @@
       <CartPreviewIcon />
       <template v-if="!isLoggedIn && !isSimpleNavbarRoute">
         <div class="login-signup-switch-wrapper">
-        <LoginSignupSwitch
-          @click:login="openLoginModal"
-          @click:signup="openSignUpModal"
-        />
+          <LoginSignupSwitch
+            @click:login="openLoginModal"
+            @click:signup="openSignUpModal"
+          />
         </div>
       </template>
 
@@ -116,8 +116,8 @@
             >
               <button
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
-                @click="toggleMenu">
-                
+                @click="toggleMenu"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="w-5 h-5 text-indigo-600"
@@ -127,10 +127,9 @@
                   <path
                     d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm51.2 32H172.8C77.3 288 0 365.3 0 460.8C0 487.5 24.5 512 51.2 512H345.6c26.7 0 51.2-24.5 51.2-51.2C396.8 365.3 319.5 288 224 288z"
                   />
-                 </svg>
-                 歡迎，{{ memberName || '使用者' }}
-                 <span
-
+                </svg>
+                歡迎，{{ memberName || "使用者" }}
+                <span
                   :class="
                     isMenuOpen
                       ? 'rotate-180 transition-transform'
@@ -203,8 +202,11 @@
     </nav>
   </div>
 
-<AuthModal v-model="showAuthModal" :initial="authStep"  @login-success="handleLoginSuccess" />
-
+  <AuthModal
+    v-model="showAuthModal"
+    :initial="authStep"
+    @login-success="handleLoginSuccess"
+  />
 </template>
 
 <script setup>
@@ -214,13 +216,14 @@ import { useRouter, useRoute } from "vue-router";
 import LoginSignupSwitch from "@/components/tools/LoginSignupSwitch.vue";
 import { ElMessage } from "element-plus";
 import { useChatStore } from "@/stores/chatStore";
-import { useAuthStore } from '@/stores/authStore'
-import AuthModal from "@/components/SignUp/AuthModal.vue"
-const showAuthModal = ref(false)
-const authStep = ref('Login') // 可為 'Login' | 'SignUp' | 'ForgetPassword'
-const chatStore = useChatStore()
+import { useAuthStore } from "@/stores/authStore";
+import AuthModal from "@/components/SignUp/AuthModal.vue";
+import { getConnection } from "@/utils/socket";
+const showAuthModal = ref(false);
+const authStep = ref("Login"); // 可為 'Login' | 'SignUp' | 'ForgetPassword'
+const chatStore = useChatStore();
 const route = useRoute();
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 const router = useRouter();
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
@@ -229,26 +232,29 @@ const isSimpleNavbarRoute = computed(() => {
 });
 
 // 登入狀態控制變數
-const isLoggedIn = computed(() => authStore.isLoggedIn)
-const memberName = computed(() => authStore.memberName)
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+const memberName = computed(() => authStore.memberName);
 
 onMounted(() => {
-  authStore.loadFromStorage()
+  authStore.loadFromStorage();
   //正式版要拿掉
-  console.log('Pinia 中的會員資訊：', {
+  console.log("Pinia 中的會員資訊：", {
     isLoggedIn: authStore.isLoggedIn,
     memberName: authStore.memberName,
-    memberId: authStore.memberId
-  })
-})
+    memberId: authStore.memberId,
+  });
+});
 
 // 登出
 function handleLogout() {
-  authStore.logout()
-  chatStore.reset()
-  
-  ElMessage.success("您已成功登出")
-  router.push("/")
+  authStore.logout();
+  chatStore.reset();
+  const conn = getConnection();
+  if (conn) {
+    conn.stop(); // 斷開 SignalR 連線
+  }
+  ElMessage.success("您已成功登出");
+  router.push("/");
 }
 
 // 會員中心下拉選單開關（設定hover + click 並存）
@@ -278,18 +284,19 @@ onBeforeUnmount(() => {
 });
 
 function handleLoginSuccess() {
-  authStore.loadFromStorage()
-  showAuthModal.value = false 
-  ElMessage.success("登入成功") 
+  authStore.loadFromStorage();
+  showAuthModal.value = false;
+  ElMessage.success("登入成功");
+  window.location.reload();
 }
 
 function openLoginModal() {
-  authStep.value = 'Login'
-  showAuthModal.value = true
+  authStep.value = "Login";
+  showAuthModal.value = true;
 }
 function openSignUpModal() {
-  authStep.value = 'SignUp'
-  showAuthModal.value = true
+  authStep.value = "SignUp";
+  showAuthModal.value = true;
 }
 </script>
 

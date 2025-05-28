@@ -63,6 +63,13 @@ export const useChatStore = defineStore("chat", () => {
     const room = allChatRooms.value.find(
       (r) => r.chatRoomId === currentChatRoomId.value
     );
+    if (!room) {
+    console.warn("[chatStore] 找不到 chatRoomId 對應的 room", {
+      currentChatRoomId: currentChatRoomId.value,
+      allChatRoomIds: allChatRooms.value.map((r) => r.chatRoomId),
+    });
+    return null;
+  }
     return memberType === "Member" ? room?.employeeId : room?.memberId;
   });
 
