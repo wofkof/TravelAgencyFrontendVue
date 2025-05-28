@@ -124,8 +124,8 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
   const duration = Math.floor((now.getTime() - safeStartTime.getTime()) / 1000);
 
   if (status === "completed" && duration <= 0) {
-    console.warn("[CallLog] duration 為 0，不記錄 completed 通話");
-    return;
+    console.warn("[CallLog] duration 為 0，改記錄為 missed 通話");
+    status = "missed";
   }
 
   callLogAlreadyRecorded = true;
