@@ -6,12 +6,21 @@ let connection;
 let isListening = false;
 
 export const setupSocket = async (chatRoomId) => {
-  if (!connection) {
-    const chatStore = useChatStore();
-    const url =
-      getApiBaseUrl() +
-      `/chathub?userType=${chatStore.memberType}&userId=${chatStore.memberId}`;
+  const chatStore = useChatStore();
+  const url =
+    getApiBaseUrl() +
+    `/chathub?userType=${chatStore.memberType}&userId=${chatStore.memberId}`;
 
+  const isUserChanged =
+    connection && !connection.baseUrl.includes(`userId=${chatStore.memberId}`);
+
+  if (isUserChanged) {
+    await connection.stop();
+    connection = null;
+    isListening = false;
+  }
+
+  if (!connection) {
     connection = new HubConnectionBuilder()
       .withUrl(url)
       .withAutomaticReconnect()
