@@ -43,13 +43,15 @@
 
     <div class="form-col">
       <label class="label">聯絡手機 <span class="text-red-500">*</span></label>
-      <el-input
-        v-model="member.phone"
-        maxlength="10"
-        placeholder="09xxxxxxxx"
-        class="fixed-input"
-        :class="{ 'border border-red-500': errors.phone }"
-      />
+
+          <el-input
+      :model-value="member.isFakePhone ? '' : member.phone"
+      @input="val => member.phone = val"
+      maxlength="10"
+      placeholder="尚未填寫"
+      class="fixed-input"
+      :class="{ 'border border-red-500': errors.phone }"
+    />
       <p class="error-info" v-if="errors.phone">{{ errors.phone }}</p>
     </div>
   </div>
@@ -331,7 +333,8 @@ onMounted(async () => {
     member.value = {
       ...res.data,
       gender: genderMap[res.data.gender] ?? res.data.gender,
-      documentType: documentTypeMap[res.data.documentType?.toUpperCase()] ?? ''
+      documentType: documentTypeMap[res.data.documentType?.toUpperCase()] ?? '',
+      isFakePhone: res.data.isFakePhone
     }
   } catch (err) {
     ElMessage.error('載入會員資料失敗')
