@@ -67,7 +67,7 @@
               </div>
               <!-- Google 登入按鈕 -->
               <div class="grid grid-cols-1 gap-4">
-                <button
+                <button type="button" @click="handleGoogleLogin"
                   class="w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
                 >
                   <img
@@ -227,5 +227,19 @@ function resetForm() {
   touched.value = false;
 }
 defineExpose({ resetForm });
+function handleGoogleLogin() {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const redirectUri = 'https://localhost:3000/oauth2/callback'; // 要跟 Google Cloud 中設定的一樣
+  const scope = 'openid email profile';
+  const responseType = 'code';
+
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}&response_type=${responseType}&scope=${encodeURIComponent(
+    scope
+  )}&prompt=consent select_account`;
+
+  window.location.href = url;
+}
 
 </script>

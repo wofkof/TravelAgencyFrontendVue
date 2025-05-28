@@ -228,24 +228,6 @@ onBeforeUnmount(() => {
                 立即註冊
               </Button>
 
-              <div class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span class="relative z-10 bg-background px-2 text-muted-foreground">
-                  或以社群帳號註冊
-                </span>
-              </div>
-
-              <div class="grid grid-cols-1 gap-4">
-                <button
-                  class="w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100">
-                  <img
-                    src="https://raw.githubusercontent.com/sidiDev/remote-assets/7cd06bf1d8859c578c2efbfda2c68bd6bedc66d8/google-icon.svg"
-                    alt="Google"
-                    class="w-5 h-5"
-                  />
-                  使用Google帳號註冊
-                </button>
-              </div>
-
               <div class="text-center text-sm">
                 已經是會員嗎？
                 <button @click="$emit('switch-to-login')"
