@@ -337,7 +337,7 @@ onMounted(() => {
 
     conn?.on("CallRejected", async () => {
       callStatus.value = "📴 對方已拒接";
-      await recordCallLog("missed");
+      await recordCallLog("rejected");
       stopTimer();
       setTimeout(() => endSession(), 3000);
     });
