@@ -161,9 +161,10 @@
       placeholder="請選擇證件類型"
       class="fixed-input" 
     >
-      <el-option label="護照" value="Passport" />
-      <el-option label="居留證" value="ResidencePermit" />
-      <el-option label="台胞證" value="EntryPermit" />
+    <el-option label="身分證" value="ID_CARD_TW" />
+      <el-option label="護照" value="PASSPORT" />
+      <el-option label="居留證" value="ARC" />
+      <el-option label="台胞證" value="ENTRY_PERMIT" />
     </el-select>
   </div>
   <div class="form-col">
@@ -309,9 +310,10 @@ const detectGenderFromId = (idNumber) => {
   }
 }
 const documentTypeMap = {
-  PASSPORT: 'Passport',
-  RESIDENCEPERMIT: 'ResidencePermit',
-  ENTRYPERMIT: 'EntryPermit'
+  PASSPORT: '護照',
+  ID_CARD_TW: '身分證',
+  ARC: '居留證',
+  ENTRY_PERMIT: '台胞證'
 }
 const isValidPassword = (pwd) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/;
