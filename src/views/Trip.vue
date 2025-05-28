@@ -25,7 +25,7 @@
               <p>去程：{{ formattedDepartureDate }}</p>
               <p>回程：{{ formattedReturnDate }}</p>
               <p>{{mainInfo.country}}/{{ mainInfo.region }}</p>
-              <p>{{ mainInfo.price }}</p>
+              <p>{{ mainInfo.adultPrice }}</p>
           </div>
           <cartButton 
             class="absolute bottom-5 right-8 shadow" 
@@ -49,7 +49,6 @@
                   <el-table
                     :data="groupList"
                     height="100%"
-                    border
                     style="width: 100%;"
                     @row-click="handleGroupClick"
                   >
@@ -59,15 +58,17 @@
                       </template>
                     </el-table-column>
 
-                    <el-table-column prop="number" label="行程" width="80" />
+                    <el-table-column prop="number" label="行程" width="60" />
                     <el-table-column prop="availableSeats" label="可賣" width="80" />
                     <el-table-column prop="totalSeats" label="席次" width="80" />
-                    <el-table-column prop="groupStatus" label="成行狀態" width="100" />
-                    
+                    <el-table-column prop="groupStatus" label="成行狀態" width="90" />
                     <el-table-column prop="price" label="價格">
                       <template #default="{ row }">
                         {{ row.price }} 元
                       </template>
+                    </el-table-column>
+                    <el-table-column  width="60">
+                      <el-button :icon="Check" circle />
                     </el-table-column>
                   </el-table>
               </div>
@@ -141,6 +142,8 @@
     import L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
     import cartButton from '@/components/official/cartButton.vue';
+    import { Check } from '@element-plus/icons-vue';
+    import { ElMessage } from 'element-plus';
     
 
     const mainInfo = ref(
@@ -152,7 +155,9 @@
       "description": "",
       "cover": "",
       "number": 0,
-      "price": 0,
+      "adultPrice": 0,
+      "childPrice": 0,
+      "babyPrice": 0,
       "country": "",
       "region": "",
       "totalSeats": 0,
@@ -193,7 +198,7 @@
           "attractions": []
         }
       ]
-    )
+    );
 
   const selectedGroup = ref(null);
 
@@ -208,40 +213,63 @@
   const route = useRoute();
 
   const handleAddToCart = () => {
-  console.log("Add to cart clicked");
-  if (!selectedGroup.value) {
-    alert("請先選擇一個出團日期！");
-    return;
-  }
 
-  const cartItem = {
-    id: uuidv4(), // 確保每筆都唯一
-    projectId: mainInfo.value.projectId,
-    title: mainInfo.value.title,
-    cover: mainInfo.value.cover,
-    departure: mainInfo.value.departure,
-    return: mainInfo.value.return,
-    number: mainInfo.value.number,
-    price: mainInfo.value.price,
-    groupId: selectedGroup.value.groupId,
-    detailId: selectedGroup.value.detailId,
-    selected: true,
+    if (!selectedGroup.value) {
+      ElMessage({
+        message: '請先選擇一個出團日期！',
+        type: 'warning',
+      });
+      return;
+    }
+    try
+    {
+      const cartItem = {
+        id: uuidv4(), // 確保每筆都唯一
+        projectId: mainInfo.value.projectId,
+        title: mainInfo.value.title,
+        cover: mainInfo.value.cover,
+        description: mainInfo.value.description,
+        departure: mainInfo.value.departure,
+        return: mainInfo.value.return,
+        number: mainInfo.value.number, // 內部行程編號
+        adultPrice: mainInfo.value.adultPrice,
+        childPrice: mainInfo.value.childPrice,
+        babyPrice: mainInfo.value.babyPrice,
+        selected: true,
+      };
+
+      cartStore.addItem(cartItem);
+      ElMessage({
+        message: '已成功加入購物車！',
+        type: 'success',
+      });
+      console.log("目前購物車：", cartStore.items);
+      
+    }
+    catch
+    {
+      ElMessage({
+        message: '加入購物車失敗，請稍後再試。',
+        type: 'error',
+      });
+    }
+    
   };
-
-  cartStore.addItem(cartItem);
-  console.log("目前購物車：", cartStore.items);
-};
         
   const handleGroupClick = async (row) => {
+    
     selectedGroup.value = row;
 
     mainInfo.value.departure = row.departure;
     mainInfo.value.return = row.return;
     mainInfo.value.number = row.number;
-    mainInfo.value.price = row.price;
+    mainInfo.value.adultPrice = row.price;
     mainInfo.value.totalSeats = row.totalSeats;
     mainInfo.value.availableSeats = row.availableSeats;
-
+    ElMessage({
+          message: `已選擇${formatDateTime(mainInfo.value.departure, { type: 'date' })}出發的行程`,
+          type: 'success',
+        });
     try {
       const detailId = row.detailId;
 
@@ -376,15 +404,7 @@ onMounted(async () => {
     console.error("取得行程scheduleList失敗", err);
   }
 
-
-
-
-
 });
 
   
   </script>
-
-  <!-- <script>
-        
-  </script> -->

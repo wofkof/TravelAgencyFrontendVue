@@ -1,7 +1,7 @@
 <template>
   <button
     :disabled="isDisabled"
-    class="w-24 text-center rounded-lg text-white m-0 p-1"
+    class="w-24 text-center rounded-lg text-white text-lg m-0 p-1 font-semibold"
     :class="buttonClass"
   >
     {{ buttonLabel }}
