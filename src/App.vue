@@ -14,6 +14,7 @@ import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import AuthModal from "@/components/SignUp/AuthModal.vue";
 import { useChatStore } from "@/stores/chatStore.js";
+import { joinAllChatRooms, setupSocket, waitForConnectionReady } from "@/utils/socket";
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
@@ -23,6 +24,9 @@ onMounted(async () => {
 
   if (authStore.memberId) {
     await chatStore.initChatRooms();
+    await setupSocket(null);
+    await waitForConnectionReady();
+    await joinAllChatRooms(chatStore.allChatRooms);
   }
 });
 

@@ -86,6 +86,26 @@ export const setupSocket = async (chatRoomId) => {
   isListening = true;
 };
 
+export const joinAllChatRooms = async (chatRooms) => {
+  if (!connection) return;
+
+  for (const room of chatRooms) {
+    try {
+      await connection.invoke("JoinGroup", room.chatRoomId.toString());
+    } catch (err) {
+      console.warn("[socket] 加入聊天室群組失敗", room.chatRoomId, err);
+    }
+  }
+
+  console.log("[socket] ✅ 已加入所有聊天室群組");
+};
+
+export const waitForConnectionReady = async () => {
+  while (!connection || connection.state !== "Connected") {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+};
+
 export const sendMessage = async (
   chatRoomId,
   senderType,
