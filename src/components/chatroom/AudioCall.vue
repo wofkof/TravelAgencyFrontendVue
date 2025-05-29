@@ -240,6 +240,7 @@ defineExpose({ startCall });
 const acceptIncomingCall = async () => {
   const fromId = callStore.fromId;
   const offer = toRaw(callStore.offer);
+  const roomId = callStore.roomId;
 
   if (!fromId || !offer) {
     console.error("[WebRTC] 接聽失敗，缺少 fromId 或 offer", { fromId, offer });
@@ -247,6 +248,12 @@ const acceptIncomingCall = async () => {
   }
 
   callStatus.value = "接通中...";
+
+  if (roomId) {
+    chatStore.setCurrentChatRoom(roomId);
+  } else {
+    console.warn("[WebRTC] 接聽時無有效 roomId，無法切換聊天室");
+  }
 
   if (offer?.sdp?.includes("m=video")) {
     enableVideo.value = true;
@@ -307,6 +314,7 @@ const hangupCall = async () => {
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
     endCallSafely({ skipSignal: true });
+    endSession();
   }, 3000);
 };
 
