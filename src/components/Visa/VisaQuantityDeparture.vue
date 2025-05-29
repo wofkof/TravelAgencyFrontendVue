@@ -1,6 +1,7 @@
+<!-- 選擇件數與出發日 -->
 <template>
-  <div>
-    <h2>選擇件數與出發日</h2>
+  <el-card class="order-detail-card">
+    <h2 class="title">選擇件數與出發日</h2>
     <el-form label-width="80px">
       <el-form-item label="出發日期">
         <el-date-picker
@@ -25,7 +26,7 @@
         <el-button>訪客購買</el-button>
       </el-form-item>
     </el-form>
-  </div>
+  </el-card>
 </template>
 
 <!-- 套件來源 -->
@@ -38,7 +39,25 @@ const agreement = ref(false);
 import useVisaRouter from "@/utils/visaRouterHelp";
 const visaRouter = useVisaRouter();
 
-
-
-
 </script>
+
+
+<style scoped>
+.order-detail-card {
+  /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+
+
+</style>

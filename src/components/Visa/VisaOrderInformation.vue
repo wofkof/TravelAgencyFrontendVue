@@ -1,11 +1,7 @@
 <!-- 訂購須知 -->
 <template>
-  <div class="purchase-notice-wrapper">
-    <el-card shadow="hover">
-      <!-- 標題 -->
+    <el-card class="order-detail-card">
       <h2 class="title">訂購須知</h2>
-
-      <!-- 注意事項 -->
       <div class="section">
         <h3 class="section-title">注意事項</h3>
         <ul class="custom-list">
@@ -29,12 +25,12 @@
         </ul>
       </div>
     </el-card>
-  </div>
 </template>
 
 <style scoped>
-.purchase-notice-wrapper {
-    /* 區塊的最大寬度 */
+
+.order-detail-card {
+  /* 區塊的最大寬度 */
   max-width: 1400px;
   /* 頁面中水平置中 */
   margin: 0 auto;
