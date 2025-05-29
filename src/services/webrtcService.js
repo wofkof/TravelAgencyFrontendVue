@@ -9,6 +9,7 @@ let remoteConnectionId = null;
 let hasStartedListening = false;
 let incomingCallHandler = null;
 let onAnswerReceived = null;
+let isEndingCall = false;
 export function getLocalStream() {
   return localStream;
 }
@@ -223,9 +224,14 @@ export async function createPeerConnection(remoteId, useVideo = false) {
   }
 }
 
-export async function endCall({ delayRelease = true } = {}) {
+export async function endCall({ delayRelease = true, skipSignal = false } = {}) {
+  if (isEndingCall) {
+    console.warn("[WebRTC] endCall 已執行過，跳過");
+    return;
+  }
+  isEndingCall = true;
   const connection = getConnection();
-  if (connection && remoteConnectionId) {
+  if (!skipSignal && connection && remoteConnectionId) {
     await connection.invoke("EndCall", remoteConnectionId);
   }
   if (peer) {
@@ -266,6 +272,9 @@ export async function endCall({ delayRelease = true } = {}) {
   }
 
   console.log("[WebRTC] 通話已結束，所有資源清除");
+  setTimeout(() => {
+    isEndingCall = false;
+  }, 3000);
 }
 
 export function getPeer() {

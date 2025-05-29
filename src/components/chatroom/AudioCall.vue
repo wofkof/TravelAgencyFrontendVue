@@ -98,8 +98,22 @@ let timer = null;
 let callStartTime = null;
 let callLogAlreadyRecorded = false;
 let signalRBound = false;
+let hasEndedCall = false;
 
 let ringtone = new Audio("/assets/sounds/incoming.mp3");
+
+function endCallSafely(options = {}) {
+  if (hasEndedCall) {
+    console.warn("[Vue] endCall 已執行過，略過");
+    return;
+  }
+  hasEndedCall = true;
+  endCall({ ...options, skipSignal: true });
+
+  setTimeout(() => {
+    hasEndedCall = false;
+  }, 3000);
+}
 
 const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
   if (!isCaller.value) {
@@ -286,12 +300,12 @@ const hangupCall = async () => {
 
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
-    endSession();
+    endCallSafely({ skipSignal: true });
   }, 3000);
 };
 
 const endSession = () => {
-  endCall();
+  endCallSafely();
   callStore.reset();
   visible.value = false;
   callStatus.value = "";
