@@ -184,16 +184,51 @@ const Philippines = () => {
     };
 
 
-  // 你可以在這裡添加更多與簽證相關的路由導航函數
+  //這些函數的作用是導航到對應的路由名稱，這些名稱在 Vue Router 的路由配置中定義。
   //導航方向
   return {
     DocumentMenuView,
     OrderFormView,
     PaymentView,
     CompletedOrderDetailView,
-    //待做付款
-    //待做完成訂單
-
-    // 其他導航函數
+    ArabEmirates,
+    Brazil,
+    Brunei,
+    Canada,
+    China,
+    Domesticlostdown,
+    Domesticlostup,
+    Foreignlostdown,
+    Foreignlostup,
+    Hongkong,
+    India,
+    Mongolia,
+    NewChangedown,
+    NewChangeup,
+    Philippines,
+    Thailand,
+    Turkiye,
+    USA,
+    Vietnam,
+    VisaBackTop,
+    VisaBreadcrumb,
+    VisaCarousel,
+    VisaChoosePayment,
+    VisaCreditCard,
+    VisaDetail,
+    VisainDetail,
+    VisaOrder,
+    VisaOrderContact,
+    VisaOrderInformation,
+    VisaPassengerInformation,
+    VisaPickupMethod,
+    VisaQuantityDeparture,
+    VisaReceiptInformation,
+    VisaSelectVisaPay,
+    VisaThankOrder,
+    VisaTotalAmount,
+    VueWorldMap,
+    // 這裡返回了所有定義的導航函數，這樣其他組件就可以使用它們來導航到相應的路由。
+    // 你可以在這裡添加更多的導航函數
   };
 }
