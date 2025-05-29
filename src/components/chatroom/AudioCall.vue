@@ -225,8 +225,14 @@ const startCall = async (useVideo = false) => {
   visible.value = true;
   isIncomingCall.value = false;
   callStatus.value = "撥號中...";
-  await callUser(receiverId, currentChatRoomId, useVideo);
-  callStatus.value = "等待對方接聽...";
+
+  try {
+    await callUser(receiverId, currentChatRoomId, useVideo);
+    callStatus.value = "等待對方接聽...";
+  } catch (err) {
+    console.error("[startCall] 呼叫失敗", err);
+    callStatus.value = "無法建立通話";
+  }
 };
 
 defineExpose({ startCall });

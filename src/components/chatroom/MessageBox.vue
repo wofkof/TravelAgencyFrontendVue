@@ -197,36 +197,26 @@ async function waitForChatRoomIdReady() {
 }
 
 const startAudioCall = async () => {
-  if (chatStore.allChatRooms.length === 0) {
+  const currentRoomId = chatStore.currentChatRoomId;
+  if (!currentRoomId) {
     console.warn("[startAudioCall] 沒有聊天室可以撥打");
     return;
   }
 
-  const firstRoom = chatStore.allChatRooms[0];
-  chatStore.setCurrentChatRoom(firstRoom.chatRoomId);
-
-  // 等 chatRoomId 和 AudioCallRef 都 ready
   await waitForChatRoomIdReady();
 
-  // ✅ 呼叫 startCall，這裡一定會執行
-  console.log("[startAudioCall] 呼叫 startCall...");
   window.audioCallRef?.startCall(false);
 };
 
 const startVideoCall = async () => {
-  if (chatStore.allChatRooms.length === 0) {
+  const currentRoomId = chatStore.currentChatRoomId;
+  if (!currentRoomId) {
     console.warn("[startAudioCall] 沒有聊天室可以撥打");
     return;
   }
 
-  const firstRoom = chatStore.allChatRooms[0];
-  chatStore.setCurrentChatRoom(firstRoom.chatRoomId);
-
-  // 等 chatRoomId 和 AudioCallRef 都 ready
   await waitForChatRoomIdReady();
 
-  // ✅ 呼叫 startCall，這裡一定會執行
-  console.log("[startAudioCall] 呼叫 startCall...");    
   window.audioCallRef?.startCall(true);
 };
 
