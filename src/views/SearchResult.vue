@@ -6,9 +6,9 @@
       <div class="w-1/4 bg-gray-100 rounded-xl p-4 text-center text-gray-700">
         <div class="text-left p-4 text-lg">
           <h1 class="text-xl font-semibold">類型</h1>
-          <label><input type="checkbox" :value="0" v-model="selectedTypes" /> 國內旅遊</label><br>
-          <label><input type="checkbox" :value="1" v-model="selectedTypes" /> 國外旅遊</label><br>
-          <label><input type="checkbox" :value="2" v-model="selectedTypes" /> 郵輪</label>
+          <label><input type="checkbox" value="Domestic" v-model="selectedTypes" /> 國內旅遊</label><br>
+          <label><input type="checkbox" value="Foreign" v-model="selectedTypes" /> 國外旅遊</label><br>
+          <label><input type="checkbox" value="CruiseShip" v-model="selectedTypes" /> 郵輪旅遊</label>
           <hr class="my-2" />
           <h1 class="text-xl font-semibold">預算</h1>
           <div class="slider-demo-block">
@@ -85,7 +85,7 @@ const formatTooltip = (val: number) => {
   return val*3000 + 3000;
 }
 
-const selectedTypes = ref<number[]>([]); // 類型
+const selectedTypes = ref<string[]>([]); // 類型
 const selectedDays = ref<string[]>([]);  // 天數
 
 const filteredResults = computed(() => {
