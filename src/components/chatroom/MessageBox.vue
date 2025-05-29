@@ -132,6 +132,7 @@ import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
 import ChatSearchBar from "@/components/chatroom/ChatSearchBar.vue";
 import StickerPanel from "@/components/chatroom/StickerPanel.vue";
+import { tr } from "element-plus/es/locale";
 
 declare global {
   interface Window {
@@ -225,8 +226,8 @@ const startVideoCall = async () => {
   await waitForChatRoomIdReady();
 
   // ✅ 呼叫 startCall，這裡一定會執行
-  console.log("[startAudioCall] 呼叫 startCall...");
-  window.audioCallRef?.startCall(false);
+  console.log("[startAudioCall] 呼叫 startCall...");    
+  window.audioCallRef?.startCall(true);
 };
 
 function isScrolledToBottom() {
