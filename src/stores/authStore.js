@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
     this.memberName = ''
     this.memberId = null
     },
-     triggerLoginModal() {
+    triggerLoginModal() {
       this.showLoginModal = true
     },
     closeLoginModal() {

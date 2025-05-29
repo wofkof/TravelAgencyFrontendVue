@@ -128,10 +128,11 @@
 <script setup>
 // --- 基本引入 ---
 import { ref, reactive, computed, onMounted, watch, nextTick, onBeforeUpdate } from 'vue'; // 引入所有必要的 Composition API
-import { useRouter } from 'vue-router'; // Vue Router
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'; // Vue Router
 import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
-import { initiateOrder } from '@/utils/orderapi'; // API Service
-
+import { initiateOrder, getMemberDetailsForOrder, getOrderDetails, updateOrderAPI } from '@/utils/orderapi'; // API Service
+import { useAuthStore } from '@/stores/authStore'; // 會員認證 Store
+import { useHesitationStore } from '@/stores/hesitationStore';
 // --- 引入 Element Plus 圖標 ---
 import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
 
@@ -145,6 +146,7 @@ import CostSummary from '@/components/OrderForm/CostSummary.vue';
 
 // --- 狀態管理 ---
 const router = useRouter(); // Vue Router 實例
+const route = useRoute(); // 當前路由 (用於獲取 query 參數)
 const cartStore = useCartStore(); // Pinia 購物車 Store
 const orderFormRef = ref(null); // 原生 form 元素的引用 (如果需要直接操作原生 form)
 const isLoading = ref(true); // 載入狀態
@@ -152,6 +154,8 @@ const error = ref(null); // 載入錯誤訊息
 const isSubmitting = ref(false); // 提交狀態
 const submitError = ref(null); // 提交錯誤訊息
 const selectedOrderItems = ref([]); // 從購物車 Store 加載的選中商品列表
+const authStore = useAuthStore();
+const hesitationStore = useHesitationStore();
 
 // 子組件表單的引用
 const ordererFormRef = ref(null); // ParticipantForm 實例引用
@@ -164,10 +168,6 @@ const itemTravelerValidity = reactive({});
 // --- Accordion (手風琴) 狀態管理 ---
 // 控制哪些 AccordionSection 區塊是展開的
 const activeCollapseNames = ref(['items', 'ordererInfo']); // 預設展開 商品、訂購人區塊
-
-// 獲取 PaymentOptions 所在 AccordionSection 的引用 (用於滾動，也可以用 data-section-name 查找)
-// const paymentAccordionRef = ref(null); // 在模板中綁定到 PaymentOptions 所在 AccordionSection
-
 
 // --- 表單數據模型 (使用 reactive) ---
 // 集中管理所有子組件表單的數據
@@ -185,77 +185,401 @@ const formData = reactive({
   
 });
 
-// --- 生命週期鉤子 ---
-onMounted(() => {
-  // 元件掛載後，從 Pinia Store 加載需要結帳的商品
-  loadOrderItems();
+const currentOrderContextForHesitation = ref({
+  orderId: null,
+  expiresAt: null,
+  // 如果 OrderForm 頁面本身需要 merchantTradeNo 來傳遞給 hesitationStore (雖然 store 目前沒用)
+  merchantTradeNo: null 
+});
 
-  // 從 localStorage 讀取會員資料並填充訂購人表單
-  try {
-    const storedMemberId = localStorage.getItem('memberId'); 
-    const storedMemberName = localStorage.getItem('memberName');
-    const storedEmail = localStorage.getItem('memberEmail');
-    const storedPhone = localStorage.getItem('memberPhone');
+function splitName(fullName) {
+    if (!fullName || typeof fullName !== 'string' || fullName.length === 0) return { lastName: '', firstName: '' };
+    // 假設姓氏為第一個字，其餘為名。
+    return { lastName: fullName.substring(0, 1), firstName: fullName.substring(1) };
+}
 
-  if (storedMemberId) {
-      formData.memberId = parseInt(storedMemberId, 10); // 正確：轉換為整數
-      if (isNaN(formData.memberId)) { // 檢查轉換是否成功
-          formData.memberId = 0; // 或 null，或其他錯誤處理
-          console.error("無法將 localStorage 中的 memberId 轉換為數字:", storedMemberId);
-      }
-  } else {
-      formData.memberId = 0; // 或 null，如果 localStorage 中沒有
-  }
-
-    if (storedMemberName && typeof storedMemberName === 'string' && storedMemberName.length > 0) {
-      let lastName = '';
-      let firstName = '';
-
-      // 簡單拆分姓名：假設第一個字元是姓氏，其餘是名字。
-      if (storedMemberName.length === 1) {
-        lastName = storedMemberName; 
-        firstName = '';
-      } else { // storedMemberName.length >= 2
-        lastName = storedMemberName.substring(0, 1);
-        firstName = storedMemberName.substring(1);
-      }
-      
-      // 更新 formData.ordererInfo 中的姓和名
-      formData.ordererInfo.lastName = lastName;
-      formData.ordererInfo.firstName = firstName;
-
-      // console.log(`從 localStorage 加載會員姓名: 姓=${lastName}, 名=${firstName}`);
-
-      if (storedEmail) {
-        formData.ordererInfo.email = storedEmail;
-      }
-
-      if (storedPhone) {
-        formData.ordererInfo.phoneNumber = storedPhone;
-      }
+function mapBackendGenderToFrontend(backendGender) {
+    if (typeof backendGender === 'string') {
+        const lowerGender = backendGender.toLowerCase();
+        if (lowerGender === 'male') return 'male';
+        if (lowerGender === 'female') return 'female';
+        if (lowerGender === 'other') return 'other';
+    } else if (typeof backendGender === 'number') { // 保留對數字的處理
+        if (backendGender === 0) return 'male';
+        if (backendGender === 1) return 'female';
+        if (backendGender === 2) return 'other';
     }
-  } catch (e) {
-    console.error("從 localStorage 讀取會員資料時發生錯誤:", e);
-  }
+    console.warn(`mapBackendGenderToFrontend: 未知的 backendGender 值: ${backendGender}`);
+    return null; // 或一個安全的預設值
+}
 
-  // << 如果 URL 中有 orderId (例如從付款頁返回)，嘗試載入訂單資料 >>
-  const routeOrderId = router.currentRoute.value.query.orderId;
-  if (routeOrderId) {
-    // TODO: 實作載入現有訂單資料填充表單的邏輯
-    // loadExistingOrderData(routeOrderId);
-    console.log("偵測到 orderId，應載入訂單資料以供修改：", routeOrderId);
-    // 載入完成後，可能需要展開所有相關旅客區塊
-  } else {
-    // 如果是新訂單，展開第一個旅客資料區塊 (如果有的話)
-    watch(selectedOrderItems, (newItems) => {
-        if (newItems.length > 0) {
-            const firstItemWithTravelers = newItems.find(item => getItemParticipantCount(item) > 0);
+function mapBackendDocTypeToFrontend(backendDocType) {
+    // 假設後端 DocumentType 是枚舉值
+    // 需要與你 ItemParticipantForm/ParticipantForm 中的 documentTypes 選項的 value 匹配
+    if (backendDocType === 0) return 'ID_CARD_TW';
+    if (backendDocType === 1) return 'PASSPORT';
+    if (backendDocType === 2) return 'ARC';
+    if (backendDocType === 3) return 'ENTRY_PERMIT';
+    return 'ID_CARD_TW'; // 預設
+}
+
+function mapApiOrderDetailsToSelectedItems(apiOrderDetails) {
+    if (!apiOrderDetails || !Array.isArray(apiOrderDetails)) return [];
+    return apiOrderDetails.map(detail => {
+        // detail 結構應基於後端 OrderDetailItemDto
+        // 確保你的 OrderDetailItemDto 包含以下或等效的欄位
+        let destinationCode = 'TW'; // 預設
+        // 你可能需要從 detail.product (如果有的話) 或 detail 本身獲取 destinationCountryCode
+        // if (detail.product && detail.product.destinationCountryCode) {
+        //     destinationCode = detail.product.destinationCountryCode;
+        // } else if (detail.destinationCountryCode) {
+        //     destinationCode = detail.destinationCountryCode;
+        // }
+
+        return {
+            id: String(detail.orderDetailId), // **關鍵：使用 OrderDetailId 作為唯一 ID**
+            productId: String(detail.itemId), // 後端的 ItemId (即 ProductId)
+            name: detail.productName || detail.description, // 使用 productName 或 description
+            productType: detail.productType, // 後端已是字串 "GroupTravel" 或 "CustomTravel"
+            price: detail.price,
+            // quantity: detail.quantity, // 如果 item 本身有 quantity (非 options)
+            options: detail.optionType ? [{ // 從 API 的 optionType 和 quantity 構造 options
+                type: detail.optionType,
+                price: detail.price, // 假設選項價格就是此 orderDetail 的價格
+                quantity: detail.quantity
+            }] : [], // 如果 API 沒有返回 options 陣列，但有單一 optionType
+            destinationCountryCode: destinationCode, // 需要確保API有返回或可以推斷
+            participantRequired: detail.participantRequired !== undefined ? detail.participantRequired : true,
+            // ... 其他 selectedOrderItems 需要的欄位，例如 startDate, endDate
+            startDate: detail.startDate, // 假設 API 返回 startDate
+            endDate: detail.endDate,   // 假設 API 返回 endDate
+        };
+    });
+}
+
+function mapApiOrdererToFormData(apiOrdererInfo) {
+    if (!apiOrdererInfo || Object.keys(apiOrdererInfo).length === 0) {
+      console.warn("mapApiOrdererToFormData: 傳入的 apiOrdererInfo 為空或無效。");
+      // 返回一個空的預設結構，或基於現有 formData.ordererInfo 避免完全清空
+      return {
+        firstName: formData.ordererInfo.firstName || '',
+        lastName: formData.ordererInfo.lastName || '',
+        country: formData.ordererInfo.country || 'TW',
+        countryCode: formData.ordererInfo.countryCode || '+886',
+        phoneNumber: formData.ordererInfo.phoneNumber || '',
+        email: formData.ordererInfo.email || '',
+        documentType: formData.ordererInfo.documentType || 'ID_CARD_TW',
+        documentNumber: formData.ordererInfo.documentNumber || '',
+        updateProfile: formData.ordererInfo.updateProfile || false,
+      };
+    }
+console.log("mapApiOrdererToFormData - 接收到的 apiOrdererInfo:", JSON.parse(JSON.stringify(apiOrdererInfo)));
+    const nameParts = splitName(apiOrdererInfo.name);
+    // 解析電話號碼 (這是一個簡化版本，你可能需要更健壯的庫或邏輯)
+    let countryCode = '+886';
+    let phoneNumber = ''; 
+    let rawPhoneNumberFromApi = apiOrdererInfo.mobilePhone || '';
+
+    if (rawPhoneNumberFromApi) {
+        if (rawPhoneNumberFromApi.startsWith('+')) {
+            // 處理帶 '+' 的國際格式，例如 "+886925806525"
+            const match = rawPhoneNumberFromApi.match(/^(\+\d+)(\d+)$/);
+            if (match) {
+                countryCode = match[1]; // 例如 "+886"
+                phoneNumber = match[2]; // 例如 "925806525"
+                // 如果國碼是 +886 且號碼是 9 開頭，可以考慮補 0 (如果前端驗證需要)
+                if (countryCode === '+886' && phoneNumber.startsWith('9') && phoneNumber.length === 9) {
+                    phoneNumber = '0' + phoneNumber; // 變成 "0925806525"
+                }
+            } else {
+                // 無法解析帶 '+' 的格式，將 '+' 後的內容視為號碼
+                phoneNumber = rawPhoneNumberFromApi.substring(1);
+            }
+        } else if (apiOrdererInfo.nationality === 'TW' && rawPhoneNumberFromApi.startsWith('886')) {
+            // 處理資料庫中類似 "886925806525" 的格式 (台灣)
+            countryCode = '+886';
+            let numberPart = rawPhoneNumberFromApi.substring(3); // 移除 "886"，得到 "925806525"
+            if (numberPart.startsWith('9') && numberPart.length === 9) {
+                phoneNumber = '0' + numberPart; // 補 '0'，變成 "0925806525"
+            } else {
+                phoneNumber = numberPart; // 其他情況直接使用
+            }
+        } else if (apiOrdererInfo.nationality === 'TW' && rawPhoneNumberFromApi.startsWith('09') && rawPhoneNumberFromApi.length === 10) {
+            // 如果資料庫存的就是 "0925806525"
+            countryCode = '+886';
+            phoneNumber = rawPhoneNumberFromApi;
+        }
+        else {
+            phoneNumber = rawPhoneNumberFromApi;
+            // 此處可以根據 apiOrdererInfo.nationality 來嘗試設定不同的預設 countryCode
+        }
+    }
+
+        // 再次確認 phoneNumber 是否符合前端期望的 "09..." 或 "9..." 格式 (針對台灣)
+    if (countryCode === '+886' && phoneNumber.startsWith('886')) {
+        // 避免重複的 886，例如後端存 "886886..." 的異常情況
+        let tempNumber = phoneNumber.substring(3);
+        if (tempNumber.startsWith('9') && tempNumber.length === 9) {
+            phoneNumber = '0' + tempNumber;
+        } else {
+            phoneNumber = tempNumber;
+        }
+    } else if (countryCode === '+886' && phoneNumber.length === 9 && phoneNumber.startsWith('9')) {
+        // 如果是 9 開頭的9碼，補0
+        phoneNumber = '0' + phoneNumber;
+    }
+
+    console.log(`mapApiOrdererToFormData - 解析後: countryCode='${countryCode}', phoneNumber='${phoneNumber}'`);
+
+    return {
+        lastName: nameParts.lastName,
+        firstName: nameParts.firstName,
+        country: apiOrdererInfo.nationality || 'TW', // 假設API有 nationality
+        countryCode: countryCode,
+        phoneNumber: phoneNumber,
+        email: apiOrdererInfo.email || '',
+        // 假設API返回的 documentType 是後端枚舉值或已轉換的字串
+        documentType: typeof apiOrdererInfo.documentType === 'number' 
+        ? mapBackendDocTypeToFrontend(apiOrdererInfo.documentType)
+        : (apiOrdererInfo.documentType || 'ID_CARD_TW'),
+        documentNumber: apiOrdererInfo.documentNumber || '', 
+        updateProfile: false, // 從API恢復時，通常不預設勾選更新會員資料
+    };
+}
+
+function mapApiParticipantsToFormData(apiParticipants, currentSelectedItems) {
+    const participantsByItemMap = {};
+
+    // 1. 先根據 currentSelectedItems 初始化 participantsByItemMap 的基本結構 (填入空殼)
+    currentSelectedItems.forEach(item => {
+        const count = getItemParticipantCount(item); // 你已有的輔助函數
+        participantsByItemMap[item.id] = []; // item.id 此時是 String(orderDetailId)
+        if (count > 0) {
+            for (let i = 0; i < count; i++) {
+                participantsByItemMap[item.id].push({
+                    id: `pax-${item.id}-${i}-${Date.now()}`,
+                    lastNameZh: '', firstNameZh: '', gender: null, birthDate: null,
+                    country: formData.ordererInfo.country || 'TW', // 可預設為訂購人國籍
+                    documentType: 'ID_CARD_TW', idNumber: '', documentNumber: '',
+                    lastNameEn: '', firstNameEn: '', passportNumber: '', passportExpiryDate: null,
+                    remarks: '', selectedFrequentTraveler: null, updateThisTravelerProfile: false,
+                    isPlaceholder: true // 添加一個標記，表示這是個空殼
+                });
+            }
+        }
+    });
+
+    if (!apiParticipants || !Array.isArray(apiParticipants) || apiParticipants.length === 0) {
+        return participantsByItemMap; // 如果API沒有旅客資料，返回基於商品數量的空殼結構
+    }
+    console.log("mapApiParticipantsToFormData - API 旅客列表:", JSON.parse(JSON.stringify(apiParticipants)));
+    console.log("mapApiParticipantsToFormData - 當前商品項 (用於匹配):", JSON.parse(JSON.stringify(currentSelectedItems.map(i => ({id: i.id, name: i.name})))));
+
+
+    // 2. 將 API 返回的旅客數據填充到對應的 item 的旅客陣列的空殼中
+    apiParticipants.forEach(apiPax => {
+        const linkingIdFromApiPax = String(apiPax.orderDetailId); // **使用 API 返回的 orderDetailId**
+
+        if (linkingIdFromApiPax && participantsByItemMap.hasOwnProperty(linkingIdFromApiPax)) {
+            const targetItemPaxsList = participantsByItemMap[linkingIdFromApiPax];
+            const namePartsZh = splitName(apiPax.name);
+
+            const mappedParticipant = {
+                id: apiPax.frontendParticipantId || `api-pax-${linkingIdFromApiPax}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                lastNameZh: namePartsZh.lastName,
+                firstNameZh: namePartsZh.firstName,
+                gender: mapBackendGenderToFrontend(apiPax.gender),
+                country: apiPax.nationality || 'TW',
+                birthDate: apiPax.birthDate ? new Date(apiPax.birthDate).toISOString().split('T')[0] : null, // 確保 YYYY-MM-DD
+                documentType: mapBackendDocTypeToFrontend(apiPax.documentType),
+                idNumber: mapBackendDocTypeToFrontend(apiPax.documentType) === 'ID_CARD_TW' ? (apiPax.idNumber || apiPax.documentNumber || '') : '',
+                documentNumber: mapBackendDocTypeToFrontend(apiPax.documentType) !== 'ID_CARD_TW' ? (apiPax.documentNumber || apiPax.idNumber || '') : '',
+                lastNameEn: apiPax.passportSurname || '',
+                firstNameEn: apiPax.passportGivenName || '',
+                // passportNumber: apiPax.passportNumber || '', // 根據你的 ItemParticipantForm 欄位，證件號碼可能已包含護照號
+                passportExpiryDate: apiPax.passportExpireDate ? new Date(apiPax.passportExpireDate).toISOString().split('T')[0] : null,
+                remarks: apiPax.note || '',
+                selectedFrequentTraveler: apiPax.favoriteTravelerId || null,
+                updateThisTravelerProfile: !!apiPax.favoriteTravelerId,
+                isPlaceholder: false // 標記為已填充數據
+            };
+             // 如果 documentType 是 PASSPORT，且 ItemParticipantForm 的 passportNumber 是獨立欄位，則可能需要這樣賦值
+            if (mappedParticipant.documentType === 'PASSPORT') {
+                mappedParticipant.passportNumber = mappedParticipant.documentNumber;
+            }
+
+
+            // 找到第一個空殼 (isPlaceholder=true) 並替換它
+            let replaced = false;
+            for (let i = 0; i < targetItemPaxsList.length; i++) {
+                if (targetItemPaxsList[i].isPlaceholder) {
+                    targetItemPaxsList[i] = mappedParticipant;
+                    replaced = true;
+                    break;
+                }
+            }
+            if (!replaced) {
+                // 如果沒有空殼了（例如 API 返回的旅客比預期多），可以選擇 log 或 push (後者可能導致數量不符)
+                console.warn(`Item ${linkingIdFromApiPax} 的旅客空殼已填滿，但仍有 API 旅客數據 ${apiPax.name} 未分配。`);
+                // targetItemPaxsList.push(mappedParticipant); // 謹慎使用，可能導致數量超出預期
+            }
+
+        } else {
+            console.error(`無法將 API 旅客 ${apiPax.name || JSON.stringify(apiPax)} (OrderDetailID: ${linkingIdFromApiPax}) 關聯到訂單項目。可用的 Item IDs (OrderDetailIDs):`, Object.keys(participantsByItemMap));
+        }
+    });
+
+    // 移除 isPlaceholder 標記 (可選，如果後續邏輯不需要它)
+    Object.values(participantsByItemMap).forEach(paxList => {
+        paxList.forEach(pax => delete pax.isPlaceholder);
+    });
+
+    return participantsByItemMap;
+}
+
+// 封裝從 authStore 和 getMemberDetailsForOrder 初始化訂購人資料的邏輯
+async function initializeOrdererInfoFromAuthStoreAndApi() {
+    const authMemberId = authStore.memberId;
+    const authMemberName = authStore.memberName;
+
+    // 先用 authStore 的資料做初步填充
+    if (authMemberName) {
+        const nameParts = splitName(authMemberName);
+        formData.ordererInfo.lastName = nameParts.lastName;
+        formData.ordererInfo.firstName = nameParts.firstName;
+    } else {
+        formData.ordererInfo.lastName = '';
+        formData.ordererInfo.firstName = '';
+    }
+    // 設定一些預設值，或從 formData.ordererInfo 現有值初始化（如果有的話）
+    formData.ordererInfo.email = formData.ordererInfo.email || authStore.memberEmail || ''; // 使用 authStore 的 email
+    formData.ordererInfo.phoneNumber = formData.ordererInfo.phoneNumber || '';
+    formData.ordererInfo.country = formData.ordererInfo.country || 'TW';
+    formData.ordererInfo.countryCode = formData.ordererInfo.countryCode || '+886';
+    formData.ordererInfo.documentType = formData.ordererInfo.documentType || 'ID_CARD_TW';
+    formData.ordererInfo.documentNumber = formData.ordererInfo.documentNumber || '';
+    formData.ordererInfo.updateProfile = formData.ordererInfo.updateProfile || false;
+
+
+    if (authMemberId) {
+        try {
+            console.log(`OrderForm: 準備從 API 獲取 Member ID: ${authMemberId} 的詳細資料 (for orderer)`);
+            const memberDetails = await getMemberDetailsForOrder(authMemberId);
+            console.log('OrderForm: API 返回的會員詳細資料 (for orderer):', memberDetails);
+
+            if (memberDetails) {
+                if (memberDetails.name && typeof memberDetails.name === 'string') {
+                    const nameParts = splitName(memberDetails.name);
+                    formData.ordererInfo.lastName = nameParts.lastName;
+                    formData.ordererInfo.firstName = nameParts.firstName;
+                }
+                formData.ordererInfo.email = memberDetails.email || formData.ordererInfo.email;
+                formData.ordererInfo.phoneNumber = memberDetails.phone || formData.ordererInfo.phoneNumber; // 後端是 Phone
+                formData.ordererInfo.country = memberDetails.nationality || formData.ordererInfo.country;
+
+                const frontendDocType = mapBackendDocTypeToFrontend(memberDetails.documentType); // memberDetails.documentType 是後端枚舉值
+                formData.ordererInfo.documentType = frontendDocType;
+                if (frontendDocType === 'ID_CARD_TW') {
+                    formData.ordererInfo.documentNumber = memberDetails.idNumber || '';
+                } else {
+                    formData.ordererInfo.documentNumber = memberDetails.documentNumber || '';
+                }
+            }
+        } catch (apiError) {
+            console.error("OrderForm: 調用 getMemberDetailsForOrder API 失敗:", apiError.message);
+        }
+    } else {
+        console.warn("OrderForm: 新訂單且未登入，訂購人資料需手動完整填寫。");
+    }
+}
+
+
+// --- 生命週期鉤子 onMounted ---
+onMounted(async () => {
+    isLoading.value = true;
+    error.value = null;
+    const routeOrderId = route.query.orderId; // 使用 route (從 useRoute() 獲取)
+    const authMemberId = authStore.memberId;
+    console.log(`OrderForm onMounted: routeOrderId = ${routeOrderId}, authMemberId = ${authMemberId}`);
+
+    try {
+        if (routeOrderId && authMemberId) {
+            console.log("OrderForm: 偵測到 orderId，將從 API 載入訂單資料:", routeOrderId);
+            console.log("OrderForm: 執行恢復訂單資料流程 (有 orderId)");
+            const response = await getOrderDetails(routeOrderId, authMemberId);
+
+            if (response && response.data) {
+                const orderDataFromApi = response.data;
+                console.log("OrderForm: getOrderDetails 完整 API 回應:", JSON.parse(JSON.stringify(orderDataFromApi)));
+
+                // << 更新 hesitation context >>
+                currentOrderContextForHesitation.value = {
+                  orderId: String(orderDataFromApi.orderId), // 確保是字串
+                  expiresAt: orderDataFromApi.expiresAt,
+                  merchantTradeNo: orderDataFromApi.merchantTradeNo
+                };
+
+                // 1. 恢復 selectedOrderItems
+                // 假設 orderDataFromApi.orderDetails 包含商品詳情列表
+                selectedOrderItems.value = mapApiOrderDetailsToSelectedItems(orderDataFromApi.orderDetails || []);
+                console.log("OrderForm: onMounted - selectedOrderItems.value 在 API 賦值後:", JSON.parse(JSON.stringify(selectedOrderItems.value)));
+                
+                // 2. 恢復 formData.ordererInfo
+                if (orderDataFromApi.ordererInfo && Object.keys(orderDataFromApi.ordererInfo).length > 0) {
+                    console.log("OrderForm: 從 API 恢復訂購人資料:", orderDataFromApi.ordererInfo);
+                    Object.assign(formData.ordererInfo, mapApiOrdererToFormData(orderDataFromApi.ordererInfo));
+                } else {
+                    console.warn("OrderForm: API 未返回有效的 ordererInfo，嘗試從會員預設資料填充 (routeOrderId path)");
+                    await initializeOrdererInfoFromAuthStoreAndApi();
+                }
+
+                // 3. 恢復 formData.participantsByItem
+                // 確保在 watch(selectedOrderItems) 的 immediate 執行前，相關數據已準備好
+                // 或者讓 watch 處理結構，這裡填充數據
+                const mappedParticipants = mapApiParticipantsToFormData(orderDataFromApi.participants || [], selectedOrderItems.value);
+                Object.keys(formData.participantsByItem).forEach(key => delete formData.participantsByItem[key]);
+                Object.assign(formData.participantsByItem, mappedParticipants);
+
+
+                // 4. 恢復 formData.note 和 formData.memberId
+                formData.note = orderDataFromApi.note || ''; // API 應返回 orderNotes
+                formData.memberId = orderDataFromApi.memberId || authMemberId || 0;
+
+                console.log("OrderForm: 已從 API 恢復訂單表單資料。");
+            } else {
+                error.value = "無法載入您的訂單資料，API 未返回有效數據，請重試。";
+                console.log("OrderForm: 執行新訂單流程 (無 orderId)"); 
+                ElMessage.error(error.value);
+                console.error("OrderForm: getOrderDetails API 未返回有效數據 (response.data is falsy)。");
+                // 考慮是否回退到購物車或顯示更明確錯誤頁
+            }
+        } else {
+            console.log("OrderForm: 新訂單流程，從購物車和會員資料初始化。");
+            loadOrderItems(); // 從 cartStore 加載商品
+            formData.memberId = authMemberId || 0;
+            await initializeOrdererInfoFromAuthStoreAndApi(); // 初始化訂購人
+        }
+
+        // Accordion 展開邏輯 (可以放在 try 內部最後，或 finally 之前)
+        if (selectedOrderItems.value.length > 0 && !routeOrderId) {
+            const firstItemWithTravelers = selectedOrderItems.value.find(item => getItemParticipantCount(item) > 0);
             if (firstItemWithTravelers && !activeCollapseNames.value.includes(`travelers-${firstItemWithTravelers.id}`)) {
                 activeCollapseNames.value.push(`travelers-${firstItemWithTravelers.id}`);
             }
         }
-    }, { immediate: true });
-  }
+
+    } catch (e) {
+        console.error("OrderForm onMounted 過程中發生嚴重錯誤:", e);
+        error.value = "載入頁面資料時發生了錯誤：" + (e.message || "未知錯誤");
+        ElMessage.error(error.value);
+        // 如果是新訂單流程出錯，可以嘗試基礎加載
+        if (!routeOrderId) {
+             loadOrderItems();
+             await initializeOrdererInfoFromAuthStoreAndApi();
+        }
+    } finally {
+        isLoading.value = false;
+    }
 });
 
 // --- 計算屬性 (Computed Properties) ---
@@ -384,22 +708,22 @@ const isCheckoutButtonDisabled = computed(() => {
 
 // 滾動到指定的區塊並展開
 const scrollToSection = (sectionName) => {
-     const sectionElement = document.querySelector(`[data-section-name="${sectionName}"]`);
-     if (sectionElement) {
-         const headerElement = sectionElement.querySelector('.el-collapse-item__header');
-         const targetElement = headerElement || sectionElement;
+    const sectionElement = document.querySelector(`[data-section-name="${sectionName}"]`);
+    if (sectionElement) {
+        const headerElement = sectionElement.querySelector('.el-collapse-item__header');
+        const targetElement = headerElement || sectionElement;
 
          targetElement.scrollIntoView({ behavior: 'smooth', block: sectionName === 'items' ? 'start' : 'center' }); // 商品區塊滾動到頂部，其他滾動到中間
 
          // 確保目標區塊是展開的
-         if (!activeCollapseNames.value.includes(sectionName)) {
+        if (!activeCollapseNames.value.includes(sectionName)) {
                nextTick(() => { // 在滾動後或 DOM 更新後展開
-                   activeCollapseNames.value.push(sectionName);
-               });
-         }
-     } else {
-         console.warn(`無法找到 data-section-name='${sectionName}' 的區塊元素進行滾動。`);
-     }
+                  activeCollapseNames.value.push(sectionName);
+              });
+        }
+    } else {
+        console.warn(`無法找到 data-section-name='${sectionName}' 的區塊元素進行滾動。`);
+    }
 };
 
 
@@ -412,7 +736,7 @@ const scrollToItemsSection = () => {
 const handleItemTravelerFormValidityChange = (itemId, isValid) => {
     // 更新對應商品 ID 的旅客表單驗證狀態
     itemTravelerValidity[itemId] = isValid;
-     console.log(`ItemParticipantForm (${itemId}) validity changed: ${isValid}`);
+    console.log(`ItemParticipantForm (${itemId}) validity changed: ${isValid}`);
 };
 
 
@@ -435,6 +759,7 @@ const getItemParticipantCount = (item) => {
 // 從 Pinia Store 加載已選中的購物車商品
 const loadOrderItems = () => {
   console.log("載入訂單商品...");
+  console.log("OrderForm: loadOrderItems() 被調用"); 
   isLoading.value = true;
   error.value = null;
   try {
@@ -454,6 +779,7 @@ const loadOrderItems = () => {
     error.value = '讀取購物車狀態時發生錯誤，請稍後再試。';
     isLoading.value = false;
   }
+  console.log("OrderForm: loadOrderItems() 完成, selectedOrderItems.value =", JSON.parse(JSON.stringify(selectedOrderItems.value)));
 };
 
 // 提交訂單 - **重要：在提交前需要觸發所有子表單的驗證**
@@ -515,43 +841,15 @@ const handleGoToPayment = async () => {
 
     console.log("所有表單嚴謹驗證通過。準備提交數據...");
 
-    // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
-    // --- 準備要傳給後端的購物車項目 ---
-    const cartItemsForApi = [];
-    cartStore.selectedItems.forEach(item => {
-        if (item.options && item.options.length > 0) {
-            item.options.forEach(option => {
-                if (option.quantity > 0) { // 只處理數量大於0的選項
-                    cartItemsForApi.push({
-                        productId: parseInt(item.productId), // GroupTravelId 或 CustomTravelId
-                        productType: item.productType, // "GroupTravel", "CustomTravel"
-                        optionType: option.type, // "成人", "兒童", "嬰兒"
-                        quantity: option.quantity,
-                    });
-                }
-            });
-        } else if (item.quantity > 0) { // 如果商品沒有 options，但有直接的 quantity
-            cartItemsForApi.push({
-                productId: parseInt(item.productId),
-                productType: item.productType,
-                optionType: "Standard", // 或其他預設值，後端需要能處理這種情況的定價
-                quantity: item.quantity,
-            });
-        }
-    });
-    if (cartItemsForApi.length === 0) {
-        ElMessage.error("購物車中沒有選擇任何有效的商品項目。");
-        isSubmitting.value = false;
-        return;
-    }        
-
     // 1. 準備訂購人資訊
     const preparedOrdererInfo = {
         Name: `${formData.ordererInfo.lastName || ''}${formData.ordererInfo.firstName || ''}`.trim(),
         MobilePhone: `${formData.ordererInfo.countryCode || ''}${formData.ordererInfo.phoneNumber || ''}`.replace(/\s/g, ''),
         Email: formData.ordererInfo.email || null,
+        Nationality: formData.ordererInfo.country,
+        DocumentType: formData.ordererInfo.documentType,
+        DocumentNumber: formData.ordererInfo.documentNumber,
     };
-
 
     // 2. 準備會員更新專用的完整個人資料 (只有當用戶勾選時才準備)
     let memberProfileToUpdate = null; // 需與後端確認此物件的欄位名和結構
@@ -573,6 +871,7 @@ const handleGoToPayment = async () => {
             DocumentNumber: formData.ordererInfo.documentNumber || null,
         };
     }
+
     // 3. 準備旅客列表 (此處邏輯與會員更新無關，保持原樣)
     const preparedParticipants = Object.values(formData.participantsByItem).flat().map(paxData => {
         let backendDocumentType; // 這是旅客的證件類型
@@ -609,66 +908,158 @@ const handleGoToPayment = async () => {
             PassportGivenName: paxData.firstNameEn || null,
             PassportExpireDate: paxData.passportExpiryDate || null,
             Nationality: paxData.country,
-            Note: paxData.remarks || ''
+            Note: paxData.remarks || '',
+            FavoriteTravelerId: paxData.selectedFrequentTraveler,
         };
     });
 
-    // 組合最終 API Payload
-    const orderDetailsPayload = {
-        memberId: formData.memberId, 
+    // --- 準備 API Payload (這部分邏輯應正確映射所有 formData 的數據) ---
+    // --- 準備要傳給後端的購物車項目 ---
+    const cartItemsForApi = [];
+    (selectedOrderItems.value || []).forEach(item => { // 使用 selectedOrderItems.value
+        if (item.options && item.options.length > 0) {
+            item.options.forEach(option => {
+                if (Number(option.quantity) > 0) {
+                    cartItemsForApi.push({
+                        productId: parseInt(item.productId),
+                        productType: item.productType,
+                        optionType: option.type,
+                        quantity: Number(option.quantity),
+                    });
+                }
+            });
+        } else if (Number(item.quantity) > 0) {
+            cartItemsForApi.push({
+                productId: parseInt(item.productId),
+                productType: item.productType,
+                optionType: item.options && item.options.length > 0 ? item.options[0].type : "Standard", // 提供一個預設 optionType
+                quantity: Number(item.quantity),
+            });
+        }
+    });
+
+    if (cartItemsForApi.length === 0) {
+        ElMessage.error("購物車中沒有選擇任何有效的商品項目。");
+        isSubmitting.value = false;
+        return;
+    }        
+
+    // 最終的 Payload
+    const apiPayload = {
         totalAmount: totalAmount.value,
         orderNotes: formData.note,
         ordererInfo: preparedOrdererInfo,
-        participants: preparedParticipants, // 扁平化的旅客陣列
-        cartItems: cartItemsForApi, // 從 Pinia Store 獲取的 cartItems
+        participants: preparedParticipants,
+        cartItems: cartItemsForApi,
     };
-    console.log("準備提交的初步訂單 Payload:", JSON.stringify(orderDetailsPayload, null, 2));
+
+    const currentRouteOrderId = route.query.orderId;
+    let finalApiPayload = { ...apiPayload };
+
+    if (!currentRouteOrderId) { // 創建新訂單時，需要 MemberId
+        finalApiPayload.memberId = formData.memberId || authStore.memberId || 0;
+    }
+    console.log("OrderForm: 最終發送到 API 的 Payload:", JSON.parse(JSON.stringify(finalApiPayload)));
 
     try {
-      // --- 第一步：呼叫後端 API 建立訂單 ---
-      const response = await initiateOrder(orderDetailsPayload);
-      console.log('初步訂單建立成功，回應:', response);
+        let response;
+        let actionType = ""; // 用於日誌
 
-      if (response && response.data && response.data.orderId) {
-        const { orderId, merchantTradeNo, expiresAt } = response.data;
-        ElMessage.success(`訂單資料已儲存 (ID: ${orderId})！正在前往付款設定頁面...`);
-
-        // 清理購物車中已提交的商品 (這部分邏輯可以保留)
-        const successfullySubmittedItemUuids = cartStore.selectedItems.map(i => i.id);
-        if (successfullySubmittedItemUuids.length > 0) {
-            cartStore.removeItemsByIds(successfullySubmittedItemUuids);
+        if (currentRouteOrderId) {
+            // **** 更新現有訂單 ****
+            actionType = "更新";
+            console.log(`OrderForm: ${actionType}現有訂單 ID: ${currentRouteOrderId}`);
+            // OrderUpdateDto 可能不需要 MemberId，後端應通過 orderId 和用戶身份驗證來確定
+            // 你需要確保 updateOrderAPI 函數已在你的 API 工具庫中定義
+            response = await updateOrderAPI(currentRouteOrderId, apiPayload);
+        } else {
+            // **** 創建新訂單 ****
+            actionType = "創建";
+            console.log("OrderForm: 準備創建新訂單");
+            // 確保 OrderCreateDto 需要的 MemberId 被包含
+            const createPayload = {
+                ...apiPayload,
+                memberId: formData.memberId || authStore.memberId || 0
+            };
+            response = await initiateOrder(createPayload);
         }
 
-        // 導向到新的付款頁面，並傳遞必要參數
-        router.push({
-          name: 'OrderPayment',
-          query: {
-            orderId: orderId,
-            mtn: merchantTradeNo, // MerchantTradeNo
-            exp: expiresAt, // 過期時間 (ISO String)
-            ordererEmail: orderDetailsPayload.ordererInfo.Email
-          }
-        });
+        console.log(`OrderForm: ${actionType}訂單 API 回應:`, response);
 
-      } else {
-        console.error('初步訂單建立失敗 - API 回應無效:', response);
-        submitError.value = response?.data?.message || response?.message || '儲存訂單資料失敗，請稍後再試。';
-        ElMessage.error(submitError.value);
-      }
+        if (response && response.data && response.data.orderId) {
+            const { orderId, merchantTradeNo, expiresAt } = response.data;
+            // 無論創建或更新，API 都應返回這些資訊
+            currentOrderContextForHesitation.value = {
+              orderId: String(orderId),
+              expiresAt: expiresAt,
+              merchantTradeNo: merchantTradeNo
+            };
+
+            ElMessage.success(`訂單資料已成功${actionType} (ID: ${orderId})！正在前往付款設定頁面...`);
+
+            router.push({
+                name: 'OrderPayment',
+                query: {
+                    orderId: orderId, // 使用API返回的 orderId (無論是新的還是更新後的)
+                    mtn: merchantTradeNo,
+                    exp: expiresAt,
+                    ordererEmail: apiPayload.ordererInfo.Email
+                }
+            });
+        } else {
+            const defaultMessage = currentRouteOrderId ? `更新訂單資料失敗` : `儲存訂單資料失敗`;
+            submitError.value = response?.data?.message || response?.message || defaultMessage + '，請稍後再試。';
+            ElMessage.error(submitError.value);
+        }
     } catch (err) {
-        console.error("訂單提交過程中發生錯誤:", err);
-      if (err.response) {
-          submitError.value = err.response.data?.message || err.response.data?.title || '訂單提交失敗，伺服器返回錯誤。';
-      } else if (err.request) {
-          submitError.value = '無法連接到伺服器，請檢查您的網路連線。';
-      } else {
-          submitError.value = err.message || '提交訂單時發生未知錯誤。';
-      }
-      ElMessage.error(`訂單提交失敗: ${submitError.value}`);
+        console.error(`OrderForm: 訂單${currentRouteOrderId ? '更新' : '提交'}過程中發生錯誤:`, err);
+        let detailedErrorMessage = "操作失敗，請稍後重試。";
+        if (err.response) {
+            detailedErrorMessage = err.response.data?.message || err.response.data?.title || `訂單${currentRouteOrderId ? '更新' : '提交'}失敗，伺服器返回錯誤。`;
+            if (err.response.data?.errors) {
+                console.error("後端模型驗證錯誤:", err.response.data.errors);
+                let errorMessages = [];
+                for (const key in err.response.data.errors) {
+                    if (err.response.data.errors[key].length > 0) {
+                        errorMessages.push(`${key}: ${err.response.data.errors[key].join(', ')}`);
+                    }
+                }
+                detailedErrorMessage = "表單資料有誤，請檢查：\n" + errorMessages.join("\n");
+            }
+        } else if (err.request) {
+            detailedErrorMessage = '無法連接到伺服器，請檢查您的網路連線。';
+        } else {
+            detailedErrorMessage = err.message || detailedErrorMessage;
+        }
+        submitError.value = detailedErrorMessage;
+        ElMessage.error(submitError.value);
     } finally {
-      isSubmitting.value = false;
+        isSubmitting.value = false;
     }
+
 };
+
+// << 新增: onBeforeRouteLeave 鉤子 >>
+onBeforeRouteLeave((to, from) => {
+  const orderId = currentOrderContextForHesitation.value.orderId;
+  const currentExpiresAt = currentOrderContextForHesitation.value.expiresAt;
+
+  // 只有當 orderId 和 currentExpiresAt 都存在時才操作
+  if (orderId && currentExpiresAt) {
+    const relevantOrderPages = ['OrderForm', 'OrderPayment']; // 您的訂單和付款頁面的路由名稱
+
+    // 如果是從 OrderForm 離開，且目標頁面不是 OrderForm 或 OrderPayment
+    if (relevantOrderPages.includes(from.name) && !relevantOrderPages.includes(to.name)) {
+      // 並且猶豫期尚未被 store 記錄為已啟動 (這一層判斷 hesitationStore 內部會做，但這裡也可以加)
+      if (!hesitationStore.getEffectiveExpiresAt(orderId)) {
+        console.log(`[OrderForm onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId}`);
+        hesitationStore.startHesitationCountdown(orderId, currentExpiresAt);
+      }
+    }
+  } else {
+    console.log("[OrderForm onBeforeRouteLeave] No valid orderId or expiresAt in context, skipping hesitation start.");
+  }
+});
 
 // 在組件更新之前清理 ItemParticipantForm 的 refs
 onBeforeUpdate(() => {
@@ -892,11 +1283,11 @@ watch(selectedOrderItems, (newItems) => {
      /* 在小螢幕，左側最後一個卡片下方應該有間距 */
      .left-column > *:last-child {
           margin-bottom: 25px;
-     }
+    }
       /* 確保整個佈局容器的最後一個元素下方沒有間距 */
       .order-layout-container > *:last-child {
         margin-bottom: 0;
-     }
+    }
   }
 
 </style>

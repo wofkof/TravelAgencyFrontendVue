@@ -76,33 +76,33 @@
     </el-row>
 
     <el-row :gutter="20">
-       <el-col :span="12">
-           <el-form-item label="證件類型" prop="documentType" :required="true">
-               <el-select
-                   :model-value="modelValue.documentType"
-                   @update:modelValue="updateField('documentType', $event)"
-                   placeholder="請選擇證件類型"
-                   style="width: 100%;"
-               >
-                   <el-option
-                       v-for="docType in documentTypes"
-                       :key="docType.value"
-                       :label="docType.text"
-                       :value="docType.value"
-                   />
-               </el-select>
-           </el-form-item>
-       </el-col>
-       <el-col :span="12">
-           <el-form-item label="證件號碼" prop="documentNumber" :required="true">
-               <el-input
-                  v-model="modelValue.documentNumber"
-                   @input="updateField('documentNumber', $event)"
-                   placeholder="請輸入證件號碼"
-                   clearable
-               />
-           </el-form-item>
-       </el-col>
+      <el-col :span="12">
+          <el-form-item label="證件類型" prop="documentType" :required="true">
+              <el-select
+                  :model-value="modelValue.documentType"
+                  @update:modelValue="updateField('documentType', $event)"
+                  placeholder="請選擇證件類型"
+                  style="width: 100%;"
+              >
+                  <el-option
+                      v-for="docType in documentTypes"
+                      :key="docType.value"
+                      :label="docType.text"
+                      :value="docType.value"
+                  />
+              </el-select>
+          </el-form-item>
+      </el-col>
+      <el-col :span="12">
+          <el-form-item label="證件號碼" prop="documentNumber" :required="true">
+              <el-input
+                v-model="modelValue.documentNumber"
+                  @input="updateField('documentNumber', $event)"
+                  placeholder="請輸入證件號碼"
+                  clearable
+              />
+          </el-form-item>
+      </el-col>
     </el-row>
 
     <el-form-item label="電子郵件信箱" prop="email" :required="true">
