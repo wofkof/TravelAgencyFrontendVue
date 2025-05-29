@@ -55,6 +55,7 @@
 import { useRouter } from "vue-router";
 import { reactive } from "vue";
 import { useSearchResultStore } from "@/stores/useSearchResultStore";
+import { ElMessage } from 'element-plus';
 import api from "@/utils/api";
 
 const router = useRouter();
@@ -99,7 +100,10 @@ const handleSearch = async () => {
 
   } catch (err) {
     console.error(err);
-    alert("請輸入正確關鍵字");
+    ElMessage({
+        message: '輸入正確的關鍵字！',
+        type: 'error',
+      });
   }
 };
 </script>
