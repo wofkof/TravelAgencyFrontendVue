@@ -203,22 +203,29 @@ if (!recaptchaToken) {
     grecaptcha.reset();
   } catch (error) {
      authStore.reset() 
-    if (error.response && error.response.status === 401) {
-      ElMessage({
-        message: '帳號或密碼錯誤',
-        type: 'error',
-        duration: 2500
-      });
+     const status = error.response?.status;
+    if (status === 401) {
+    ElMessage({
+      message: '帳號或密碼錯誤',
+      type: 'error',
+      duration: 2500
+    });
+  } else if (status === 409) {
+    ElMessage({
+      message: '此帳號是透過 Google 註冊，請使用下方「使用 Google 帳號登入」按鈕',
+      type: 'warning',
+      duration: 3500
+    });
+  } else {
+    ElMessage({
+      message: '登入失敗，請稍後再試',
+      type: 'error',
+      duration: 2500
+    });
+    console.error(error);
+  }
       grecaptcha.reset();
-    } else {
-      // 其他錯誤
-      ElMessage({
-        message: '登入失敗，請稍後再試',
-        type: 'error',
-        duration: 2500
-      });
-      console.error(error);
-    }
+   
   }
 }
 function resetForm() {
