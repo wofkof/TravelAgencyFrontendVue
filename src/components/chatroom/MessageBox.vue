@@ -177,38 +177,56 @@ const filteredMessages = computed(() => {
   );
 });
 
-// 通話邏輯
-const startAudioCall = () => {
-  const chatRoomId = chatStore.currentChatRoomId;
+async function waitForChatRoomIdReady() {
+  return new Promise<void>((resolve) => {
+    const check = () => {
+      const ready =
+        chatStore.currentChatRoomId &&
+        window.audioCallRef &&
+        typeof window.audioCallRef.startCall === "function";
 
-  // 確保聊天室存在
-  if (!chatStore.chatRooms[chatRoomId]) {
-    console.error("[startAudioCall] 找不到聊天室資料");
+      if (ready) {
+        resolve();
+      } else {
+        setTimeout(check, 50);
+      }
+    };
+    check();
+  });
+}
+
+const startAudioCall = async () => {
+  if (chatStore.allChatRooms.length === 0) {
+    console.warn("[startAudioCall] 沒有聊天室可以撥打");
     return;
   }
 
-  // 設定目前聊天室 ID（這會觸發 getTargetUserId 自動生效）
-  chatStore.setCurrentChatRoom(chatRoomId);
+  const firstRoom = chatStore.allChatRooms[0];
+  chatStore.setCurrentChatRoom(firstRoom.chatRoomId);
 
-  // 撥打語音通話
-  // @ts-ignore
+  // 等 chatRoomId 和 AudioCallRef 都 ready
+  await waitForChatRoomIdReady();
+
+  // ✅ 呼叫 startCall，這裡一定會執行
+  console.log("[startAudioCall] 呼叫 startCall...");
   window.audioCallRef?.startCall(false);
 };
 
-// 視訊邏輯
-const startVideoCall = () => {
-  const chatRoomId = chatStore.currentChatRoomId;
-
-  if (!chatStore.chatRooms[chatRoomId]) {
-    console.error("[startVideoCall] 找不到聊天室資料");
+const startVideoCall = async () => {
+  if (chatStore.allChatRooms.length === 0) {
+    console.warn("[startAudioCall] 沒有聊天室可以撥打");
     return;
   }
 
-  chatStore.setCurrentChatRoom(chatRoomId);
+  const firstRoom = chatStore.allChatRooms[0];
+  chatStore.setCurrentChatRoom(firstRoom.chatRoomId);
 
-  // 撥打視訊通話
-  // @ts-ignore
-  window.audioCallRef?.startCall(true);
+  // 等 chatRoomId 和 AudioCallRef 都 ready
+  await waitForChatRoomIdReady();
+
+  // ✅ 呼叫 startCall，這裡一定會執行
+  console.log("[startAudioCall] 呼叫 startCall...");
+  window.audioCallRef?.startCall(false);
 };
 
 function isScrolledToBottom() {

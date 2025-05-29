@@ -17,10 +17,19 @@ export const useChatStore = defineStore("chat", () => {
 
   //舒婷const rawId = localStorage.getItem("memberId");
   //舒婷const memberId = rawId ? Number(rawId) : null;
-  const memberType = "Member";
+  const memberType = ref("Member");
 
   const setCurrentChatRoom = (chatRoomId) => {
     currentChatRoomId.value = chatRoomId;
+    console.log("[setCurrentChatRoom] 切換至聊天室：", chatRoomId);
+
+    const room = allChatRooms.value.find((r) => r.chatRoomId === chatRoomId);
+    if (room) {
+      const targetId =
+        memberType.value === "Member" ? room.employeeId : room.memberId;
+      console.log("[setCurrentChatRoom] 對方 ID =", targetId);
+    }
+
     unreadCountMap[chatRoomId] = 0;
     if (!chatRooms[chatRoomId]) {
       chatRooms[chatRoomId] = [];
@@ -59,19 +68,28 @@ export const useChatStore = defineStore("chat", () => {
     }
   }
 
-  const getTargetUserId = computed(() => {
+  function getTargetUserId() {
+    console.log(
+      "[getTargetUserId] currentChatRoomId:",
+      currentChatRoomId.value
+    );
+    console.log("[getTargetUserId] allChatRooms:", allChatRooms.value);
     const room = allChatRooms.value.find(
       (r) => r.chatRoomId === currentChatRoomId.value
     );
     if (!room) {
-    console.warn("[chatStore] 找不到 chatRoomId 對應的 room", {
-      currentChatRoomId: currentChatRoomId.value,
-      allChatRoomIds: allChatRooms.value.map((r) => r.chatRoomId),
-    });
-    return null;
+      console.warn("[chatStore] 找不到 chatRoomId 對應的 room", {
+        currentChatRoomId: currentChatRoomId.value,
+        allChatRoomIds: allChatRooms.value.map((r) => r.chatRoomId),
+      });
+      return null;
+    }
+    return memberType.value === "Member" ? room.employeeId : room.memberId;
   }
-    return memberType === "Member" ? room?.employeeId : room?.memberId;
-  });
+
+  const setCurrentChatRoomId = (chatRoomId) => {
+    currentChatRoomId.value = chatRoomId;
+  };
 
   function reset() {
     allChatRooms.value = [];
@@ -99,6 +117,7 @@ export const useChatStore = defineStore("chat", () => {
     memberType,
     getTargetUserId,
     isChatRoomsLoaded,
+    setCurrentChatRoomId,
     reset,
   };
 });

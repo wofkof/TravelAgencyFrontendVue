@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import { fetchChatRooms } from "@/services/chatService";
 import { formatDateTime, formatRelativeTime } from "@/utils/formatDateTime";
@@ -71,13 +71,25 @@ const selectedChatRoomId = ref(null);
 onMounted(async () => {
   if (chatStore.memberId) {
     await fetchChatRooms(chatStore.memberId);
+
+    if (chatStore.allChatRooms.length > 0) {
+      const firstRoomId = chatStore.allChatRooms[0].chatRoomId;
+      chatStore.setCurrentChatRoom(firstRoomId);
+      await nextTick();
+      console.log("所有聊天室：", chatStore.allChatRooms);
+      console.log("目前聊天室ID：", chatStore.currentChatRoomId);
+      console.log("對方ID：", chatStore.getTargetUserId());
+    }
   } else {
     ElMessage.error("請先登入，載入聊天室列表");
   }
 });
 
-const selectChatRoom = (chatRoomId) => {
+const selectChatRoom = async (chatRoomId) => {
   chatStore.setCurrentChatRoom(chatRoomId);
+  await nextTick();
+  console.log("目前聊天室 ID:", chatStore.currentChatRoomId);
+  console.log("對方 ID (getTargetUserId):", chatStore.getTargetUserId());
   chatStore.unreadCountMap[chatRoomId] = 0;
 };
 

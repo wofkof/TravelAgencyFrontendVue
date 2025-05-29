@@ -41,8 +41,7 @@ export async function getConnectionId(userType, userId) {
   }
 }
 
-export async function callUser(targetUserId, useVideo = false) {
-  const chatStore = useChatStore();
+export async function callUser(targetUserId, chatRoomId, useVideo = false) {
   const connectionId = await getConnectionId("Employee", targetUserId);
   if (!connectionId) {
     alert("對方未上線或無法通話");
@@ -54,34 +53,34 @@ export async function callUser(targetUserId, useVideo = false) {
     console.warn("[WebRTC] 無法送出 offer，SignalR 尚未連線");
     return;
   }
-  remoteConnectionId = connectionId;
-  await createPeerConnection(connectionId, useVideo); // 傳入對方 ID
 
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  console.log("呼叫時聊天室ID:", chatStore.currentChatRoomId.value);
-  console.log("SendCallOffer params:", {
-    toConnectionId: connectionId,
-    offer,
-    roomId: currentChatRoomId,
-    callType: useVideo ? "video" : "audio",
-  });
-
-  if (!chatStore.currentChatRoomId.value) {
+  if (!chatRoomId) {
     alert("錯誤：聊天室ID不存在，無法發起通話");
     return;
   }
+
+  remoteConnectionId = connectionId;
+  await createPeerConnection(connectionId, useVideo);
+
+  const offer = await peer.createOffer();
+  await peer.setLocalDescription(offer);
+
+  console.log("呼叫時聊天室ID:", chatRoomId);
   console.log("SendCallOffer params:", {
     toConnectionId: connectionId,
     offer,
-    roomId: chatStore.currentChatRoomId.value,
+    roomId: chatRoomId,
     callType: useVideo ? "video" : "audio",
   });
+  console.log("[Vue] 即將傳送 offer 給 MVC：", offer);
   await conn.invoke(
     "SendCallOffer",
     connectionId,
-    offer,
-    chatStore.currentChatRoomId.value,
+    {
+      sdp: offer.sdp,
+      type: offer.type,
+    },
+    chatRoomId,
     useVideo ? "video" : "audio"
   );
   console.log("[WebRTC] 已送出 offer 給", connectionId);

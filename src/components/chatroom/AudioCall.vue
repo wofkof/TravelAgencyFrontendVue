@@ -106,7 +106,7 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
     console.log("[CallLog] 本機不是發起者，不紀錄 call log");
     return;
   }
-  const resolvedReceiverId = chatStore.getTargetUserId.value;
+  const resolvedReceiverId = chatStore.getTargetUserId();
   console.log(
     "[CallLog] callerId:",
     callerId,
@@ -192,20 +192,26 @@ const toggleVideoTrack = () => {
 
 const startCall = async (useVideo = false) => {
   const callerId = authStore.memberId;
-  const receiverId = chatStore.getTargetUserId.value;
-  const currentChatRoomId = chatStore.currentChatRoomId.value;
-  console.log("callerId:", callerId);
-  console.log("receiverId:", receiverId);
-  console.log("chatRoomId:", currentChatRoomId);
+  const receiverId = chatStore.getTargetUserId();
+  const currentChatRoomId = chatStore.currentChatRoomId;
+  console.log("[startCall 檢查]", {
+    callerId,
+    receiverId,
+    currentChatRoomId,
+  });
   if (!callerId || !receiverId || !currentChatRoomId) {
-    console.error("[startCall] 缺少參數，無法撥打");
+    console.error("[startCall] 缺少參數，無法撥打", {
+      callerId,
+      receiverId,
+      currentChatRoomId,
+    });
     return;
   }
   enableVideo.value = useVideo;
   visible.value = true;
   isIncomingCall.value = false;
   callStatus.value = "撥號中...";
-  await callUser(receiverId, useVideo);
+  await callUser(receiverId, currentChatRoomId, useVideo);
   callStatus.value = "等待對方接聽...";
 };
 
