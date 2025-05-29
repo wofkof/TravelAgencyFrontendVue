@@ -10,15 +10,21 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue";
 import AudioCall from "./components/chatroom/AudioCall.vue";
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
-import AuthModal from "@/components/SignUp/AuthModal.vue"
+import { onMounted } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import AuthModal from "@/components/SignUp/AuthModal.vue";
+import { useChatStore } from "@/stores/chatStore.js";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
+const chatStore = useChatStore();
 
-onMounted(() => {
-  authStore.loadFromStorage() 
-})
+onMounted(async () => {
+  authStore.loadFromStorage();
+
+  if (authStore.memberId) {
+    await chatStore.initChatRooms();
+  }
+});
 
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route
@@ -30,13 +36,15 @@ const isHomePage = computed(() => route.path === "/"); // <-- 檢查路徑
 const showCheckoutSteps = computed(() => {
   const currentPath = route.path;
 
-  return currentPath === "/ShoppingCart" ||
-         currentPath === "/order-form" ||
-         currentPath.startsWith("/order-complete");
+  return (
+    currentPath === "/ShoppingCart" ||
+    currentPath === "/order-form" ||
+    currentPath.startsWith("/order-complete")
+  );
 });
 function handleLoginSuccess() {
-  authStore.loadFromStorage()
-  authStore.closeLoginModal()
+  authStore.loadFromStorage();
+  authStore.closeLoginModal();
 }
 </script>
 
@@ -56,9 +64,7 @@ function handleLoginSuccess() {
   <NewsletterSection />
   <FooterSection />
   <AuthModal
-  v-model="authStore.showLoginModal"
-  @login-success="handleLoginSuccess"
-/>
-
-
+    v-model="authStore.showLoginModal"
+    @login-success="handleLoginSuccess"
+  />
 </template>

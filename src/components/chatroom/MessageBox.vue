@@ -1,7 +1,7 @@
 <!-- MessageBox.vue -->
 <template>
   <div class="message-area">
-    <el-scrollbar ref="scrollRef" class="message-list">
+    <el-scrollbar ref="scrollRef" class="message-list" @scroll="handleScroll">
       <div
         v-for="msg in filteredMessages"
         :key="msg.sentAt"
@@ -165,6 +165,19 @@ const sendSticker = async (url: string) => {
 
   showStickerPanel.value = false;
 };
+
+function handleScroll() {
+  const wrap = scrollRef.value?.wrapRef;
+  if (!wrap) return;
+
+  const isAtBottom =
+    wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 10;
+
+  const chatRoomId = chatStore.currentChatRoomId;
+  if (isAtBottom && chatRoomId != null) {
+    chatStore.unreadCountMap[chatRoomId] = 0;
+  }
+}
 
 // 搜尋訊息
 const filteredMessages = computed(() => {

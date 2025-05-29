@@ -3,6 +3,7 @@ import { reactive, ref, computed } from "vue";
 //舒婷
 import { useAuthStore } from "@/stores/authStore";
 import { storeToRefs } from "pinia";
+import { getChatRooms } from "@/apis//chatRoomApi";
 
 export const useChatStore = defineStore("chat", () => {
   //舒婷
@@ -49,6 +50,18 @@ export const useChatStore = defineStore("chat", () => {
       chatRooms[chatRoomId] = [];
     }
     chatRooms[chatRoomId].push(message);
+
+    const isCurrent = chatRoomId === currentChatRoomId.value;
+    const isAtBottom = window.isScrolledToBottom?.() ?? false;
+
+    if (
+      message.senderId !== memberId.value ||
+      !showChat.value ||
+      !isCurrent ||
+      !isAtBottom
+    ) {
+      unreadCountMap[chatRoomId] = (unreadCountMap[chatRoomId] || 0) + 1;
+    }
   };
 
   const setMessages = (chatRoomId, messages) => {
@@ -91,6 +104,24 @@ export const useChatStore = defineStore("chat", () => {
     currentChatRoomId.value = chatRoomId;
   };
 
+  const initChatRooms = async () => {
+    try {
+      if (!memberId.value) return; // 安全檢查
+
+      const rooms = await getChatRooms(memberId.value);
+      allChatRooms.value = rooms;
+
+      rooms.forEach((room) => {
+        unreadCountMap[room.chatRoomId] = 0;
+      });
+
+      isChatRoomsLoaded.value = true;
+      console.log("[chatStore] 初始化聊天室完成", rooms);
+    } catch (err) {
+      console.error("[chatStore] 無法載入聊天室清單", err);
+    }
+  };
+
   function reset() {
     allChatRooms.value = [];
     currentChatRoomId.value = null;
@@ -118,6 +149,7 @@ export const useChatStore = defineStore("chat", () => {
     getTargetUserId,
     isChatRoomsLoaded,
     setCurrentChatRoomId,
+    initChatRooms,
     reset,
   };
 });

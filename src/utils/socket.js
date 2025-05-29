@@ -69,15 +69,6 @@ export const setupSocket = async (chatRoomId) => {
         chatStore.memberType
       );
     }
-
-    // 顯示紅點提示：聊天室未開啟、不是當前聊天室、沒滾到最底
-    if (
-      !isSelf &&
-      (!chatStore.showChat || !isCurrentRoom || !isScrolledToBottom())
-    ) {
-      chatStore.unreadCountMap[msg.chatRoomId] =
-        (chatStore.unreadCountMap[msg.chatRoomId] || 0) + 1;
-    }
   });
 
   connection.on("MessageRead", (chatRoomId, readerId, readerType) => {
