@@ -54,6 +54,14 @@
 </template>
 
 <script setup lang="ts">
+declare global {
+  interface Window {
+    audioCallRef?: {
+      startCall: (useVideo?: boolean) => void;
+    };
+  }
+}
+
 import { ref, onMounted, onUnmounted, watch, toRaw } from "vue";
 import {
   callUser,
@@ -65,13 +73,13 @@ import {
 import { getConnection } from "@/utils/socket";
 import { useChatStore } from "@/stores/chatStore";
 import { useCallStore } from "@/stores/callStore";
-
 import { createCallLog } from "@/apis/callLogApi";
+import { useAuthStore } from "@/stores/authStore.js";
 
+const authStore = useAuthStore();
 const chatStore = useChatStore();
 const callerId = chatStore.memberId;
-const callerType = chatStore.memberType;
-const receiverId = chatStore.getTargetUserId;
+const callerType = chatStore.memberType as "Member" | "Employee";
 const receiverType = "Employee";
 
 const visible = ref(false);
@@ -98,7 +106,7 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
     console.log("[CallLog] 本機不是發起者，不紀錄 call log");
     return;
   }
-  const resolvedReceiverId = chatStore.getTargetUserId;
+  const resolvedReceiverId = chatStore.getTargetUserId.value;
   console.log(
     "[CallLog] callerId:",
     callerId,
@@ -183,11 +191,21 @@ const toggleVideoTrack = () => {
 };
 
 const startCall = async (useVideo = false) => {
+  const callerId = authStore.memberId;
+  const receiverId = chatStore.getTargetUserId.value;
+  const currentChatRoomId = chatStore.currentChatRoomId.value;
+  console.log("callerId:", callerId);
+  console.log("receiverId:", receiverId);
+  console.log("chatRoomId:", currentChatRoomId);
+  if (!callerId || !receiverId || !currentChatRoomId) {
+    console.error("[startCall] 缺少參數，無法撥打");
+    return;
+  }
   enableVideo.value = useVideo;
   visible.value = true;
   isIncomingCall.value = false;
   callStatus.value = "撥號中...";
-  await callUser(chatStore.getTargetUserId, useVideo);
+  await callUser(receiverId, useVideo);
   callStatus.value = "等待對方接聽...";
 };
 
@@ -299,7 +317,7 @@ const stopTimer = () => {
 
 const updateTimer = () => {
   const now = new Date();
-  const seconds = Math.floor((now - callStartTime) / 1000);
+  const seconds = Math.floor((now.getTime() - callStartTime) / 1000);
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
   callDuration.value = `${String(minutes).padStart(2, "0")}:${String(

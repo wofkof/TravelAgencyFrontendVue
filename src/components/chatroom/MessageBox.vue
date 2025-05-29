@@ -179,12 +179,34 @@ const filteredMessages = computed(() => {
 
 // 通話邏輯
 const startAudioCall = () => {
+  const chatRoomId = chatStore.currentChatRoomId;
+
+  // 確保聊天室存在
+  if (!chatStore.chatRooms[chatRoomId]) {
+    console.error("[startAudioCall] 找不到聊天室資料");
+    return;
+  }
+
+  // 設定目前聊天室 ID（這會觸發 getTargetUserId 自動生效）
+  chatStore.setCurrentChatRoom(chatRoomId);
+
+  // 撥打語音通話
   // @ts-ignore
   window.audioCallRef?.startCall(false);
 };
 
 // 視訊邏輯
 const startVideoCall = () => {
+  const chatRoomId = chatStore.currentChatRoomId;
+
+  if (!chatStore.chatRooms[chatRoomId]) {
+    console.error("[startVideoCall] 找不到聊天室資料");
+    return;
+  }
+
+  chatStore.setCurrentChatRoom(chatRoomId);
+
+  // 撥打視訊通話
   // @ts-ignore
   window.audioCallRef?.startCall(true);
 };
