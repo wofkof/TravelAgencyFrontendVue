@@ -70,14 +70,6 @@
           style="color: black"
           >代辦簽證</router-link
         >
-        <router-link
-          to="/order-form"
-          class="main-menu__item"
-          exact
-          active-class="main-menu__item--active"
-          style="color: black"
-          >訂單表單</router-link
-        >
       </nav>
     </header>
 
@@ -127,9 +119,9 @@
                   <path
                     d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm51.2 32H172.8C77.3 288 0 365.3 0 460.8C0 487.5 24.5 512 51.2 512H345.6c26.7 0 51.2-24.5 51.2-51.2C396.8 365.3 319.5 288 224 288z"
                   />
-                 </svg>
+                </svg>
                  歡迎，{{ memberName || '使用者' }}
-                 <span
+                <span
 
                   :class="
                     isMenuOpen

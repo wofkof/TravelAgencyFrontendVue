@@ -1,7 +1,7 @@
 <template>
-  <div class="item-participant-form">
+    <div class="item-participant-form">
     <div v-if="numberOfParticipants === 0">
-      <el-empty description="此項目無需填寫旅客資料。" />
+        <el-empty description="此項目無需填寫旅客資料。" />
     </div>
     <el-form 
       v-else 
@@ -36,7 +36,13 @@
                 style="width: 100%;"
               >
                 <el-option label="-- 自行填寫 --" :value="null" />
-                <el-option v-for="traveler in frequentTravelers" :key="traveler.id" :label="traveler.label" :value="traveler.id" />
+                <el-option 
+                    v-for="traveler in frequentTravelers" 
+                    :key="traveler.id" 
+                    :label="traveler.textLabel" 
+                    :value="traveler.dbId" >
+                    <span v-html="traveler.htmlLabel"></span>
+                </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -196,6 +202,8 @@
 <script setup>
 import { defineProps, defineEmits, computed, ref, watch, reactive, nextTick, onMounted } from 'vue';
 import countries from 'i18n-iso-countries'; // 引入國家代碼轉換函式庫
+import { getFavoriteTravelersAPI } from '@/utils/orderapi';
+import { useAuthStore } from '@/stores/authStore';
 
 // --- 組件 Props 定義 ---
 const props = defineProps({
@@ -227,6 +235,7 @@ const emit = defineEmits([
 const participantsData = ref([]);
 const itemFormRef = ref(null);
 const isFormValid = ref(false);
+const authStore = useAuthStore();
 
 // --- 計算屬性 ---
 const isInternationalTravel = computed(() => props.tripDestinationCountry !== 'TW');
@@ -270,24 +279,102 @@ const getDynamicDocumentPlaceholder = (pIndex) => {
 
 // 常用旅客列表範例資料
 // 注意：每個常用旅客物件中新增 `dbId` 欄位，假設其值為後端資料庫中的 FavoriteTravelerId。
-const frequentTravelers = ref([
-  { id: 'ft1', dbId: 101, label: '本人 (王小明 - 成人)', data: { lastNameZh: '王', firstNameZh: '小明', gender: 'male', country: 'TW', birthDate: '1990-01-01', documentType: 'ID_CARD_TW', idNumber: 'A123456789', documentNumber: '' } },
-  { id: 'ft2', dbId: 102, label: '常用旅客 (陳大文 - 成人)', data: { lastNameZh: '陳', firstNameZh: '大文', gender: 'male', country: 'US', birthDate: '1985-05-05', documentType: 'PASSPORT', idNumber: '', documentNumber: 'USPAS123', lastNameEn: 'CHEN', firstNameEn: 'DA-WEN', passportNumber: 'USPAS123', passportExpiryDate: '2030-12-31' } },
-  { id: 'ft3', dbId: 103, label: '常用旅客 (林小妹妹 - 兒童)', data: { lastNameZh: '林', firstNameZh: '小妹妹', gender: 'female', country: 'TW', birthDate: '2015-07-10', documentType: 'ID_CARD_TW', idNumber: 'F234567890', documentNumber: '' } },
-  { id: 'ft4', dbId: 104, label: '常用旅客 (張寶寶 - 嬰兒)', data: { lastNameZh: '張', firstNameZh: '寶寶', gender: 'male', country: 'TW', birthDate: '2024-03-20', documentType: 'ID_CARD_TW', idNumber: 'G123456789', documentNumber: '' } }
-]);
+const frequentTravelers = ref([]);
+const isLoadingFrequentTravelers = ref(false);
 
 // 用於 Element Plus 表單驗證的模型
 const formModelForValidation = reactive({
-  passengers: [] 
+    passengers: [] 
+});
+
+onMounted(async () => {
+    validateFormStatus();
+const memberId = authStore.memberId;
+
+if (memberId) {
+    isLoadingFrequentTravelers.value = true;
+    try {
+        console.log(`ItemParticipantForm: 準備獲取 Member ID: ${memberId} 的常用旅客名單`);
+        const travelersFromApi = await getFavoriteTravelersAPI(memberId);
+        console.log('ItemParticipantForm: 從 API 獲取到的常用旅客:', travelersFromApi);
+
+        // 🔽 3. 將 API 返回的數據轉換為 el-select 需要的格式
+        frequentTravelers.value = travelersFromApi.map(travelerApiDto => {
+        // 後端 FavoriteTravelerResponseDto 的欄位:
+        // FavoriteTravelerId, Name, Phone, IdNumber, BirthDate, Gender, Email,
+        // DocumentType, DocumentNumber, PassportSurname, PassportGivenName,
+        // PassportExpireDate, Nationality, Note
+        // 前端 el-select 需要的格式: { id, dbId, label, data: { ... } }
+
+        let travelerName = travelerApiDto.name || '未知旅客';
+        let travelerNationality = travelerApiDto.nationality || 'N/A';
+        let genderText = '其他';
+        if (travelerApiDto.gender === 0) genderText = '男'; // 假設 0: Male
+        else if (travelerApiDto.gender === 1) genderText = '女'; // 假設 1: Female
+
+        // 姓名拆分 (後端 Name 是完整姓名)
+        let lastNameZh = '';
+        let firstNameZh = '';
+        if (travelerApiDto.name && typeof travelerApiDto.name === 'string') {
+            lastNameZh = travelerApiDto.name.substring(0, 1);
+            firstNameZh = travelerApiDto.name.substring(1);
+        }
+
+        // DocumentType 從後端枚舉轉為前端字串
+        let docTypeString = 'ID_CARD_TW'; // 預設
+        if (travelerApiDto.documentType === 0) docTypeString = 'ID_CARD_TW';
+        else if (travelerApiDto.documentType === 1) docTypeString = 'PASSPORT';
+        else if (travelerApiDto.documentType === 2) docTypeString = 'ARC';
+        else if (travelerApiDto.documentType === 3) docTypeString = 'ENTRY_PERMIT';
+
+        const textLabelForDisplay = `${travelerName} (${genderText}, ${travelerNationality})`;        // 產生 HTML 標籤給下拉選單顯示 (假設 `\\(` 是你期望的字面顯示 `\(` )
+        const htmlLabelForDropdown = `<span class="math-inline">${travelerName} (${genderText}, ${travelerNationality})</span>`;
+        return {
+          id: `ft-api-${travelerApiDto.favoriteTravelerId}`, // 前端唯一識別碼
+          dbId: travelerApiDto.favoriteTravelerId,        // 後端資料庫的 ID，用於選擇時傳遞
+          textLabel: textLabelForDisplay, // 純文字標籤
+          htmlLabel: htmlLabelForDropdown, // HTML 標籤
+        data: {
+            lastNameZh: lastNameZh,
+            firstNameZh: firstNameZh,
+            gender: travelerApiDto.gender === 0 ? 'male' : (travelerApiDto.gender === 1 ? 'female' : 'other'),
+            country: travelerApiDto.nationality || 'TW',
+            birthDate: travelerApiDto.birthDate ? new Date(travelerApiDto.birthDate).toISOString().split('T')[0] : null, // 格式化日期 YYYY-MM-DD
+            documentType: docTypeString,
+            // 根據 documentType 決定 idNumber 和 documentNumber 的值
+            idNumber: docTypeString === 'ID_CARD_TW' ? (travelerApiDto.idNumber || '') : '',
+            documentNumber: docTypeString !== 'ID_CARD_TW' ? (travelerApiDto.documentNumber || '') : '',
+            lastNameEn: travelerApiDto.passportSurname || '',
+            firstNameEn: travelerApiDto.passportGivenName || '',
+            // 護照號碼：如果證件類型是護照且為國際旅行，則使用 documentNumber
+            passportNumber: (docTypeString === 'PASSPORT' && props.tripDestinationCountry !== 'TW') ? (travelerApiDto.documentNumber || '') : '',
+            passportExpiryDate: travelerApiDto.passportExpireDate ? new Date(travelerApiDto.passportExpireDate).toISOString().split('T')[0] : null,
+            remarks: travelerApiDto.note || '',
+            // email: travelerApiDto.email || '', // 新增 email
+            // phone: travelerApiDto.phone || '', // 新增 phone (如果 ItemParticipantForm 需要)
+            // phoneCountryCode: travelerApiDto.phoneCountryCode || '+886', // 如果後端常用旅客有存國碼
+            favoriteTravelerId: travelerApiDto.favoriteTravelerId // 將後端ID也存入data，方便後續操作
+            }
+        };
+      });
+    } catch (error) {
+      console.error('ItemParticipantForm: 載入常用旅客名單失敗:', error.message);
+      frequentTravelers.value = []; // 出錯時清空或保留預設的範例資料
+    } finally {
+      isLoadingFrequentTravelers.value = false;
+    }
+  } else {
+    console.warn('ItemParticipantForm: memberId 不存在，無法載入常用旅客名單。');
+    // 如果沒有 memberId，可以考慮禁用常用旅客下拉選單或顯示提示
+  }
 });
 
 // --- 監聽器 ---
 watch(participantsData, (newData) => {
-  formModelForValidation.passengers = newData;
-  if (itemFormRef.value && numberOfParticipants.value > 0) {
-      validateFormStatus();
-  }
+    formModelForValidation.passengers = newData;
+    if (itemFormRef.value && numberOfParticipants.value > 0) {
+        validateFormStatus();
+    }
 }, { deep: true });
 
 const calculateAge = (birthDateStr, referenceDateStr) => {
@@ -382,14 +469,14 @@ const validatePassportExpiryDate = (rule, value, callback) => {
         const expiryDate = new Date(expiryYear, expiryMonth, expiryDay);
         
         if (expiryDate.getFullYear() !== expiryYear || expiryDate.getMonth() !== expiryMonth || expiryDate.getDate() !== expiryDay) {
-             return callback(new Error('無效的護照效期日期'));
+            return callback(new Error('無效的護照效期日期'));
         }
         const today = new Date();
         today.setHours(0, 0, 0, 0); 
         const tripEndDateStr = props.orderItem.endDate; 
         if (tripEndDateStr) {
             const endParts = tripEndDateStr.split('/');
-             if (endParts.length !== 3) {
+            if (endParts.length !== 3) {
                 console.warn(`[validatePassportExpiryDate] 行程結束日期格式無效: ${tripEndDateStr}`);
                 if (expiryDate < today) { 
                     return callback(new Error('護照效期到期日不能早於今天'));
@@ -416,7 +503,7 @@ const validatePassportExpiryDate = (rule, value, callback) => {
                 return callback(new Error(`護照效期至少需在行程結束 (${tripEndDate.toLocaleDateString('zh-TW')}) 後 ${monthsToAdd} 個月 (即 ${requiredExpiryDate.toLocaleDateString('zh-TW')} 或之後)`));
             }
         } else if (expiryDate < today) { 
-             return callback(new Error('護照效期到期日不能早於今天'));
+            return callback(new Error('護照效期到期日不能早於今天'));
         }
         callback();
     } catch (e) {
@@ -425,13 +512,6 @@ const validatePassportExpiryDate = (rule, value, callback) => {
     }
 };
 
-/**
- * 根據選擇的證件類型，驗證對應的證件號碼欄位 (idNumber 或 documentNumber) 的格式。
- * @param {object} rule - Element Plus 表單驗證規則物件。
- * @param {string} value - 對應證件號碼欄位的值。
- * @param {function} callback - 驗證回調函數。
- * @param {string} targetField - 'idNumber' 或 'documentNumber'，指明當前驗證哪個欄位。
- */
 const validateDocumentValue = (rule, value, callback, targetField) => {
     const pIndex = parseInt(rule.field.split('[')[1].split(']')[0]);
     const participant = participantsData.value[pIndex];
@@ -472,8 +552,8 @@ const validateDocumentValue = (rule, value, callback, targetField) => {
                 break;
             default: // 若 documentType 不是以上類型，但仍在驗證 documentNumber (例如類型剛切換)
                 if (!documentType) {
-                     specificErrorMessage = '請先選擇證件類型。';
-                     isValid = false;
+                    specificErrorMessage = '請先選擇證件類型。';
+                    isValid = false;
                 } else {
                     // 對於其他未明確定義格式的 documentType，如果走到這裡，可能表示一個不預期的狀態
                     // 或者也可以將其視為通過，如果這些類型不需要 documentNumber 欄位
@@ -528,7 +608,7 @@ const getRulesForField = (pIndex, fieldName) => {
     if (fieldName === 'documentNumber') {
         // documentNumber 欄位在證件類型不是台灣身分證時為必填和格式驗證
         if (participant.documentType && participant.documentType !== 'ID_CARD_TW') {
-             baseRules.push(
+            baseRules.push(
                 { required: true, message: `請輸入${getDynamicDocumentLabel(pIndex)}`, trigger: 'blur' },
                 { validator: (rule, value, cb) => validateDocumentValue(rule, value, cb, 'documentNumber'), trigger: ['blur', 'change'] }
             );
@@ -575,7 +655,7 @@ const getRulesForField = (pIndex, fieldName) => {
             });
         }
         if (fieldName === 'passportExpiryDate') {
-             baseRules.push(
+            baseRules.push(
                 { required: participant.documentType === 'PASSPORT', message: `請選擇${getLabelForField(fieldName)} (${getLabelForField('passportNumber')}適用)`, trigger: 'change' },
                 { validator: validatePassportExpiryDate, trigger: ['change', 'blur'] }
             );
@@ -763,13 +843,13 @@ const updateParticipantField = (index, field, value) => {
             if ((field === 'documentNumber' && updatedParticipant.documentType === 'PASSPORT' && isInternationalTravel.value) ||
                 (field === 'documentType' && isInternationalTravel.value) // documentType 改變也可能影響 passportNumber
             ) {
-                 itemFormRef.value.validateField(`passengers[${index}].passportNumber`, () => {});
+                itemFormRef.value.validateField(`passengers[${index}].passportNumber`, () => {});
             }
         });
     }
 };
 
-const handleFrequentTravelerSelect = (index, selectedId) => {
+const handleFrequentTravelerSelect = (index, selectedDbId) => {
     const currentParticipantRaw = participantsData.value[index];
     let travelerDataToFill = { 
         lastNameZh: '', firstNameZh: '', gender: null, country: 'TW',
@@ -778,7 +858,6 @@ const handleFrequentTravelerSelect = (index, selectedId) => {
         idNumber: '',  // 台灣身分證號碼
         documentNumber: '', // 其他證件號碼 (例如護照)
         favoriteTravelerId: null, // 後端常用旅客ID
-        // updateThisTravelerProfile: currentParticipantRaw.updateThisTravelerProfile || false, // 【修改】保留當前 checkbox 狀態
         lastNameEn: '', firstNameEn: '', // Typo: firstNameEn
         passportNumber: '', passportExpiryDate: null,
         remarks: '',
@@ -786,55 +865,50 @@ const handleFrequentTravelerSelect = (index, selectedId) => {
      // 【新增】選擇常用旅客時，預設勾選「更新旅客資料」，手動填寫則不勾選（或維持原樣）
     let newUpdateProfileState = false;
 
-    if (selectedId) {
-        const selectedTraveler = frequentTravelers.value.find(ft => ft.id === selectedId);
+    if (selectedDbId) {
+        const selectedTraveler = frequentTravelers.value.find(ft => ft.dbId === selectedDbId);
         if (selectedTraveler && selectedTraveler.data) {
             travelerDataToFill = { ...travelerDataToFill, ...selectedTraveler.data };
-            travelerDataToFill.favoriteTravelerId = selectedTraveler.dbId || null; // 填充後端ID
+            // travelerDataToFill.favoriteTravelerId = selectedTraveler.dbId || null; // 填充後端ID
             newUpdateProfileState = true; // 【新增】選擇常用旅客時，預設勾選
 
+            const docType = travelerDataToFill.documentType;
+            const isIntTravel = isInternationalTravel.value;
+
             // 根據選擇的 documentType，校正 idNumber 和 documentNumber
-            if (travelerDataToFill.documentType === 'ID_CARD_TW') {
+            if (docType === 'ID_CARD_TW') {
                 // idNumber 應有值，documentNumber 應為空 (常用旅客資料應已是此結構)
-                 if(travelerDataToFill.idNumber && !travelerDataToFill.documentNumber){/*ok*/}
-                 else if (!travelerDataToFill.idNumber && travelerDataToFill.documentNumber){ //如果常用旅客資料存反了
+                if (!travelerDataToFill.idNumber && travelerDataToFill.documentNumber) {
                     travelerDataToFill.idNumber = travelerDataToFill.documentNumber;
-                    travelerDataToFill.documentNumber = '';
-                 } else { //預設
-                     travelerDataToFill.documentNumber = '';
-                 }
-
-            } else { // 非台灣身分證，證件號碼應在 documentNumber
-                if(travelerDataToFill.documentNumber && !travelerDataToFill.idNumber){/*ok*/}
-                else if(!travelerDataToFill.documentNumber && travelerDataToFill.idNumber) {  //如果常用旅客資料存反了
-                    travelerDataToFill.documentNumber = travelerDataToFill.idNumber;
-                    travelerDataToFill.idNumber = '';
-                } else {
-                    travelerDataToFill.idNumber = '';
                 }
-            }
-
-            if (travelerDataToFill.documentType === 'PASSPORT' && isInternationalTravel.value) {
-                travelerDataToFill.passportNumber = travelerDataToFill.documentNumber; // 從 documentNumber 同步
-            } else if (isInternationalTravel.value && travelerDataToFill.documentType !== 'PASSPORT') {
-                // 若非護照類型但為國際旅遊，passportNumber 可以是常用旅客資料中獨立的 passportNumber 值
-                // travelerDataToFill.passportNumber 已被 ...selectedTraveler.data 填充 (如果存在)
-            } else if (!isInternationalTravel.value) {
-                travelerDataToFill.passportNumber = ''; // 非國際旅遊，清空 passportNumber
+                travelerDataToFill.documentNumber = ''; // 清空 documentNumber
+            } else { // 非台灣身分證，證件號碼應在 documentNumber
+                if (!travelerDataToFill.documentNumber && travelerDataToFill.idNumber) {
+                    travelerDataToFill.documentNumber = travelerDataToFill.idNumber;
+                }
+                travelerDataToFill.idNumber = ''; // 清空 idNumber
+            }    
+            if (docType === 'PASSPORT' && isIntTravel) {
+                travelerDataToFill.passportNumber = travelerDataToFill.documentNumber; // 同步護照號碼
+            } else if (!isIntTravel) { // 非國際旅遊，清空護照相關欄位
+                travelerDataToFill.passportNumber = '';
+                travelerDataToFill.lastNameEn = '';
+                travelerDataToFill.firstNameEn = '';
+                travelerDataToFill.passportExpiryDate = null;
             }
         } else { // 若 selectedId 但找不到旅客，清空 favoriteTravelerId
             travelerDataToFill.favoriteTravelerId = null;
             newUpdateProfileState = currentParticipantRaw.updateThisTravelerProfile || false; // 維持原 checkbox 狀態
         }
     } else { // 若選擇 "自行填寫" (selectedId is null)
-         travelerDataToFill.favoriteTravelerId = null;
+        travelerDataToFill.favoriteTravelerId = null;
           newUpdateProfileState = false; // 【修改】自行填寫時，預設不勾選更新                           
     }
 
     const updatedParticipant = {
         id: currentParticipantRaw.id,
         ...travelerDataToFill,   
-        selectedFrequentTraveler: selectedId, 
+        selectedFrequentTraveler: selectedDbId, 
         updateThisTravelerProfile: newUpdateProfileState // 【新增】應用新的勾選狀態
     };
 
@@ -903,9 +977,6 @@ const validateFormStatus = async () => {
     }
 };
 
-onMounted(() => {
-    validateFormStatus();
-});
 
 watch(() => props.orderItem.startDate, (newDate, oldDate) => {
     if (newDate !== oldDate && numberOfParticipants.value > 0 && itemFormRef.value) {
@@ -937,8 +1008,8 @@ watch(() => props.tripDestinationCountry, (newCountry, oldCountry) => {
                         }
                     } else { 
                         if (participant.passportNumber !== '') { 
-                           newPassportNumberValue = '';
-                           modifiedThisParticipant = true;
+                            newPassportNumberValue = '';
+                            modifiedThisParticipant = true;
                         }
                     }
                 }
@@ -988,8 +1059,8 @@ watch(() => props.tripDestinationCountry, (newCountry, oldCountry) => {
 const validateAll = async () => {
     if (numberOfParticipants.value === 0) {
         if (isFormValid.value !== true) { 
-           isFormValid.value = true;
-           emit('validity-changed', true);
+            isFormValid.value = true;
+            emit('validity-changed', true);
         }
         return true;
     }
