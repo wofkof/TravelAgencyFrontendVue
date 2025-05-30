@@ -6,7 +6,7 @@
       <div>
         <div class="border rounded-lg bg-blue-300 w-full h-80 flex items-center justify-center">
           <img v-if="hoverImage" :src="currentImage" class="object-cover w-full h-full rounded-lg" />
-          <span v-else>請滑過表格以顯示封面</span>
+          <img v-else src="/src/assets/images/newlogo.png" class="object-cover"/>
         </div>
       </div>
 
