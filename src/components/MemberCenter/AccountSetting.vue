@@ -43,13 +43,15 @@
 
     <div class="form-col">
       <label class="label">聯絡手機 <span class="text-red-500">*</span></label>
-      <el-input
-        v-model="member.phone"
-        maxlength="10"
-        placeholder="09xxxxxxxx"
-        class="fixed-input"
-        :class="{ 'border border-red-500': errors.phone }"
-      />
+
+          <el-input
+      :model-value="member.isFakePhone ? '' : member.phone"
+      @input="val => member.phone = val"
+      maxlength="10"
+      placeholder="尚未填寫"
+      class="fixed-input"
+      :class="{ 'border border-red-500': errors.phone }"
+    />
       <p class="error-info" v-if="errors.phone">{{ errors.phone }}</p>
     </div>
   </div>
@@ -159,9 +161,10 @@
       placeholder="請選擇證件類型"
       class="fixed-input" 
     >
-      <el-option label="護照" value="Passport" />
-      <el-option label="居留證" value="ResidencePermit" />
-      <el-option label="台胞證" value="EntryPermit" />
+    <el-option label="身分證" value="ID_CARD_TW" />
+      <el-option label="護照" value="PASSPORT" />
+      <el-option label="居留證" value="ARC" />
+      <el-option label="台胞證" value="ENTRY_PERMIT" />
     </el-select>
   </div>
   <div class="form-col">
@@ -307,9 +310,10 @@ const detectGenderFromId = (idNumber) => {
   }
 }
 const documentTypeMap = {
-  PASSPORT: 'Passport',
-  RESIDENCEPERMIT: 'ResidencePermit',
-  ENTRYPERMIT: 'EntryPermit'
+  PASSPORT: '護照',
+  ID_CARD_TW: '身分證',
+  ARC: '居留證',
+  ENTRY_PERMIT: '台胞證'
 }
 const isValidPassword = (pwd) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z]).{6,12}$/;
@@ -331,7 +335,8 @@ onMounted(async () => {
     member.value = {
       ...res.data,
       gender: genderMap[res.data.gender] ?? res.data.gender,
-      documentType: documentTypeMap[res.data.documentType?.toUpperCase()] ?? ''
+      documentType: documentTypeMap[res.data.documentType?.toUpperCase()] ?? '',
+      isFakePhone: res.data.isFakePhone
     }
   } catch (err) {
     ElMessage.error('載入會員資料失敗')

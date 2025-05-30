@@ -70,14 +70,6 @@
           style="color: black"
           >代辦簽證</router-link
         >
-        <router-link
-          to="/order-form"
-          class="main-menu__item"
-          exact
-          active-class="main-menu__item--active"
-          style="color: black"
-          >訂單表單</router-link
-        >
       </nav>
     </header>
 
@@ -103,7 +95,7 @@
       </template>
 
       <!-- 登入時 -->
-      <template v-else>
+      <template v-else-if="isLoggedIn">
         <!-- 使用 flex 容器包覆兩個區塊 -->
         <div class="logged-in-user-wrapper">
           <div class="flex items-center space-x-4">
@@ -210,7 +202,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter, useRoute } from "vue-router";
 import LoginSignupSwitch from "@/components/tools/LoginSignupSwitch.vue";

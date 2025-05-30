@@ -1,12 +1,10 @@
 import { defineStore } from "pinia";
 import { reactive, ref, computed } from "vue";
-//舒婷
 import { useAuthStore } from "@/stores/authStore";
 import { storeToRefs } from "pinia";
 import { getChatRooms } from "@/apis//chatRoomApi";
 
 export const useChatStore = defineStore("chat", () => {
-  //舒婷
   const authStore = useAuthStore();
   const { memberId } = storeToRefs(authStore);
   const chatRooms = reactive({});
