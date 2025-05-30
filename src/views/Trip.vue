@@ -46,9 +46,9 @@
                 </div>
             </div> -->
               <div class="mb-2">
-                  <el-table
+              <el-scrollbar height="353px">
+              <el-table
                     :data="groupList"
-                    height="100%"
                     style="width: 100%;"
                     @row-click="handleGroupClick"
                   >
@@ -71,6 +71,8 @@
                       <el-button :icon="Check" circle />
                     </el-table-column>
                   </el-table>
+              </el-scrollbar>
+                  
               </div>
         </div>
       </div>
