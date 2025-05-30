@@ -84,7 +84,7 @@ const props = defineProps({
   // << 新增/修改 Props 以適應不同階段 >>
   buttonText: { type: String, default: '前往付款' }, // 按鈕文字，由父組件提供
   showPaymentInfo: { type: Boolean, default: true }, // 是否顯示支付方式區域，預設顯示 (用於付款頁)
-  paymentTimerSeconds: { type: Number, default: 30 * 60 } // 支付時限（秒），預設30分鐘
+  paymentTimerSeconds: { type: Number, default: 30 * 60 } // 支付時限（秒），預設3分鐘
 });
 
 // << 新增 emit，因為 native-type="submit" 的按鈕會觸發 form 的 submit 事件，但我們通常在父組件處理 >>

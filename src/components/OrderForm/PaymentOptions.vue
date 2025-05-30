@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from 'vue';// 引入 Element Plus 圖標
+import { ref, computed, watch, reactive } from 'vue';
 import { SuccessFilled } from '@element-plus/icons-vue'; // 打勾圖示
 
 const props = defineProps({
