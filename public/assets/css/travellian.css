@@ -560,6 +560,9 @@ body {
   border: none;
 }
 .search__btn {
+  display: flex;               /* 讓內容可以彈性對齊 */
+  align-items: center;         /* 垂直置中 */
+  justify-content: center;     /* 水平置中 */
   font-family: "Playfair Display", serif;
   font-weight: 400;
   font-size: 2.25rem;

@@ -6,8 +6,8 @@
   </div>
 
   <!-- 搜尋表單 -->
-  <form class="search" @submit.prevent="handleSearch">
-    <div class="search__wrapper">
+  <form class="search" @submit.prevent="handleSearch" style="max-width: 97%;">
+    <div class="search__wrapper" style="height: 150px;">
       <div class="search__group">
         <label for="keyword" class="search__lbl">關鍵字</label>
         <input
@@ -42,7 +42,7 @@
           class="search__input"
         />
       </div>
-      <button type="submit" class="search__btn">
+      <button type="submit" class="search__btn" style="height: 150px;">
         <span class="l-search-btn-wrapper" data-text="Book">
           立即<br />預訂
         </span>
@@ -55,6 +55,7 @@
 import { useRouter } from "vue-router";
 import { reactive } from "vue";
 import { useSearchResultStore } from "@/stores/useSearchResultStore";
+import { ElMessage } from 'element-plus';
 import api from "@/utils/api";
 
 const router = useRouter();
@@ -99,7 +100,10 @@ const handleSearch = async () => {
 
   } catch (err) {
     console.error(err);
-    alert("請輸入正確關鍵字");
+    ElMessage({
+        message: '輸入正確的關鍵字！',
+        type: 'error',
+      });
   }
 };
 </script>

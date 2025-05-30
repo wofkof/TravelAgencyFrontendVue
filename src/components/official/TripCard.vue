@@ -5,8 +5,10 @@
               v-for="trip in trips"
               :key="trip.projectId"
               :to="{ name: 'DetailPage', params: { projectId: trip.projectId,detailId: trip.detailId,groupId: trip.groupId} }"
-              class="bg-slate-300 h-96 p-0 rounded-md grid grid-rows-5"
-            ><img :src="trip.cover || '/src/assets/images/logo.png'" alt="封面" class="row-span-4 row-start-1 w-full h-64 object-cover">
+              class="bg-slate-300 h-72 p-0 rounded-md grid grid-rows-5"
+            >
+            <img :src="trip.cover || '/src/assets/images/logo.png'" alt="封面" 
+              class="row-span-4 row-start-1 w-full h-64 object-cover rounded-md">
             <div class="relative bg-slate-100 rounded-b-md h-full">
             <p class="absolute left-0 m-2 text-sm font-bold">{{ trip.title }}</p>
             <div class="absolute bottom-2 right-2 text-xs">
@@ -14,6 +16,7 @@
             </div>
           </div>
         </router-link>
+        
     </div>
    
   </div>

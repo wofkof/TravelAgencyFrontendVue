@@ -95,7 +95,7 @@
       </template>
 
       <!-- 登入時 -->
-      <template v-else>
+      <template v-else-if="isLoggedIn">
         <!-- 使用 flex 容器包覆兩個區塊 -->
         <div class="logged-in-user-wrapper">
           <div class="flex items-center space-x-4">
@@ -107,7 +107,7 @@
               @mouseleave="closeMenu"
             >
               <button
-                class="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
+                class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu">
                 
                 <svg
@@ -200,7 +200,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import CartPreviewIcon from "@/components/tools/CartPreviewIcon.vue"; // 確認路徑
 import { useRouter, useRoute } from "vue-router";
 import LoginSignupSwitch from "@/components/tools/LoginSignupSwitch.vue";
@@ -225,13 +225,19 @@ const isLoggedIn = computed(() => authStore.isLoggedIn)
 const memberName = computed(() => authStore.memberName)
 
 onMounted(() => {
+  // 載入登入狀態
   authStore.loadFromStorage()
+  window.addEventListener('login-success', handleLoginSuccess)
+  console.log(authStore.memberName)
   //正式版要拿掉
   console.log('Pinia 中的會員資訊：', {
     isLoggedIn: authStore.isLoggedIn,
     memberName: authStore.memberName,
     memberId: authStore.memberId
   })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('login-success', handleLoginSuccess)
 })
 
 // 登出
@@ -270,7 +276,6 @@ onBeforeUnmount(() => {
 });
 
 function handleLoginSuccess() {
-  authStore.loadFromStorage()
   showAuthModal.value = false 
   ElMessage.success("登入成功") 
 }

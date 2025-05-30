@@ -122,7 +122,6 @@ const attraction = ref([]);
 const restaurant = ref([]);
 const accommodation = ref([]);
 const transport = ref([]);
-//舒婷改const memberId = localStorage.getItem("memberId");
 import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 const memberId = computed(() => authStore.memberId);
@@ -305,18 +304,12 @@ const saveToServe = async () => {
       title: "確認送出",
       message: "確定要將這筆行程送出審核嗎?",
     });
-
-    // 舒婷if (!memberId) {
-    //   ElMessage.warning("請先登入會員，才可送出審核!");
-    //   return;
-    // }
     if (!authStore.memberId) {
       ElMessage.warning("請先登入會員，才可送出審核!");
       return;
     }
 
     const payload = {
-      //舒婷memberId: memberId,
       memberId: memberId.value,
       note: form.title,
       departureDate: form.daterange[0],
