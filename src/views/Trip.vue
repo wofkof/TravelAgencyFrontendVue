@@ -3,7 +3,7 @@
   <div class="max-w-7xl mx-auto p-4">
     <!-- 最外層容器 -->
     <!-- 最後加上skeleton -->
-    <div class="bg-white rounded-xl p-4 shadow-lg mb-6">
+    <div class="bg-gray-50 rounded-xl p-4 shadow-lg mb-6">
       <!-- 行程資訊大矩形 -->
 
       <!-- 標題區塊 -->
@@ -11,7 +11,7 @@
         {{ mainInfo.title }}
       </div>
 
-      <div class="flex h-96 bg-gray-100 rounded-lg">
+      <div class="flex h-96 rounded-lg">
         <!-- 二等分區塊 -->
         
 
@@ -38,15 +38,8 @@
 
         <div class="w-1/2 rounded-lg p-4">
           <!-- 資訊 03：出團日期表格 -->
-          <!-- <div class="mb-2 p-2 border border-solid rounded-md border-gray-400">
-                <p class="mb-4">選擇行程</p>
-                <div class="grid grid-cols-5 gap-x-2">
-                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">全部</button>
-                    <button type="button" class="border border-solid rounded-md border-blue-300 bg-blue-200">行程1</button>
-                </div>
-            </div> -->
-              <div class="mb-2">
-              <el-scrollbar height="353px">
+              <div class="mb-2 shadow-md">
+              <el-scrollbar height="22em">
               <el-table
                     :data="groupList"
                     style="width: 100%;"
@@ -96,32 +89,38 @@
               </div>
             </template>
             <div class="text-lg text-gray-900 leading-relaxed">
-              <p class="text-xl">{{ s.description }}</p>
-              <p>早餐: {{ s.breakfast }}</p>
-              <p>午餐: {{ s.lunch }}</p>
-              <p>晚餐: {{ s.dinner }}</p>
-              <p>{{ s.hotel }}</p>
-              <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="text-blue-800">
+              <p class="text-xl mb-2">{{ s.description }}</p>
+              <p class="mb-2">早餐: {{ s.breakfast }}</p>
+              <p class="mb-2">午餐: {{ s.lunch }}</p>
+              <p class="mb-2">晚餐: {{ s.dinner }}</p>
+              <p class="mb-4">{{ s.hotel }}</p>
+              <p class="mb-2">今日景點</p>
+              <div class="grid grid-cols-2">
+                <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="mb-5">
+                  <!-- 使用唯一 map ID -->
+                  <el-popover
+                    :width="300"
+                    trigger="hover"
+                    placement="top"
 
-                <!-- 使用唯一 map ID -->
-                <el-popover
-                  :width="300"
-                  trigger="hover"
-                  placement="top"
-                >
-                  <template #reference>
-                    <el-button type="primary" plain size="small">{{ a.name }}</el-button>
-                  </template>
+                  >
+                    <template #reference>
+                        <el-button plain round size="large" class="mb-3 shadow">{{ a.name }}
+                        </el-button>
+                    </template>
 
-                  <template #default>
-                    <div>
-                      <p class="font-bold text-base mb-1">{{ a.name }}</p>
-                      <p class="text-sm text-gray-700 mb-2">{{ a.description }}</p>
-                      <div :id="`map-popover-${s.scheduleId}-${a.attractionId}`" class="w-full h-40 rounded" ></div>
-                    </div>
-                  </template>
-                </el-popover>
+                    <template #default>
+                      <div>
+                        <p class="font-bold text-lg mb-3">{{ a.name }}</p>
+                        <p class="text-base text-gray-700 mb-2">{{ a.description }}</p>
+                        <div :id="`map-popover-${s.scheduleId}-${a.attractionId}`" class="w-full h-40 rounded" ></div>
+                      </div>
+                    </template>
+                  </el-popover>
+                  <p class="">{{ a.description }}</p>
+                </div>
               </div>
+              
             </div>
           </el-collapse-item>
     </el-collapse>
