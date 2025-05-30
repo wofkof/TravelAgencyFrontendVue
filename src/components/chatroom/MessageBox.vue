@@ -40,22 +40,39 @@
     </el-scrollbar>
 
     <div class="message-input-bar">
+      <p
+        v-if="chatRoomStatus === 1"
+        style="color: gray; font-size: 12px; margin-top: 4px; padding-left: 8px"
+      >
+        此聊天室已關閉，無法再發送訊息。
+      </p>
       <el-input
         v-model="newMessage"
         clearable
         type="textarea"
-        placeholder="輸入訊息..."
+        :placeholder="chatRoomStatus === 1 ? '聊天室已關閉' : '輸入訊息...'"
         @keydown.enter.prevent="send"
+        :disabled="chatRoomStatus === 1"
         autosize
         class="message-input"
       />
       <!-- 送出按鈕 -->
-      <el-button @click="send" type="primary" size="small" plain circle
+      <el-button
+        @click="send"
+        type="primary"
+        size="small"
+        plain
+        circle
+        :disabled="chatRoomStatus === 1"
         ><el-icon><Promotion /></el-icon
       ></el-button>
 
       <!-- 表情按鈕 -->
-      <EmojiButton @click="toggleEmojiPicker" style="margin-left: 0px" />
+      <EmojiButton
+        @click="toggleEmojiPicker"
+        style="margin-left: 0px"
+        :disabled="chatRoomStatus === 1"
+      />
       <!-- 貼圖按鈕 -->
       <el-button
         type="warning"
@@ -64,6 +81,7 @@
         size="small"
         plain
         circle
+        :disabled="chatRoomStatus === 1"
         ><el-icon><PictureFilled /></el-icon
       ></el-button>
 
@@ -75,9 +93,12 @@
     </div>
     <div class="button-group">
       <!-- 圖片按鈕 -->
-      <ImageUploader style="margin-left: 5px" />
+      <ImageUploader
+        style="margin-left: 5px"
+        :disabled="chatRoomStatus === 1"
+      />
       <!-- 錄音按鈕 -->
-      <VoiceUploader />
+      <VoiceUploader :disabled="chatRoomStatus === 1" />
       <!-- 通話按鈕 -->
       <el-button
         type="success"
@@ -86,6 +107,7 @@
         plain
         circle
         style="margin-left: 0px"
+        :disabled="chatRoomStatus === 1"
         ><el-icon><Phone /></el-icon
       ></el-button>
       <!-- 視訊通話按鈕 -->
@@ -96,10 +118,20 @@
         plain
         circle
         style="margin-left: 0px"
+        :disabled="chatRoomStatus === 1"
         ><el-icon><VideoCamera /></el-icon
       ></el-button>
       <!-- 測試用的假訊息 -->
       <TestFakeMessage style="margin-left: 0px" />
+      <el-button
+        type="danger"
+        size="small"
+        plain
+        @click="closeChatRoom"
+        v-if="chatRoomStatus === 0"
+      >
+        關閉聊天室
+      </el-button>
       <!-- 搜尋訊息 -->
       <ChatSearchBar
         v-model:searchText="searchText"
@@ -132,7 +164,7 @@ import MessageRenderer from "@/components/chatroom/MessageRenderer.vue";
 import VoiceUploader from "@/components/chatroom/VoiceUploader.vue";
 import ChatSearchBar from "@/components/chatroom/ChatSearchBar.vue";
 import StickerPanel from "@/components/chatroom/StickerPanel.vue";
-import { tr } from "element-plus/es/locale";
+import { closeChatRoom as closeChatRoomApi } from "@/apis/chatRoomApi";
 
 declare global {
   interface Window {
@@ -150,6 +182,31 @@ const searchText = ref("");
 const isSearching = ref(false);
 const showStickerPanel = ref(false);
 const stickerPanelRef = ref(null);
+
+const currentChatRoom = computed(() => {
+  return chatStore.allChatRooms.find(
+    (r) => r.chatRoomId === chatStore.currentChatRoomId
+  );
+});
+
+const chatRoomStatus = computed(() => currentChatRoom.value?.status ?? 0); // Opened = 0 Closed = 1
+
+const closeChatRoom = async () => {
+  const chatRoomId = chatStore.currentChatRoomId;
+  if (!chatRoomId) return;
+
+  try {
+    await closeChatRoomApi(chatRoomId);
+    const room = chatStore.allChatRooms.find(
+      (r) => r.chatRoomId === chatRoomId
+    );
+    if (room) room.status = "Closed";
+    ElMessage.success("聊天室已關閉");
+  } catch (err) {
+    console.error("關閉聊天室失敗", err);
+    ElMessage.error("關閉聊天室失敗");
+  }
+};
 
 const sendSticker = async (url: string) => {
   const chatRoomId = chatStore.currentChatRoomId;
