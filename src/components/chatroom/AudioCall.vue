@@ -54,7 +54,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+declare global {
+  interface Window {
+    audioCallRef?: {
+      startCall: (useVideo?: boolean) => void;
+    };
+  }
+}
+
+import { ref, onMounted, onUnmounted, watch, toRaw } from "vue";
 import {
   callUser,
   endCall,
@@ -65,13 +73,13 @@ import {
 import { getConnection } from "@/utils/socket";
 import { useChatStore } from "@/stores/chatStore";
 import { useCallStore } from "@/stores/callStore";
-
 import { createCallLog } from "@/apis/callLogApi";
+import { useAuthStore } from "@/stores/authStore.js";
 
+const authStore = useAuthStore();
 const chatStore = useChatStore();
 const callerId = chatStore.memberId;
-const callerType = chatStore.memberType;
-const receiverId = chatStore.getTargetUserId;
+const callerType = chatStore.memberType as "Member" | "Employee";
 const receiverType = "Employee";
 
 const visible = ref(false);
@@ -84,30 +92,73 @@ const incomingOffer = ref(null);
 const callDuration = ref("");
 const enableVideo = ref(false); // 控制是否為視訊通話
 const isVideoEnabled = ref(true);
+const isCaller = computed(() => !callStore.fromId);
+
 let timer = null;
 let callStartTime = null;
 let callLogAlreadyRecorded = false;
+let signalRBound = false;
+let hasEndedCall = false;
+
 let ringtone = new Audio("/assets/sounds/incoming.mp3");
 
+function endCallSafely(options = {}) {
+  if (hasEndedCall) {
+    console.warn("[Vue] endCall 已執行過，略過");
+    return;
+  }
+  hasEndedCall = true;
+  endCall({ ...options, skipSignal: true });
+
+  setTimeout(() => {
+    hasEndedCall = false;
+  }, 3000);
+}
+
 const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
+  if (!isCaller.value) {
+    console.log("[CallLog] 本機不是發起者，不紀錄 call log");
+    return;
+  }
+  const resolvedReceiverId = chatStore.getTargetUserId();
+  console.log(
+    "[CallLog] callerId:",
+    callerId,
+    "receiverId:",
+    resolvedReceiverId
+  );
+
+  if (
+    !resolvedReceiverId ||
+    typeof resolvedReceiverId !== "number" ||
+    isNaN(resolvedReceiverId)
+  ) {
+    console.warn("[CallLog] 無效的 receiverId，取消記錄");
+    return;
+  }
   if (callLogAlreadyRecorded) {
     console.warn(`[CallLog] 已記錄過，略過 ${status}`);
     return;
   }
-  callLogAlreadyRecorded = true;
-  try {
-    const safeStartTime = callStartTime ?? new Date();
-    const now = new Date();
-    const duration = Math.floor(
-      (now.getTime() - safeStartTime.getTime()) / 1000
-    );
 
+  const now = new Date();
+  const safeStartTime = callStartTime ?? now;
+  const duration = Math.floor((now.getTime() - safeStartTime.getTime()) / 1000);
+
+  if (status === "completed" && duration <= 0) {
+    console.warn("[CallLog] duration 為 0，改記錄為 missed 通話");
+    status = "missed";
+  }
+
+  callLogAlreadyRecorded = true;
+
+  try {
     await createCallLog({
       chatRoomId: chatStore.currentChatRoomId,
       callerType,
       callerId,
       receiverType,
-      receiverId,
+      receiverId: resolvedReceiverId,
       callType: enableVideo.value ? "video" : "audio",
       status,
       startTime: safeStartTime.toISOString(),
@@ -125,8 +176,6 @@ watch(
   () => callStore.showPopup,
   (show) => {
     if (show) {
-      incomingFromId.value = callStore.fromId;
-      incomingOffer.value = callStore.offer;
       remoteConnectionId.value = callStore.fromId;
       visible.value = true;
       isIncomingCall.value = true;
@@ -156,29 +205,68 @@ const toggleVideoTrack = () => {
 };
 
 const startCall = async (useVideo = false) => {
+  const callerId = authStore.memberId;
+  const receiverId = chatStore.getTargetUserId();
+  const currentChatRoomId = chatStore.currentChatRoomId;
+  console.log("[startCall 檢查]", {
+    callerId,
+    receiverId,
+    currentChatRoomId,
+  });
+  if (!callerId || !receiverId || !currentChatRoomId) {
+    console.error("[startCall] 缺少參數，無法撥打", {
+      callerId,
+      receiverId,
+      currentChatRoomId,
+    });
+    return;
+  }
   enableVideo.value = useVideo;
   visible.value = true;
   isIncomingCall.value = false;
   callStatus.value = "撥號中...";
-  await callUser(chatStore.getTargetUserId, useVideo);
-  callStatus.value = "等待對方接聽...";
+
+  try {
+    await callUser(receiverId, currentChatRoomId, useVideo);
+    callStatus.value = "等待對方接聽...";
+  } catch (err) {
+    console.error("[startCall] 呼叫失敗", err);
+    callStatus.value = "無法建立通話";
+  }
 };
 
 defineExpose({ startCall });
 
 const acceptIncomingCall = async () => {
+  const fromId = callStore.fromId;
+  const offer = toRaw(callStore.offer);
+  const roomId = callStore.roomId;
+
+  if (!fromId || !offer) {
+    console.error("[WebRTC] 接聽失敗，缺少 fromId 或 offer", { fromId, offer });
+    return;
+  }
+
   callStatus.value = "接通中...";
 
-  if (incomingOffer.value?.sdp?.includes("m=video")) {
+  if (roomId) {
+    chatStore.setCurrentChatRoom(roomId);
+  } else {
+    console.warn("[WebRTC] 接聽時無有效 roomId，無法切換聊天室");
+  }
+
+  if (offer?.sdp?.includes("m=video")) {
     enableVideo.value = true;
   }
   isVideoEnabled.value = enableVideo.value;
 
-  await acceptCall(
-    incomingFromId.value,
-    incomingOffer.value,
-    enableVideo.value
-  );
+  try {
+    await acceptCall(fromId, offer, enableVideo.value);
+  } catch (err) {
+    console.error("[WebRTC] 接聽過程中錯誤", err);
+    callStatus.value = "接聽失敗";
+    return;
+  }
 
   if (enableVideo.value) {
     const stream = getLocalStream();
@@ -219,19 +307,19 @@ const hangupCall = async () => {
   }
 
   callStatus.value = "📴 通話已結束";
-  stopTimer();
-
   // 記錄通話
   await recordCallLog("completed");
+  stopTimer();
 
   // 等待 3 秒再關閉 UI
   setTimeout(() => {
+    endCallSafely({ skipSignal: true });
     endSession();
   }, 3000);
 };
 
 const endSession = () => {
-  endCall();
+  endCallSafely();
   callStore.reset();
   visible.value = false;
   callStatus.value = "";
@@ -249,6 +337,7 @@ const endSession = () => {
 
 const startTimer = () => {
   callStartTime = new Date();
+  console.log("[Timer] callStartTime 設定為", callStartTime);
   updateTimer();
   timer = setInterval(updateTimer, 1000);
 };
@@ -262,7 +351,7 @@ const stopTimer = () => {
 
 const updateTimer = () => {
   const now = new Date();
-  const seconds = Math.floor((now - callStartTime) / 1000);
+  const seconds = Math.floor((now.getTime() - callStartTime) / 1000);
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
   callDuration.value = `${String(minutes).padStart(2, "0")}:${String(
@@ -296,23 +385,25 @@ onMounted(() => {
     startTimer();
   });
 
-  const conn = getConnection();
-  conn?.on("ReceiveEndCall", async () => {
-    callStatus.value = "📴 對方已掛斷";
-    stopTimer();
+  if (!signalRBound) {
+    const conn = getConnection();
 
-    await recordCallLog("completed");
+    conn?.on("ReceiveEndCall", async () => {
+      callStatus.value = "📴 對方已掛斷";
+      await recordCallLog("completed");
+      stopTimer();
+      setTimeout(() => endSession(), 3000);
+    });
 
-    setTimeout(() => endSession(), 3000);
-  });
-  conn?.on("CallRejected", async () => {
-    callStatus.value = "📴 對方已拒接";
-    stopTimer();
+    conn?.on("CallRejected", async () => {
+      callStatus.value = "📴 對方已拒接";
+      await recordCallLog("rejected");
+      stopTimer();
+      setTimeout(() => endSession(), 3000);
+    });
 
-    await recordCallLog("missed");
-
-    setTimeout(() => endSession(), 3000);
-  });
+    signalRBound = true;
+  }
 });
 
 onUnmounted(() => {

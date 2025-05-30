@@ -20,6 +20,8 @@ declare module 'vue' {
     Brazil: typeof import('./components/Visa/Brazil.vue')['default']
     Brunei: typeof import('./components/Visa/Brunei.vue')['default']
     Button: typeof import('./components/ui/button/Button.vue')['default']
+    CallLogDialog: typeof import('./components/chatroom/CallLogDialog.vue')['default']
+    CallLogList: typeof import('./components/chatroom/CallLogList.vue')['default']
     Canada: typeof import('./components/Visa/Canada.vue')['default']
     Card: typeof import('./components/ui/card/Card.vue')['default']
     CardContent: typeof import('./components/ui/card/CardContent.vue')['default']

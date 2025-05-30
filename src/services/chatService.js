@@ -30,7 +30,9 @@ export async function sendAudioMessage(
 
 export async function fetchChatRooms(memberId) {
   const chatStore = useChatStore();
+  chatStore.isChatRoomsLoaded = false;
   const rooms = await getChatRooms(memberId);
   rooms.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
   chatStore.setChatRooms(rooms);
+  return rooms;
 }

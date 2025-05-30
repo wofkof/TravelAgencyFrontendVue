@@ -17,10 +17,27 @@ onMounted(async () => {
   listenForCallEvents(handleIncomingOffer);
 });
 
-function handleIncomingOffer(fromId: string, offer: any) {
-  console.log("[WebRTC] 收到來電 Offer，來自", fromId);
-  // @ts-ignore
-  callStore.receiveCall(fromId, offer);
+function handleIncomingOffer({
+  fromId,
+  offer,
+  roomId,
+  callType,
+}: {
+  fromId: string;
+  offer: any;
+  roomId: number;
+  callType: "audio" | "video";
+}) {
+  console.log("[WebRTC] 收到來電 Offer：", {
+    fromId,
+    offer,
+    roomId,
+    callType,
+  });
+
+  callStore.receiveCall(fromId, offer, roomId, callType);
+
+  callStore.showPopup = true;
 }
 </script>
 
