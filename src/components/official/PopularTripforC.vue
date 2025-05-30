@@ -10,10 +10,15 @@
             :key="trip.projectId"
             class="p-4 w-1/2 align-top"
           >
-            <div class="rounded p-2 shadow">
-              <p class="font-semibold">{{ trip.title }}</p>
-              <!-- 你可以加其他 trip 資訊 -->
-            </div>
+            <router-link
+              :to="{ name: 'DetailPage', params: { projectId: trip.projectId,detailId: trip.detailId,groupId: trip.groupId} }"
+            >
+              <div class="rounded p-2 shadow">
+                <p class="font-semibold">{{ trip.title }}</p>
+                <!-- 你可以加其他 trip 資訊 -->
+              </div>
+            </router-link>
+            
           </td>
           <!-- 若此列只有一筆，補上空白欄對齊 -->
           <td v-if="group.length === 1" class="p-4 w-1/2"></td>
@@ -24,8 +29,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
-import api from '@/utils/api'
+import { ref, onMounted, computed } from 'vue';
+import api from '@/utils/api';
 
 const props = defineProps<{ category: string }>()
 
@@ -45,13 +50,12 @@ onMounted(async () => {
   loading.value = true
   console.log('收到的 category：', props.category)
   try {
-    const response = await api.get(`/OfficialIndex/${encodeURIComponent(props.category)}`)
-    trips.value = response.data
+    const response = await api.get(`/OfficialIndex/getcard/${encodeURIComponent(props.category)}`);
+    trips.value = response.data;
+    loading.value = false;
   } catch (error) {
     console.error('API 錯誤:', error)
-    trips.value = []
-  } finally {
-    loading.value = false
-  }
+    trips.value = [];
+  } 
 })
 </script>

@@ -73,4 +73,7 @@ function checkAnswer() {
 onMounted(() => {
   generateCaptcha()
 })
+defineExpose({
+  resetCaptcha: generateCaptcha
+})
 </script>

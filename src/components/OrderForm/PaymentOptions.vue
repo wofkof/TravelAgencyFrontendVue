@@ -24,20 +24,11 @@
 import { ref, computed, watch, reactive } from 'vue';// 引入 Element Plus 圖標
 import { SuccessFilled } from '@element-plus/icons-vue'; // 打勾圖示
 
-// 有一個信用卡表單組件
-// import CreditCardForm from './CreditCardForm.vue';
-
 const props = defineProps({
   modelValue: { // 從父組件的 v-model="formData.paymentMethod" 傳入
     type: String,
     default: null,
   },
-  // 如果信用卡數據也需要由父組件管理，可以通過 props 傳入並 emit 更新
-  // creditCardInfo: {
-  //   type: Object,
-  //   default: () => ({ cardHolderName: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvc: '' }),
-  //   required: true
-  // }
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -55,42 +46,9 @@ const paymentMethods = ref([
   }
 ]);
 
-// // 信用卡表單數據模型
-// const creditCardData = reactive({
-//   cardHolderName: '',
-//   cardNumber: '',
-//   expiryMonth: '',
-//   expiryYear: '',
-//   cvc: ''
-// });
-
-// // 監聽內部 creditCardData 的變化，並通知父組件 (如果需要)
-// watch(creditCardData, (newValue) => {
-//   // 如果 OrderForm.vue 需要這些數據，則 emit
-//   emits('update:creditCardInfo', newValue);
-// });
-
-
-// const getImageUrl = (name) => {
-//   const pathPrefix = name.startsWith('payment/') ? '/images/' : '/images/payment/';
-//   return `${pathPrefix}${name.replace('payment/', '')}`;
-// };
-
 const handleChange = (value) => {
   emits('update:modelValue', value);
 };
-
-// // 計算是否顯示信用卡表單
-// const showCreditCardForm = computed(() => {
-//   if (!props.modelValue) return false;
-//   // 檢查選擇的支付方式是否為信用卡類型
-//   return props.modelValue.endsWith('CreditCard');
-// });
-
-// // 處理信用卡表單驗證狀態變化的事件
-// const handleCreditCardFormValidity = (isValid) => {
-//   emits('creditCardFormValidityChanged', isValid);
-// };
 
 </script>
 

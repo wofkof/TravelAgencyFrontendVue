@@ -122,7 +122,10 @@ const attraction = ref([]);
 const restaurant = ref([]);
 const accommodation = ref([]);
 const transport = ref([]);
-const memberId = localStorage.getItem("memberId");
+import { useAuthStore } from "@/stores/authStore";
+const authStore = useAuthStore();
+const memberId = computed(() => authStore.memberId);
+
 
 const form = reactive({
   title: "",
@@ -301,13 +304,13 @@ const saveToServe = async () => {
       title: "確認送出",
       message: "確定要將這筆行程送出審核嗎?",
     });
-
-    if (!memberId) {
+    if (!authStore.memberId) {
       ElMessage.warning("請先登入會員，才可送出審核!");
       return;
     }
+
     const payload = {
-      memberId: memberId,
+      memberId: memberId.value,
       note: form.title,
       departureDate: form.daterange[0],
       endDate: form.daterange[1],

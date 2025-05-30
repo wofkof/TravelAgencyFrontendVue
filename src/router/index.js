@@ -41,22 +41,20 @@ const routes = [
     name: "SignUp",
     component: () => import("@/components/SignUp/SignUp.vue"),
   },
-  // 會員中心
   {
     path: "/member/:section?",
     name: "MemberCenter",
     component: () => import("@/views/MemberCenterView.vue"),
   },
-
   {
-    path: "/ShoppingCart", // 購物車頁面的路徑
+    path: "/ShoppingCart",
     name: "ShoppingCart",
-    component: ShoppingCart, // 對應到 ShoppingCart 組件
+    component: ShoppingCart, 
   },
   {
-    path: "/order-form", // 訂單表單頁面的路徑
+    path: "/order-form",
     name: "OrderForm",
-    component: OrderForm, // 對應到 OrderForm 組件
+    component: OrderForm,
     meta: { simpleNavbar: true }
   },
   {
@@ -64,7 +62,18 @@ const routes = [
     name: "Ordercomplete",
     component: OrderComplete,
     meta: { simpleNavbar: true },
-    props: true // 將路由參數作為 props 傳遞給元件
+    props: true
+  },
+  {
+    path: "/order-payment",
+    name: "OrderPayment",
+    component: OrderPayment,
+    props: route => ({
+        orderId: route.query.orderId,
+        mtn: route.query.mtn,
+        exp: route.query.exp
+    }),
+    meta: { simpleNavbar: true }
   },
   {
     path: "/CustomtravelCreate",
@@ -87,39 +96,9 @@ const routes = [
 
   { path: '/detail/:projectId/:detailId/:groupId', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
-  { path: "/DocumentMenuView", // 瀏覽器網址中顯示的路徑
-    name: "DocumentMenuView", 
-    component: DocumentMenuView }, // 當這個 path 被匹配時，要載入並顯示哪個 Vue 元件,對應到 DocumentMenuView 組件
-    // path: "/DocumentMenuView", : 訪問這個路徑時，會顯示 component: DocumentMenuView。
-    //富成
-
-  //   {
-  //   path: '/visa/detail/:id', // 定義一個 ID 的動態參數
-  //   name: 'VisainDetail',
-  //   component: VisainDetail,
-  //   props: true // 如果直接從 Store 獲取資料，這裡就不一定需要 props: true，但保留是個好習慣
-  //   //富成
-  // },
-
-  { path: "/OrderFormView/:id",  // 為 OrderFormView 定義一個可選的 ID 參數
-    name: "OrderFormView", 
-    component: OrderFormView,
-    props: true // 讓元件可以透過 props 接收 ID
-  }, //富成
-
-  { path: "/PaymentView", 
-    name: "PaymentView", 
-    component: PaymentView }, //富成
-
-  { path: "/CompletedOrderDetailView", 
-    name: "CompletedOrderDetailView", 
-    component: CompletedOrderDetailView }, //富成
-
-
+  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
 
 ];
-
-
 const router = createRouter({
   history: createWebHistory(),
   routes,

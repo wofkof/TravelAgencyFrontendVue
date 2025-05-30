@@ -76,33 +76,33 @@
     </el-row>
 
     <el-row :gutter="20">
-       <el-col :span="12">
-           <el-form-item label="證件類型" prop="documentType" :required="true">
-               <el-select
-                   :model-value="modelValue.documentType"
-                   @update:modelValue="updateField('documentType', $event)"
-                   placeholder="請選擇證件類型"
-                   style="width: 100%;"
-               >
-                   <el-option
-                       v-for="docType in documentTypes"
-                       :key="docType.value"
-                       :label="docType.text"
-                       :value="docType.value"
-                   />
-               </el-select>
-           </el-form-item>
-       </el-col>
-       <el-col :span="12">
-           <el-form-item label="證件號碼" prop="documentNumber" :required="true">
-               <el-input
-                  v-model="modelValue.documentNumber"
-                   @input="updateField('documentNumber', $event)"
-                   placeholder="請輸入證件號碼"
-                   clearable
-               />
-           </el-form-item>
-       </el-col>
+      <el-col :span="12">
+          <el-form-item label="證件類型" prop="documentType" :required="true">
+              <el-select
+                  :model-value="modelValue.documentType"
+                  @update:modelValue="updateField('documentType', $event)"
+                  placeholder="請選擇證件類型"
+                  style="width: 100%;"
+              >
+                  <el-option
+                      v-for="docType in documentTypes"
+                      :key="docType.value"
+                      :label="docType.text"
+                      :value="docType.value"
+                  />
+              </el-select>
+          </el-form-item>
+      </el-col>
+      <el-col :span="12">
+          <el-form-item label="證件號碼" prop="documentNumber" :required="true">
+              <el-input
+                v-model="modelValue.documentNumber"
+                  @input="updateField('documentNumber', $event)"
+                  placeholder="請輸入證件號碼"
+                  clearable
+              />
+          </el-form-item>
+      </el-col>
     </el-row>
 
     <el-form-item label="電子郵件信箱" prop="email" :required="true">
@@ -115,14 +115,14 @@
       />
     </el-form-item>
 
-    <el-form-item label="" prop="updateProfile"> 
+    <!-- <el-form-item label="" prop="updateProfile"> 
       <el-checkbox
         :model-value="modelValue.updateProfile"
         @update:modelValue="updateField('updateProfile', $event)"
         label="同時更新會員資料"
         size="large" 
       />
-    </el-form-item>
+    </el-form-item> -->
 
   </el-form>
 </template>
@@ -140,7 +140,7 @@ const props = defineProps({
     required: true,
     default: () => ({
         firstName: '', lastName: '', country: 'TW', countryCode: '+886',
-        phoneNumber: '', email: '', updateProfile: false,
+        phoneNumber: '', email: '', // updateProfile: false,
         documentType: 'ID_CARD_TW', documentNumber: ''
     })
   }
@@ -349,7 +349,7 @@ const rules = reactive({
     { required: true, message: '請輸入電子郵件信箱', trigger: 'blur' },
     { type: 'email', message: '請輸入有效的電子郵件格式', trigger: ['blur', 'change'] }
   ],
-  updateProfile: [] // 空陣列表示沒有驗證規則
+  // updateProfile: [] // 空陣列表示沒有驗證規則
 });
 
 const asYouType = new AsYouType(); // 建立一個實例
@@ -394,7 +394,7 @@ watch(() => props.modelValue.documentType, () => {
 
 // 暴露驗證方法給父組件 (如果父組件需要主動觸發表單驗證)
 const validateForm = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!formRef.value) {
       return resolve(false); // 如果 formRef 不存在，直接返回 false
     }

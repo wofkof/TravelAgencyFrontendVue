@@ -56,6 +56,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/utils/api'
 import { LocationInformation } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/authStore'
+const authStore = useAuthStore()
+import { computed } from 'vue'
+const memberId = computed(() => authStore.memberId)
+
 
 const form = ref({
   title: '',
@@ -76,8 +81,7 @@ onMounted(async () => {
   try {
     const res = await api.get(`/Content?id=${customTravelId}`)
     const raw = res.data
-const memberId = localStorage.getItem('memberId')
-    const travelRes = await api.get(`/List?memberId=${memberId}`)
+    const travelRes = await api.get(`/List?memberId=${memberId.value}`) 
     const travel = travelRes.data.find(t => t.customTravelId == customTravelId)
 
     if (travel) {

@@ -1,12 +1,16 @@
 export function formatDateTime(
   dateTimeStr: string | null | undefined,
-  options: { type?: "datetime" | "date" | "time" } = { type: "datetime" }
+  options: {
+    type?: "datetime" | "date" | "time";
+    showSeconds?: boolean;
+    useChinese?: boolean;
+  } = { type: "datetime", showSeconds: false, useChinese: true }
 ): string {
   if (!dateTimeStr) return "";
 
-  const date = new Date(dateTimeStr);
-
-  if (isNaN(date.getTime())) return "";
+  const rawDate = new Date(dateTimeStr);
+  if (isNaN(rawDate.getTime())) return "";
+  const date = new Date(rawDate.getTime() + 8 * 60 * 60 * 1000);
 
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -15,14 +19,25 @@ export function formatDateTime(
   const mi = String(date.getMinutes()).padStart(2, "0");
   const ss = String(date.getSeconds()).padStart(2, "0");
 
+  const useChinese = options.useChinese ?? true;
+  const showSeconds = options.showSeconds ?? false;
+
   switch (options.type) {
     case "date":
-      return `${yyyy}-${mm}-${dd}`;
+      return useChinese ? `${yyyy}年${mm}月${dd}日` : `${yyyy}/${mm}/${dd}`;
     case "time":
-      return `${hh}:${mi}:${ss}`;
+      return showSeconds ? `${hh}:${mi}:${ss}` : `${hh}:${mi}`;
     case "datetime":
     default:
-      return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+      if (useChinese) {
+        return showSeconds
+          ? `${yyyy}年${mm}月${dd}日 ${hh}:${mi}:${ss}`
+          : `${yyyy}年${mm}月${dd}日 ${hh}:${mi}`;
+      } else {
+        return showSeconds
+          ? `${yyyy}/${mm}/${dd} ${hh}:${mi}:${ss}`
+          : `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+      }
   }
 }
 
