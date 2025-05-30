@@ -7,11 +7,11 @@
       <!-- 行程資訊大矩形 -->
 
       <!-- 標題區塊 -->
-      <div class="bg-yellow-100 rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
+      <div class="rounded-lg p-4 mb-4 text-gray-800 font-semibold text-left text-2xl">
         {{ mainInfo.title }}
       </div>
 
-      <div class="flex h-96 bg-gray-100">
+      <div class="flex h-96 bg-gray-100 rounded-lg">
         <!-- 二等分區塊 -->
         
 

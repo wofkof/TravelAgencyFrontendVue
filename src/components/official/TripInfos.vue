@@ -4,7 +4,7 @@
     <div class="grid grid-cols-3 gap-6">
       <!-- 圖片區塊 -->
       <div>
-        <div class="border rounded-lg bg-blue-300 w-full h-80 flex items-center justify-center">
+        <div class="border rounded-lg bg-blue-200 w-full h-80 flex items-center justify-center">
           <img v-if="hoverImage" :src="currentImage" class="object-cover w-full h-full rounded-lg" />
           <img v-else src="/src/assets/images/newlogo.png" class="object-cover"/>
         </div>
