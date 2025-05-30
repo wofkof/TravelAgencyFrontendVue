@@ -123,7 +123,7 @@ const routes = [
   { path: "/CompletedOrderDetailView", 
     name: "CompletedOrderDetailView", 
     component: CompletedOrderDetailView }, //富成
-  { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
+  // { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
   { path: '/oauth2/callback', name: 'GoogleCallback', component: OAuthCallback }
 ];
 
