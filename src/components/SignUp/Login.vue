@@ -113,6 +113,7 @@ import { defineEmits } from 'vue'
 import { ElMessage } from 'element-plus'
 import PasswordInput from "./PasswordInput.vue";
 const siteKey = '6LcVekgrAAAAAGl9ArUfrJjLffkSNTWtvMQlHBTo'
+//const siteKey = '6LfBw08rAAAAABB6dek7wp9FyquEt57roYyaE-oW'
 const recaptchaHtml = `<div class="g-recaptcha" data-sitekey="${siteKey}"></div>`;
 const getRecaptchaToken = () => {
   return grecaptcha.getResponse()
