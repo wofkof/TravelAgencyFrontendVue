@@ -19,7 +19,7 @@
         </div>
       </nav>
 
-      <h3 class="offer__text">查看我們的特別優惠和折扣</h3>
+      <!-- <h3 class="offer__text">查看我們的特別優惠和折扣</h3> -->
     </div>
 
     <div class="offer__carousel carousel">

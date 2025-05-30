@@ -17,7 +17,7 @@ import OrderForm from "@/views/OrderForm.vue";
 import VisaPage from "@/views/VisaPage.vue";//富成
 import OrderComplete from "@/views/OrderComplete.vue";
 import OrderPayment from "@/views/OrderPayment.vue";
-
+import OAuthCallback from '@/views/OAuthCallback.vue'
 
 
 const routes = [
@@ -38,13 +38,11 @@ const routes = [
     name: "SignUp",
     component: () => import("@/components/SignUp/SignUp.vue"),
   },
-  // 會員中心
   {
     path: "/member/:section?",
     name: "MemberCenter",
     component: () => import("@/views/MemberCenterView.vue"),
   },
-
   {
     path: "/ShoppingCart",
     name: "ShoppingCart",
@@ -96,7 +94,7 @@ const routes = [
   { path: '/detail/:projectId/:detailId/:groupId', name: 'DetailPage', component: () => import('@/views/Trip.vue') },
 
   { path: "/VisaPage", name: "VisaPage", component: VisaPage }, //富成
-
+  { path: '/oauth2/callback', name: 'GoogleCallback', component: OAuthCallback }
 ];
 const router = createRouter({
   history: createWebHistory(),

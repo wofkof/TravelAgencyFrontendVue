@@ -5,7 +5,7 @@
     <h1 class="text-xl font-semibold">類型</h1>
     <input type="checkbox" name="" id=""> 國內旅遊<br>
     <input type="checkbox" name="" id=""> 國外旅遊<br>
-    <input type="checkbox" name="" id=""> 郵輪
+    <input type="checkbox" name="" id=""> 郵輪旅遊
     <hr class="my-2" />
     <h1 class="text-xl font-semibold">預算</h1>
     <div ref="slider" class="slider"></div>

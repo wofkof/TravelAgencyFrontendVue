@@ -7,7 +7,7 @@
     </div>
 
     <!-- 按郵輪類型排序 -->
-    <TripInfos />
+    <TripInfos :category="category" :keyword="currentRegion"/>
   </div>
 </template>
 
@@ -16,6 +16,8 @@ import { ref } from "vue";
 import BigBanner from "@/components/official/BigBanner.vue";
 import PopularTripforC from "@/components/official/PopularTripforC.vue";
 import TripInfos from "@/components/official/TripInfos.vue";
+
+const currentRegion = ref("全部"); 
 
 const props = defineProps<{ category: string }>();
 </script>
