@@ -2,7 +2,7 @@
   <section class="gallery">
     <h2 class="gallery__hdl">旅行照片</h2>
     <div class="l-subhdl-wrapper">
-      <p class="gallery__text">我們的旅行照片</p>
+      <p class="gallery__text"></p>
       <nav class="carousel-nav">
         <div class="carousel-nav__left left-btn" @click="prevSlide">
           <img
