@@ -22,8 +22,8 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" :disabled="!agreement">會員購買</el-button>
-        <el-button>訪客購買</el-button>
+        <!-- <el-button type="primary" :disabled="!agreement">會員購買</el-button> -->
+        <!-- <el-button type="primary" @click="visaRouter.PaymentView">購買</el-button> -->
       </el-form-item>
     </el-form>
   </el-card>
@@ -57,7 +57,4 @@ const visaRouter = useVisaRouter();
   font-weight: bold;
   margin-bottom: 20px;
 }
-
-
-
 </style>

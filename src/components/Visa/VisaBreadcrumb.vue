@@ -31,10 +31,7 @@
 
 <!-- 套件來源 -->
 <script lang="ts" setup>
-
 import { ArrowRight } from '@element-plus/icons-vue'
 import useVisaRouter from "@/utils/visaRouterHelp";
 const visaRouter = useVisaRouter();
-// import {VisaDetail} from "@/Visa/VisaDetail.vue";
-
 </script>

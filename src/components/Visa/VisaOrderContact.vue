@@ -1,11 +1,7 @@
 <!-- 訂單聯絡人 -->
  <template>
   <el-card class="contact-info">
-    <template #header>
-      <div class="card-header">
-        <span>訂單聯絡人</span>
-      </div>
-    </template>
+    <h2 class="title">訂單聯絡人</h2>
     <el-form label-width="80px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -86,17 +82,18 @@ const handleSelect = (item) => {
 
 <style scoped>
 .contact-info {
-  margin: 10px; /* 可以根據你的佈局調整外邊距 */
+    /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
 }
 
-.card-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.card-header span {
-  font-size: 16px;
+.title {
+  font-size: 24px;
   font-weight: bold;
+  margin-bottom: 20px;
 }
 </style>
 

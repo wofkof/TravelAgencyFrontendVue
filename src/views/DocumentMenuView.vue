@@ -1,9 +1,8 @@
 <!-- 我是證件選單第一頁 -->
 <template>
-  <!-- 上面的輪播圖 -->
-  <div class="common-layout">
+  <div class="common-layout" style="height:1300px;"> 
     <el-container>
-      <el-header style="height: auto">
+      <el-header style="height: auto"> <!-- 上面的輪播圖 -->
         <div style="margin-bottom: 20px">
           <el-carousel :interval="4000" type="card" height="300px">
             <el-carousel-item v-for="(img, index) in images" :key="index">
@@ -15,7 +14,7 @@
 
       <!-- 側邊Aside -->
       <el-container>
-        <el-aside width="200px">
+        <el-aside width="500px" style="background-color: #EEDACB;height:1300">
           <el-scrollbar>
             <el-menu>
               <el-sub-menu index="1">
@@ -39,7 +38,7 @@
                 </el-sub-menu>
               </el-sub-menu>
 
-              <el-sub-menu index="3">
+              <el-sub-menu index="2">
                 <template #title>
                   <el-icon><Document /></el-icon>各國簽證
                 </template>
@@ -215,4 +214,5 @@ onMounted(() => {
   margin: 0 auto;
   border-radius: 8px;
 }
+
 </style>

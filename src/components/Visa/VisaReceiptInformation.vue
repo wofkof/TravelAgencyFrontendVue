@@ -1,11 +1,7 @@
 <!-- 收據資料 -->
  <template>
   <el-card class="receipt-info">
-    <template #header>
-      <div class="card-header">
-        <span>收據資料</span>
-      </div>
-    </template>
+    <h2 class="title">收據資料</h2>
     <div class="receipt-description">
       本公司依財政部台財稅第 10504544630 號函登錄統一編號「旅行業代收轉付電子收據」，不另開立統一發票，付款後以 e-mail 提供。
       <br>
@@ -44,17 +40,18 @@ const visaRouter = useVisaRouter();
 
 <style scoped>
 .receipt-info {
-  margin: 10px;
+  /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
 }
 
-.card-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.card-header span {
-  font-size: 16px;
+.title {
+  font-size: 24px;
   font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .receipt-description {

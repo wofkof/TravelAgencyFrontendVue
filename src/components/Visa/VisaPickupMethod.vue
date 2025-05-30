@@ -1,11 +1,7 @@
 <!-- 取件方式 -->
  <template>
   <el-card class="pickup-method">
-    <template #header>
-      <div class="card-header">
-        <span>取件方式</span>
-      </div>
-    </template>
+     <h2 class="title">取件方式</h2>
     <el-radio-group v-model="pickupType">
       <el-radio label="郵寄">郵寄</el-radio>
       <div v-if="pickupType === '郵寄'" class="shipping-address">
@@ -85,17 +81,18 @@ const visaRouter = useVisaRouter();
 
 <style scoped>
 .pickup-method {
-  margin: 10px;
+   /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
 }
 
-.card-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.card-header span {
-  font-size: 16px;
+.title {
+  font-size: 24px;
   font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .shipping-address {

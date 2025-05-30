@@ -1,12 +1,12 @@
 <!-- 應付總額-->
  <template>
   <el-card class="order-summary">
-    <template #header>
+    <!-- <template #header>
       <div class="card-header">
         <span>中華民國護照代辦-新辦/更換(14歲以上)</span>
         <el-tag size="small">商品明細</el-tag>
       </div>
-    </template>
+    </template> -->
     <div class="item">
       中華民國護照代辦-新辦/更換(14歲以上) x 1
       <span class="price">TWD 1,700</span>
@@ -20,14 +20,19 @@
 
     @click="visaRouter.PaymentView"
 
-    size="large" style="width: 100%;">送出訂單資料</el-button>
+    size="large" style="width: 100%;font-size: 25px">送出訂單資料</el-button>
     
   </el-card>
 </template>
 
 <style scoped>
 .order-summary {
-  margin: 10px; /* 可以根據你的佈局調整外邊距 */
+  /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
 }
 
 .card-header {
@@ -37,9 +42,9 @@
 }
 
 .order-summary .item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .order-summary .price {
@@ -47,10 +52,13 @@
 }
 
 .order-summary .total {
-  display: flex;
+  /* display: flex;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #eee; */
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .order-summary .total-price {
