@@ -56,8 +56,13 @@
               disabled
             />
           </div>
-          <div class="text-sm text-gray-700 mt-2">
+          <div class="comment-content">
             評論內容：{{ commentMap[order.orderDetailId]?.content || "無內容" }}
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+            評論時間：{{
+              formatDateTime(commentMap[order.orderDetailId]?.createdAt)
+            }}
           </div>
         </div>
       </el-tab-pane>
@@ -70,6 +75,7 @@ import { ref, onMounted, computed } from "vue";
 import { ElMessage } from "element-plus";
 import { useAuthStore } from "@/stores/authStore";
 import api from "@/utils/api";
+import { formatDateTime } from "@/utils/formatDateTime";
 
 const authStore = useAuthStore();
 
@@ -89,14 +95,24 @@ const commentableOrders = computed(() =>
 );
 
 const commentedOrders = computed(() =>
-  allOrders.value.filter((order) => {
-    const isCompleted = order.status === "Completed";
-    const endDate = new Date(order.endDate);
-    const isValidDate = !isNaN(endDate.getTime());
-    const isEnded = endDate < new Date();
-    const isCommented = order.isCommented;
-    return isCompleted && isValidDate && isEnded && isCommented;
-  })
+  allOrders.value
+    .filter((order) => {
+      const isCompleted = order.status === "Completed";
+      const endDate = new Date(order.endDate);
+      const isValidDate = !isNaN(endDate.getTime());
+      const isEnded = endDate < new Date();
+      const isCommented = order.isCommented;
+      return isCompleted && isValidDate && isEnded && isCommented;
+    })
+    .sort((a, b) => {
+      const aTime = new Date(
+        commentMap.value[a.orderDetailId]?.createdAt
+      ).getTime();
+      const bTime = new Date(
+        commentMap.value[b.orderDetailId]?.createdAt
+      ).getTime();
+      return bTime - aTime;
+    })
 );
 
 onMounted(async () => {
@@ -118,7 +134,7 @@ onMounted(async () => {
     commentMap.value = Object.fromEntries(
       rawComments.map((c) => [
         c.orderDetailId,
-        { rating: c.rating, content: c.content },
+        { rating: c.rating, content: c.content, createdAt: c.createdAt },
       ])
     );
   } catch (err) {
@@ -132,22 +148,43 @@ const submitComment = async (order) => {
     return;
   }
 
+  const categoryEnumMap = {
+    GroupTravel: 0,
+    CustomTravel: 1,
+  };
+
   try {
     const payload = {
       memberId: authStore.memberId,
       orderDetailId: order.orderDetailId,
-      category: order.category,
+      category: categoryEnumMap[order.category],
       rating: order.form.rating,
       content: order.form.content,
     };
+    console.log("🟡 送出評論 payload：", payload);
     const res = await api.post("/comments", payload);
     ElMessage.success(
       res.data.message || `「${order.description}」評論送出成功`
     );
+
+    // 更新評論內容
+    commentMap.value[order.orderDetailId] = {
+      rating: order.form.rating,
+      content: order.form.content,
+      createdAt: new Date().toISOString(),
+    };
+
+    // 標記為已評論
+    order.isCommented = true;
+
+    // 移除原始位置並重新加入（觸發 reactivity）
+    allOrders.value = [
+      ...allOrders.value.filter((o) => o.orderDetailId !== order.orderDetailId),
+      order,
+    ];
+
+    // 切換到已評論
     activeTab.value = "completed";
-    allOrders.value = allOrders.value.filter(
-      (o) => o.orderDetailId !== order.orderDetailId
-    );
   } catch (err) {
     const msg = err?.response?.data?.message || "發送評論失敗";
     ElMessage.error(msg);
@@ -160,3 +197,16 @@ function formatDate(dateStr) {
   return date.toLocaleDateString();
 }
 </script>
+
+<style setup>
+.comment-content {
+  max-height: 6rem;
+  overflow-y: auto;
+  font-size: 0.875rem;
+  color: #4a4a4a;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  padding-right: 0.5rem;
+  word-break: break-word;
+}
+</style>
