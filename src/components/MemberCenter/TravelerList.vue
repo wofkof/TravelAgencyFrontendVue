@@ -5,13 +5,8 @@
     <h2 class="text-xl font-semibold">常用旅客名單</h2>
     <h4 class="text-sm text-gray-500 font-normal">最多可新增20筆常用旅客資料</h4>
   </div>
-      <button
-        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded disabled:opacity-50"
-        @click="handleAdd"
-        :disabled="travelers.length >= 20"
-      >
-        新增常用旅客
-      </button>
+   <el-button type="primary" plain @click="handleAdd"
+        :disabled="travelers.length >= 20">新增常用旅客</el-button>
     </div>
     <div class="space-y-6">
     </div>
@@ -25,13 +20,14 @@
         class="border border-gray-200 rounded-md mb-3"
       >
       <div
-        class="bg-gray-100 px-4 py-3 cursor-pointer flex justify-between items-center"
-        @click="toggleAccordion(t.id)"
-      >
-    <h3 class="font-semibold">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
-    <p><strong>生日：</strong>{{ formatDate(t.birthDate) }}</p>
-    <span>{{ expandedTravelerId === t.id ? '關閉 ▲' : '編輯 ▼' }}</span>
-  </div>
+  class="bg-gray-100 px-4 py-3 cursor-pointer grid grid-cols-3 gap-x-4 items-center text-sm"
+  @click="toggleAccordion(t.id)"
+>
+  <h3 class="font-semibold truncate">旅客 {{ index + 1 }}：{{ t.chineseName }}</h3>
+  <p><strong>生日：</strong>{{ formatDate(t.birthDate) }}</p>
+  <span class="text-right">{{ expandedTravelerId === t.id ? '關閉 ▲' : '編輯 ▼' }}</span>
+</div>
+
 
   <div v-show="expandedTravelerId === t.id" class="px-4 py-3 space-y-6">
     <div class="flex gap-6">
@@ -152,8 +148,8 @@
      
             
     <div class="mt-3 flex justify-end">
-      <el-button @click="saveTraveler(t)" type="primary">儲存</el-button>
-       <el-button  @click="deleteTraveler(t.id)" type="danger" plain>刪除</el-button>
+      <el-button @click="saveTraveler(t)" type="primary" plain>儲存</el-button>
+       <el-button  @click="deleteTraveler(t.id)" type="danger" >刪除</el-button>
     </div>
   </div>
 </div>
