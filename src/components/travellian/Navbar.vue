@@ -110,6 +110,7 @@
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu"
               >
+                <span v-if="showOrderNotificationDot" class="navbar-notification-dot main-button-dot"></span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="w-5 h-5 text-indigo-600"
@@ -139,7 +140,9 @@
                     <router-link
                       to="/member/orders"
                       class="block px-4 py-3 hover:bg-red-50 rounded-t-xl"
-                      >📦 訂單管理</router-link
+                      >📦 訂單管理
+                      <span v-if="showOrderNotificationDot" class="navbar-notification-dot menu-item-dot"></span>
+                    </router-link
                     >
                   </li>
                   <li>
@@ -211,12 +214,14 @@ import { useChatStore } from "@/stores/chatStore";
 import { useAuthStore } from "@/stores/authStore";
 import AuthModal from "@/components/SignUp/AuthModal.vue";
 import { getConnection } from "@/utils/socket";
+import { useHesitationStore } from "@/stores/hesitationStore"; 
 const showAuthModal = ref(false);
 const authStep = ref("Login"); // 可為 'Login' | 'SignUp' | 'ForgetPassword'
 const chatStore = useChatStore();
 const route = useRoute();
 const authStore = useAuthStore();
 const router = useRouter();
+const hesitationStore = useHesitationStore(); 
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
@@ -226,6 +231,8 @@ const isSimpleNavbarRoute = computed(() => {
 // 登入狀態控制變數
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const memberName = computed(() => authStore.memberName);
+
+const showOrderNotificationDot = computed(() => hesitationStore.shouldShowHesitationNotification);
 
 onMounted(() => {
   authStore.loadFromStorage();
@@ -331,6 +338,48 @@ function openSignUpModal() {
   align-items: center;
   gap: 1rem;
 }
+
+.navbar-notification-dot {
+  position: absolute; 
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite; 
+}
+
+.main-button-dot {
+  top: 6px; 
+  right: 6px;
+}
+
+.menu-item-dot {
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.5;        
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.navbar .auth-menu .relative ul li .block {
+  position: relative; /* 給下拉菜單項的 router-link 添加 relative */
+}
+
+
 @media (max-width: 768px) {
   .navbar > .header__logo {
     margin-left: 20px !important;

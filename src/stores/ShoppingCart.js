@@ -2,12 +2,46 @@
 import { defineStore } from 'pinia'; // 從 pinia 導入 defineStore 方法
 import { ref, computed, watch } from 'vue'; // 從 vue 導入 ref (用於狀態) 和 computed (用於計算屬性/Getters)
 import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import 'dayjs/locale/zh-tw';
+
+dayjs.extend(customParseFormat);
+dayjs.locale('zh-tw');
+
+const formatDateToStore = (dateInput) => {
+  if (!dateInput || typeof dateInput !== 'string') { // 增加對非字串的檢查
+    console.warn(`[CartStore] formatDateToStore: 輸入不是有效字串或為空:`, dateInput);
+    return null;
+  }
+
+  console.log(`[CartStore] formatDateToStore - 正在嘗試格式化: "${dateInput}"`);
+
+  // 嘗試解析特定中文格式 'YYYY年MM月DD日'
+  // 即使導入了 locale，有時明確在解析時指定 locale 和 strict true 更有幫助
+  let d = dayjs(dateInput, 'YYYY年MM月DD日', 'zh-tw', true); 
+
+  if (!d.isValid()) {
+    // 如果特定格式解析失敗，嘗試 dayjs 的默認解析（能處理 ISO, YYYY-MM-DD 等）
+    console.log(`[CartStore] formatDateToStore - 中文格式解析失敗，嘗試 Day.js 默認解析: "${dateInput}"`);
+    d = dayjs(dateInput);
+  }
+  
+  if (d.isValid()) {
+    const formattedDate = d.format('YYYY-MM-DD');
+    console.log(`[CartStore] formatDateToStore - 解析成功，輸出: "${formattedDate}" (來自 "${dateInput}")`);
+    return formattedDate;
+  }
+
+  // 如果所有嘗試都失敗
+  console.warn(`[CartStore] formatDateToStore - 無效的日期輸入，最終無法格式化: "${dateInput}"`);
+  return null; 
+};
 
 // 使用 setup 函數語法定義購物車 store
 export const useCartStore = defineStore('ShoppingCart', () => {
-
   const items = ref([
-    // 範例商品：官方團體旅遊 (保持不變)
+    // 範例商品：官方團體旅遊
     {
       id: uuidv4(),
       productId: '1',
@@ -76,8 +110,6 @@ export const useCartStore = defineStore('ShoppingCart', () => {
         ]
       }
     },
-    // --- 您原有的其他範例商品 (保持不變或按需調整) ---
-    // ...
   ]);
 
 
@@ -96,23 +128,15 @@ export const useCartStore = defineStore('ShoppingCart', () => {
   };
 
   const expiredItems = computed(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = dayjs().startOf('day'); // 使用 dayjs 獲取今天的開始
     return items.value.filter(item => {
       if (!item.departureDate) return false;
-      try {
-        const parts = item.departureDate.split('-');
-        if (parts.length !== 3) {
-          console.warn(`項目 ${item.id} 的日期格式無效: ${item.departureDate}`);
-          return false;
-        }
-        const departure = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-        departure.setHours(0, 0, 0, 0);
-        return departure < today;
-      } catch (e) {
-        console.error(`解析項目 ${item.id} 的日期時出錯: ${item.departureDate}`, e);
+      const departure = dayjs(item.departureDate);
+      if (!departure.isValid()) {
+        console.warn(`項目 ${item.id} 的 departureDate 格式無效: ${item.departureDate}`);
         return false;
       }
+      return departure.isBefore(today);
     });
   });
 
@@ -144,10 +168,25 @@ export const useCartStore = defineStore('ShoppingCart', () => {
   // --- 方法 (Actions) ---
 
   function addItem(productToAdd) {
-    // 使用 productId 和 startDate 來查找現有項目
+    console.log('[CartStore] addItem - 接收到的 productToAdd:', JSON.parse(JSON.stringify(productToAdd)));
+
+    const formattedStartDate = formatDateToStore(productToAdd.startDate);
+    const formattedEndDate = formatDateToStore(productToAdd.endDate);
+    const formattedDepartureDate = formatDateToStore(productToAdd.departureDate);
+
+    // 【關鍵檢查】如果任何一個必要的日期格式化失敗，則不添加商品並提示錯誤
+    if (formattedStartDate === null || formattedEndDate === null || formattedDepartureDate === null) {
+        console.error('[CartStore] addItem - 日期格式化失敗，至少一個關鍵日期為 null。無法添加商品:', {
+            startDate: productToAdd.startDate, fStartDate: formattedStartDate,
+            endDate: productToAdd.endDate, fEndDate: formattedEndDate,
+            departureDate: productToAdd.departureDate, fDepartureDate: formattedDepartureDate
+        });
+        ElMessage.error('加入購物車失敗：商品日期資訊不正確。');
+        return; // 中止添加
+    } 
     const existingItem = items.value.find(
       item => item.productId === productToAdd.productId &&
-              item.startDate === productToAdd.startDate
+              item.startDate === formattedStartDate 
     );
 
     if (existingItem) {
@@ -177,12 +216,12 @@ export const useCartStore = defineStore('ShoppingCart', () => {
         details: productToAdd.details || '',
         imageUrl: productToAdd.imageUrl || null,
         destinationCountryCode: productToAdd.destinationCountryCode,
-        startDate: productToAdd.startDate,
-        startDayOfWeek: productToAdd.startDayOfWeek, 
-        endDate: productToAdd.endDate,
-        endDayOfWeek: productToAdd.endDayOfWeek, 
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        departureDate: formattedDepartureDate,
+        //startDayOfWeek: productToAdd.startDayOfWeek, 
+        //endDayOfWeek: productToAdd.endDayOfWeek, 
         totalDays: productToAdd.totalDays,
-        departureDate: productToAdd.departureDate,
         flights: productToAdd.flights ? JSON.parse(JSON.stringify(productToAdd.flights)) : null,
         accommodation: productToAdd.accommodation ? JSON.parse(JSON.stringify(productToAdd.accommodation)) : null,
         options: productToAdd.options ? JSON.parse(JSON.stringify(productToAdd.options)) : undefined,
