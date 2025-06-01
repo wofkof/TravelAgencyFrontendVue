@@ -11,16 +11,13 @@
             class="p-4 w-1/2 align-top"
           >
             <router-link
-              :to="{ name: 'DetailPage', params: { projectId: trip.projectId,detailId: trip.detailId,groupId: trip.groupId} }"
+              :to="{ name: 'DetailPage', params: { projectId: trip.projectId, detailId: trip.detailId, groupId: trip.groupId } }"
             >
               <div class="rounded p-2 shadow">
                 <p class="font-semibold">{{ trip.title }}</p>
-                <!-- 你可以加其他 trip 資訊 -->
               </div>
             </router-link>
-            
           </td>
-          <!-- 若此列只有一筆，補上空白欄對齊 -->
           <td v-if="group.length === 1" class="p-4 w-1/2"></td>
         </tr>
       </tbody>
@@ -29,33 +26,48 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import api from '@/utils/api';
 
 const props = defineProps<{ category: string }>()
 
-const trips = ref<any[]>([])
+const allTrips = ref<any[]>([])       // 存全部
+const displayTrips = ref<any[]>([])   // 存目前顯示的 10 筆
 const loading = ref(true)
 
-// 分組為每兩筆一組
+let intervalId: ReturnType<typeof setInterval> | null = null
+
+// 隨機挑 10 筆
+function pickRandomTrips() {
+  const shuffled = [...allTrips.value].sort(() => Math.random() - 0.5)
+  displayTrips.value = shuffled.slice(0, 10)
+}
+
+// 每 2 筆一列
 const groupedTrips = computed(() => {
   const groups = []
-  for (let i = 0; i < trips.value.length; i += 2) {
-    groups.push(trips.value.slice(i, i + 2))
+  for (let i = 0; i < displayTrips.value.length; i += 2) {
+    groups.push(displayTrips.value.slice(i, i + 2))
   }
   return groups
 })
 
 onMounted(async () => {
   loading.value = true
-  console.log('收到的 category：', props.category)
   try {
     const response = await api.get(`/OfficialIndex/getcard/${encodeURIComponent(props.category)}`);
-    trips.value = response.data;
-    loading.value = false;
+    allTrips.value = response.data;
+    pickRandomTrips()
+    intervalId = setInterval(pickRandomTrips, 30000) // 每 30 秒重選
   } catch (error) {
     console.error('API 錯誤:', error)
-    trips.value = [];
-  } 
+    allTrips.value = []
+  } finally {
+    loading.value = false
+  }
+})
+
+onBeforeUnmount(() => {
+  if (intervalId) clearInterval(intervalId)
 })
 </script>
