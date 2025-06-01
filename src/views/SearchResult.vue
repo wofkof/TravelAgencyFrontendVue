@@ -1,9 +1,9 @@
 <template>
   <div class="max-w-7xl mx-auto p-4">
 
-    <div class="flex gap-4">
+    <div class="grid grid-cols-4 gap-4">
       <!-- 左邊篩選器區塊 -->
-      <div class="w-1/4 bg-gray-100 rounded-xl p-4 text-center text-gray-700">
+      <div class="rounded-xl p-4 text-center text-gray-700 shadow-lg col-span-1 h-full max-h-96 ">
         <div class="text-left p-4 text-lg">
           <h1 class="text-xl font-semibold">類型</h1>
           <label><input type="checkbox" value="Domestic" v-model="selectedTypes" /> 國內旅遊</label><br>
@@ -19,13 +19,13 @@
           <input type="checkbox" value="1-4" v-model="selectedDays"> 1-4<br>
           <input type="checkbox" value="5-9" v-model="selectedDays"> 5-9<br>
           <input type="checkbox" value="10-14" v-model="selectedDays"> 10-14<br>
-          <input type="checkbox" value="其他" v-model="selectedDays"> 其他
-          <hr class="my-2"/>
+          <input type="checkbox" value="其他" v-model="selectedDays" class="mb-6"> 其他
+          
         </div>
       </div>
 
       <!-- 右邊結果區塊 -->
-      <div class="w-3/4">
+      <div class="col-span-3">
         <div class="pb-4 mb-5 text-center">
           <div v-if="filteredResults.length > 0">
             <router-link
