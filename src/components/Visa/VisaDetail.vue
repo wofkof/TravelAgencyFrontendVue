@@ -1,4 +1,4 @@
-<!-- 訂單明細 範例 -->
+<!-- 填寫訂單 -->
 <template>
 
   <div>
@@ -11,7 +11,7 @@
 1111
   </div>
 
-  <el-button type="primary" @click="visaRouter.VisaOrderView">購買</el-button>
+  <!-- <el-button type="primary" @click="visaRouter.PaymentView">購買</el-button> -->
 
 </template>
 

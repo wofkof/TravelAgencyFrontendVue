@@ -1,8 +1,6 @@
 <template>
   <div class="visa-info-container">
-    <h3><el-icon>
-        <Avatar />
-      </el-icon>中華民國護照｜申辦項目|新辦/更換(14歲以下)</h3>
+    <h3><el-icon><Avatar /></el-icon>中華民國護照｜申辦項目|新辦/更換(14歲以下)</h3>
 
     <div class="VisaOrderdetails">
       <el-card class="visa-info-card">

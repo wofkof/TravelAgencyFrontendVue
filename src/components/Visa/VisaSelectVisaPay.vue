@@ -1,13 +1,14 @@
-<!-- 信用卡, line pay, google pay 付款 -->
+<!-- 選擇付款方式:信用卡, line pay, google pay 付款 -->
 <template>
-  <div>
-    <h2>選擇付款方式</h2>
-    <el-radio-group v-model="selectedPaymentMethod">
-      <el-radio label="credit_card">
-        <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 150px; text-align: center;">
-          <el-icon><CreditCard /></el-icon>
-          信用卡
-        </div>
+  <el-card class="selet-visapay-card">
+     <h2 class="title">選擇付款方式</h2>
+       <el-form label-width="80px">
+       <el-radio-group v-model="selectedPaymentMethod">
+         <el-radio label="credit_card">
+           <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 150px; text-align: center;">
+             <el-icon><CreditCard /></el-icon>
+             信用卡
+           </div>
         <div v-if="selectedPaymentMethod === 'credit_card'" style="margin-top: 10px; padding-left: 20px;">
           <h3>信用卡選項</h3>
           <el-radio-group v-model="selectedInstallment">
@@ -26,50 +27,51 @@
           <el-icon v-if="selectedPaymentMethod === 'mobile_payment'" color="#67C23A"><Check /></el-icon>
         </div>
         <div v-if="selectedPaymentMethod === 'mobile_payment'" style="margin-top: 10px; padding-left: 20px;">
-          <h3>選擇支付平台</h3>
+           <h3>選擇支付平台</h3>
           <el-radio-group v-model="selectedMobilePayment">
             <el-radio label="line_pay">
-              <div style="display: flex; align-items: center;">
-                <el-icon color="#00C300"><Coin /></el-icon>
-                LINE Pay <el-tag type="success" size="small">LINE Pay</el-tag>
-              </div>
+               <div style="display: flex; align-items: center;">
+                 <el-icon color="#00C300"><Coin /></el-icon>
+                 LINE Pay <el-tag type="success" size="small">LINE Pay</el-tag>
+               </div>
             </el-radio>
-            <el-radio label="google_pay">
-              <div style="display: flex; align-items: center;">
-                <el-icon><Google /></el-icon>
-                Google Pay <el-tag type="info" size="small">G Pay</el-tag>
-              </div>
-            </el-radio>
-          </el-radio-group>
-        </div>
-      </el-radio>
-    </el-radio-group>
-    <p style="color: #f56c6c; font-size: 12px; margin-top: 10px;">
-      僅接受台灣發行之信用卡。
-    </p>
-    <div style="margin-top: 20px;">
-      <el-button>回訂單明細</el-button>
-      <el-button
-        v-if="selectedPaymentMethod === 'mobile_payment' && selectedMobilePayment === 'line_pay'"
-        type="primary"
-        style="background-color: #00C300; border-color: #00C300;"
-      >
-        <div style="display: flex; align-items: center;">
-          <el-icon><Coin /></el-icon>
-          使用 LINE Pay 付款
-        </div>
-      </el-button>
-      <el-button v-if="selectedPaymentMethod === 'mobile_payment' && selectedMobilePayment === 'google_pay'" type="primary">
-        <div style="display: flex; align-items: center;">
-          <el-icon><Google /></el-icon>
-          使用 Google Pay 付款
-        </div>
-      </el-button>
-      <el-button v-if="selectedPaymentMethod === 'credit_card'" type="primary">
-        使用信用卡付款 ({{ selectedInstallment }})
-      </el-button>
-    </div>
-  </div>
+               <el-radio label="google_pay">
+                 <div style="display: flex; align-items: center;">
+                 <el-icon><Google /></el-icon>
+                 Google Pay <el-tag type="info" size="small">G Pay</el-tag>
+                 </div>
+               </el-radio>
+             </el-radio-group>
+           </div>
+         </el-radio>
+       </el-radio-group>
+       <p style="color: #f56c6c; font-size: 12px; margin-top: 10px;">
+       僅接受台灣發行之信用卡。
+       </p>
+       <div style="margin-top: 20px;">
+         <el-button>回訂單明細</el-button>
+         <el-button
+         v-if="selectedPaymentMethod === 'mobile_payment' && selectedMobilePayment === 'line_pay'"
+         type="primary"
+         style="background-color: #00C300; border-color: #00C300;"
+         >
+         <div style="display: flex; align-items: center;">
+           <el-icon><Coin /></el-icon>
+           使用 LINE Pay 付款
+         </div>
+         </el-button>
+         <el-button v-if="selectedPaymentMethod === 'mobile_payment' && selectedMobilePayment === 'google_pay'" type="primary">
+         <div style="display: flex; align-items: center;">
+           <el-icon><Google /></el-icon>
+           使用 Google Pay 付款
+         </div>
+         </el-button>
+           <el-button v-if="selectedPaymentMethod === 'credit_card'" type="primary">
+           使用信用卡付款 ({{ selectedInstallment }})
+         </el-button>
+       </div>
+     </el-form>
+   </el-card>
 </template>
 
 <script setup>
@@ -87,4 +89,21 @@ const visaRouter = useVisaRouter();
 
 <style scoped>
 /* 您可以根據需要添加自定義樣式 */
+</style>
+
+<style scoped>
+.select-visapay-card {
+  /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 </style>
