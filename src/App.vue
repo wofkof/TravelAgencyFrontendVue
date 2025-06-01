@@ -32,6 +32,7 @@ const showCheckoutSteps = computed(() => {
 
   return currentPath === "/ShoppingCart" ||
          currentPath === "/order-form" ||
+         currentPath === "/order-payment" ||
          currentPath.startsWith("/order-complete");
 });
 function handleLoginSuccess() {

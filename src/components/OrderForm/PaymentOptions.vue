@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from 'vue';
+import { ref } from 'vue'; // 移除了 computed, watch, reactive 因為在這個簡化版中未使用
 import { SuccessFilled } from '@element-plus/icons-vue'; // 打勾圖示
 
 const props = defineProps({
@@ -33,16 +33,12 @@ const props = defineProps({
 
 const emits = defineEmits(['update:modelValue']);
 
+// 只保留 ECPay 的支付方式
 const paymentMethods = ref([
   {
     value: 'ECPay_CreditCard',
     label: '綠界科技(信用卡)',
-    imgSrc: '/images/Ecpay.png',
-  },
-  {
-    value: 'LINEPay',
-    label: 'LINE Pay',
-    icon: null,
+    imgSrc: '/images/Ecpay.png', // 請確保此圖片路徑是正確的
   }
 ]);
 
@@ -128,7 +124,7 @@ const handleChange = (value) => {
   justify-content: center;
 }
 
-/* 信用卡表單容器樣式 */
+/* 信用卡表單容器樣式 (如果不需要顯示信用卡表單，這段可以考慮移除或註解) */
 .credit-card-form-container {
   margin-top: 25px;
   padding: 20px;

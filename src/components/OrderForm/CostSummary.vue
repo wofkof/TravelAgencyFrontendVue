@@ -50,11 +50,11 @@
         style="width: 100%;"
         @click="onButtonClick" >
         {{ isSubmitting ? '處理中...' : buttonText }} </el-button>
-
       <div class="important-notes">
         <p>請注意：</p>
         <ul>
-          <li>點擊「{{ buttonText }}」即表示您已閱讀並同意本站的 <a href="/terms" target="_blank">訂購條款</a> 與 <a href="/privacy" target="_blank">服務約定</a>。</li> <li>請在 <span class="timer">{{ paymentTimerDisplay }}</span> 內完成支付流程，逾時訂單可能自動取消。</li>
+          <li>點擊「{{ buttonText }}」即表示您已閱讀並同意本站的 <a href="/terms" target="_blank">訂購條款</a> 與 <a href="/privacy" target="_blank">服務約定</a>。</li>
+          <li>請在 <span class="timer">{{ paymentTimerDisplay }}</span> 內完成支付流程，逾時訂單可能自動取消。</li>
         </ul>
       </div>
     </div>

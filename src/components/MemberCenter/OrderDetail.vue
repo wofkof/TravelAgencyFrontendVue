@@ -23,12 +23,12 @@
     <div>
       <h3 class="text-base font-semibold text-gray-800 mb-2">💳 付款與發票資訊</h3>
       <p><strong>付款方式：</strong>{{ detail.paymentMethod }}</p>
-      <p><strong>付款狀態：</strong>{{ detail.status }}</p>
+      <p><strong>付款狀態：</strong>{{ getPaymentStatusInChinese(detail.status) }}</p>
       <p><strong>付款時間：</strong>{{ formatDate(detail.createdAt) }}</p>
       <p><strong>總金額：</strong>{{ detail.totalAmount }} 元</p>
       <p v-if="detail.invoice">
         <strong>發票號碼：</strong>{{ detail.invoice.invoiceNumber }}<br />
-        <strong>發票狀態：</strong>{{ detail.invoice.invoiceStatus }}<br />
+        <strong>發票狀態：</strong>{{ getInvoiceStatusInChinese(detail.invoice.invoiceStatus) }}<br />
         <strong>發票類型：</strong>{{ detail.invoice.invoiceType }}<br />
         <strong>買受人：</strong>{{ detail.invoice.buyerName }}（{{ detail.invoice.buyerUniformNumber || '無統編' }}）<br />
         <strong>發票金額：</strong>{{ detail.invoice.totalAmount }} 元<br />
@@ -41,7 +41,7 @@
 
 <script setup>
 import dayjs from 'dayjs'
-
+import { getPaymentStatusInChinese, getInvoiceStatusInChinese } from '@/utils/translations'; //柏亦修改
 defineProps({
   detail: Object
 })

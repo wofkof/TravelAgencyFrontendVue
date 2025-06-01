@@ -7,24 +7,24 @@
     </div>
 
     <el-table :data="tableData" style="width: 100%" class="details-table" empty-text="暫無訂購項目">
-      <el-table-column prop="departureDate" label="出發日期" width="140" />
-      <el-table-column prop="travelerName" label="旅客" width="120" />
-      <el-table-column prop="productAmount" label="商品金額" align="right">
+      <el-table-column prop="departureDate" label="出發日期" align="center" width="140" />
+      <el-table-column prop="travelerName" label="旅客" align="center" width="120" />
+      <el-table-column prop="productAmount" label="商品金額" align="center">
         <template #default="scope">
           {{ scope.row.productAmount.toLocaleString() }}
         </template>
       </el-table-column>
-      <el-table-column prop="pendingAmount" label="未付金額" align="right">
+      <!-- <el-table-column prop="pendingAmount" label="未付金額" align="right">
         <template #default="scope">
           {{ scope.row.pendingAmount.toLocaleString() }}
         </template>
-      </el-table-column>
-      <el-table-column prop="paymentDeadlineDisplay" label="付款期限" width="180" align="center">
+      </el-table-column> -->
+      <el-table-column prop="paymentDeadlineDisplay" label="付款期限" align="center">
         <template #default="scope">
           <span class="deadline-text">{{ scope.row.paymentDeadlineDisplay }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="orderStatusDisplay" label="訂單狀態" width="120" align="center" />
+      <el-table-column prop="orderStatusDisplay" label="訂單狀態"align="center" />
     </el-table>
 
     <div class="summary-total-amount">
@@ -81,7 +81,7 @@ const formatDeadline = (dateString) => {
   if (!dateString) return 'N/A';
   try {
     const date = new Date(dateString);
-     if (isNaN(date.getTime())) {
+    if (isNaN(date.getTime())) {
         if (dateString.startsWith('0001-')) return 'N/A';
         return dateString;
     }
@@ -93,14 +93,10 @@ const formatDeadline = (dateString) => {
 
 const orderStatusMap = {
     'Awaiting': '待付款',
-    'Processing': '處理中',
-    'Confirmed': '已確認',
     'Completed': '已完成',
     'Cancelled': '已取消',
-    'Refunded': '已退款',
-    'Expired': '已過期',
     'InvoiceFailed': '付款成功但發票失敗',
-    // ... 其他您可能有的狀態
+    'Expired': '已過期',
 };
 
 const orderStatusDisplay = computed(() => {

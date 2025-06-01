@@ -44,15 +44,20 @@
                 <div class="quantity-controls">
                   <el-button
                     @click="handleDecrementOptionQuantity(item, option)"
-                    :disabled="option.quantity <= 0"
+                    :disabled="item.productType === 'CustomTravel' || option.quantity <= 0"
                     class="qty-el-btn"
                     size="small"
                     circle
                     :icon="Minus" title="減少數量"
                   />
-                  <span class="qty-display">{{ option.quantity }}人</span>
+                  <span v-if="item.productType === 'CustomTravel'" class="qty-display">
+                    {{ (item.productSpecificData && typeof item.productSpecificData.people !== 'undefined') ? item.productSpecificData.people + '人' : '人數 N/A' }}
+                  </span>
+                  <span v-else class="qty-display">
+                    {{ option.quantity }}人 </span>
                   <el-button
                     @click="cartStore.updateOptionQuantity(item.id, option.type, 1)"
+                    :disabled="item.productType === 'CustomTravel'"
                     class="qty-el-btn"
                     size="small"
                     circle
@@ -65,7 +70,7 @@
               v-else-if="item.quantity !== undefined"
               class="quantity-controls simple-quantity-controls"
             >
-                 <el-button
+                <el-button
                   @click="handleDecrementSimpleQuantity(item)"
                   :disabled="item.quantity <= 0"
                   class="qty-el-btn"
@@ -82,8 +87,8 @@
                   :icon="Plus" title="增加數量"
                 />
             </div>
-             <div v-else>
-               </div>
+            <div v-else>
+              </div>
           </div>
 
           <div class="item-price">
@@ -137,7 +142,7 @@
             type="danger"
             plain
             size="small"
-            style="margin-left: 10px"
+            :icon="Delete"  style="margin-left: 10px"
           >
             刪除已選項目
           </el-button>
@@ -152,7 +157,7 @@
             :disabled="selectedItemCount === 0"
             type="primary"
           >
-            前往結帳
+            前往結帳 <el-icon class="el-icon--right"><ArrowRightBold /></el-icon>
           </el-button>
         </div>
       </div>
@@ -414,29 +419,35 @@ const goToCheckout = () => {
 /* 使用 :deep() 選中 FavoriteIcon 元件內部的元素來設定顏色 */
 /* 未收藏時 (空心) 的顏色 */
 .favorite-icon-action :deep(.favorite-icon-wrapper) {
-   color: #909399; /* Element Plus 次要文字顏色 (灰色) */
-   transition: color 0.2s ease; /* 顏色變化動畫 */
+    color: #909399;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.favorite-icon-action:active :deep(.favorite-icon-wrapper) {
+    transform: scale(0.9) rotate(-15deg);
 }
 .favorite-icon-action:hover :deep(.favorite-icon-wrapper) {
    color: #606266; /* 懸停時顏色加深 */
+   transform: scale(1.1); /* 懸停時放大 */
 }
-
-/* 已收藏時 (實心) 的顏色 */
 .favorite-icon-action :deep(.favorite-icon-wrapper.is-favorite) {
-   color: #ca0d1d;
-
+    color: #ca0d1d;
 }
-
+.favorite-icon-action :deep(.favorite-icon-wrapper.is-favorite:active) { /* 已收藏點擊時 */
+    transform: scale(0.9);
+}
 
 /* 確保刪除按鈕視覺上協調 */
 .action-button.delete-button {
   margin: 0; /* 可能需要移除預設 margin */
-
 }
 /* 如果需要調整刪除圖示大小 */
 .action-button.delete-button .el-icon,
 .action-button.delete-button :deep(svg) {
-   font-size: 20px; /* 例如，使其與收藏圖標視覺大小接近 */
+   font-size: 25px; /* 例如，使其與收藏圖標視覺大小接近 */
+}
+.action-button.delete-button:hover {
+    background-color: #fef0f0;
+    color: #e71414; /* 如果需要，也可以改變圖示顏色 */
 }
 
 /* --- 項目內部元素樣式 --- */
