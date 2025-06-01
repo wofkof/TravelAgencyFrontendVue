@@ -10,15 +10,25 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import CheckoutSteps from "@/components/tools/CheckoutSteps.vue";
 import AudioCall from "./components/chatroom/AudioCall.vue";
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
-import AuthModal from "@/components/SignUp/AuthModal.vue"
+import { onMounted } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import AuthModal from "@/components/SignUp/AuthModal.vue";
+import { useChatStore } from "@/stores/chatStore.js";
+import { joinAllChatRooms, setupSocket, waitForConnectionReady } from "@/utils/socket";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
+const chatStore = useChatStore();
 
-onMounted(() => {
-  authStore.loadFromStorage() 
-})
+onMounted(async () => {
+  authStore.loadFromStorage();
+
+  if (authStore.memberId) {
+    await chatStore.initChatRooms();
+    await setupSocket(null);
+    await waitForConnectionReady();
+    await joinAllChatRooms(chatStore.allChatRooms);
+  }
+});
 
 // 取得目前的路由物件
 const route = useRoute(); // <-- 取得 route
@@ -36,8 +46,8 @@ const showCheckoutSteps = computed(() => {
          currentPath.startsWith("/order-complete");
 });
 function handleLoginSuccess() {
-  authStore.loadFromStorage()
-  authStore.closeLoginModal()
+  authStore.loadFromStorage();
+  authStore.closeLoginModal();
 }
 </script>
 
@@ -57,9 +67,7 @@ function handleLoginSuccess() {
   <NewsletterSection />
   <FooterSection />
   <AuthModal
-  v-model="authStore.showLoginModal"
-  @login-success="handleLoginSuccess"
-/>
-
-
+    v-model="authStore.showLoginModal"
+    @login-success="handleLoginSuccess"
+  />
 </template>

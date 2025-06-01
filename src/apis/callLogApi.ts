@@ -15,3 +15,8 @@ export interface CallLogDto {
 export const createCallLog = async (log: CallLogDto) => {
   return await api.post("/CallLogs", log);
 };
+
+export async function getCallLogsByChatRoom(chatRoomId) {
+  const response = await api.get(`/calllogs/ByChatRoom/${chatRoomId}`);
+  return response.data;
+}

@@ -24,6 +24,12 @@ import { useAuthStore } from '@/stores/authStore'
 const authStore = useAuthStore()
 authStore.loadFromStorage()
 
+window.isScrolledToBottom = function () {
+  const el = document.querySelector(".chat-message-box");
+  if (!el) return false;
+  return el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
+};
+
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }

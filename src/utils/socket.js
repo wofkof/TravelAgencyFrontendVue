@@ -6,12 +6,21 @@ let connection;
 let isListening = false;
 
 export const setupSocket = async (chatRoomId) => {
-  if (!connection) {
-    const chatStore = useChatStore();
-    const url =
-      getApiBaseUrl() +
-      `/chathub?userType=${chatStore.memberType}&userId=${chatStore.memberId}`;
+  const chatStore = useChatStore();
+  const url =
+    getApiBaseUrl() +
+    `/chathub?userType=${chatStore.memberType}&userId=${chatStore.memberId}`;
 
+  const isUserChanged =
+    connection && !connection.baseUrl.includes(`userId=${chatStore.memberId}`);
+
+  if (isUserChanged) {
+    await connection.stop();
+    connection = null;
+    isListening = false;
+  }
+
+  if (!connection) {
     connection = new HubConnectionBuilder()
       .withUrl(url)
       .withAutomaticReconnect()
@@ -60,15 +69,6 @@ export const setupSocket = async (chatRoomId) => {
         chatStore.memberType
       );
     }
-
-    // 顯示紅點提示：聊天室未開啟、不是當前聊天室、沒滾到最底
-    if (
-      !isSelf &&
-      (!chatStore.showChat || !isCurrentRoom || !isScrolledToBottom())
-    ) {
-      chatStore.unreadCountMap[msg.chatRoomId] =
-        (chatStore.unreadCountMap[msg.chatRoomId] || 0) + 1;
-    }
   });
 
   connection.on("MessageRead", (chatRoomId, readerId, readerType) => {
@@ -84,6 +84,26 @@ export const setupSocket = async (chatRoomId) => {
   });
 
   isListening = true;
+};
+
+export const joinAllChatRooms = async (chatRooms) => {
+  if (!connection) return;
+
+  for (const room of chatRooms) {
+    try {
+      await connection.invoke("JoinGroup", room.chatRoomId.toString());
+    } catch (err) {
+      console.warn("[socket] 加入聊天室群組失敗", room.chatRoomId, err);
+    }
+  }
+
+  console.log("[socket] ✅ 已加入所有聊天室群組");
+};
+
+export const waitForConnectionReady = async () => {
+  while (!connection || connection.state !== "Connected") {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
 };
 
 export const sendMessage = async (

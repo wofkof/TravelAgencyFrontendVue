@@ -11,3 +11,7 @@ export const createChatWithCustomerService = async (memberId) => {
   });
   return response.data.chatRoomId;
 };
+
+export const closeChatRoom = async (chatRoomId) => {
+  return await api.put(`/chatrooms/${chatRoomId}/close`);
+};
