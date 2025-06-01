@@ -43,7 +43,16 @@
   const travelList = ref([])
   const router = useRouter()
   const cartStore = useCartStore()
-    
+  
+  const formatDate = (dateInput) => {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}/${month}/${day}`;
+  };
+
   const statusClass = (statusText) => {
     switch (statusText) {
       case '待審核': return 'status-pending'
@@ -56,41 +65,102 @@
 
 onMounted(async () => {
   try {
-    const memberId = authStore.memberId // ✅ 從 Pinia 拿 memberId
+    const memberId = authStore.memberId;
     if (!memberId) {
-      throw new Error("尚未登入，無法載入資料")
+      ElMessage.error("尚未登入，無法載入資料");
+      throw new Error("尚未登入，無法載入資料");
     }
-    const res = await api.get(`/List?memberId=${memberId}`)
-    travelList.value = res.data.map(item => ({
-      customTravelId: item.customTravelId,
-      title: item.note || '無標題',
-      people: item.people,
-      startDate: item.departureDate,
-      endDate: item.endDate,
-      days: item.days,
-      statusText: item.statusText,
-      daterange: [item.departureDate, item.endDate]
-    }))
+    const res = await api.get(`/List?memberId=${memberId}`);
+    travelList.value = res.data.map(apiItem => {
+      // 假設 API 返回的 JSON 鍵名是 camelCase (如 statusText, contents)
+      // 如果是 PascalCase (StatusText, Contents)，請相應修改
+      const statusTextFromApi = apiItem.statusText || (apiItem.Status !== undefined ? `未知狀態 (${apiItem.Status})` : '未知狀態');
+      const dailyActivitiesFromApi = apiItem.contents || [];
+
+      return {
+        customTravelId: apiItem.customTravelId, // 假設 camelCase
+        title: apiItem.note || '無標題',        // 假設 camelCase
+        people: apiItem.people,              // 假設 camelCase
+        startDate: formatDate(apiItem.departureDate), // 假設 camelCase
+        endDate: formatDate(apiItem.endDate),       // 假設 camelCase
+        days: apiItem.days,                  // 假設 camelCase
+        statusText: statusTextFromApi,       // <<-- 直接使用 API 返回的 statusText
+        daterange: [formatDate(apiItem.departureDate), formatDate(apiItem.endDate)],
+        totalAmount: apiItem.totalAmount,    // 假設 camelCase
+        dailyActivities: dailyActivitiesFromApi, // <<-- 儲存每日活動詳情
+      };
+    });
   } catch (error) {
-    console.error('載入資料失敗:', error)
+    console.error('載入資料失敗:', error);
+    if (error.message !== "尚未登入，無法載入資料") {
+        ElMessage.error('載入自訂行程列表失敗，請稍後再試。');
+    }
   }
-})
+});
 
 const emit = defineEmits(['view-detail'])
 const viewTravel = (id) =>{
   emit('view-detail', id)
 }
 
-const addToCart = (item) => {
-  console.log("目前購物車：", cartStore.activeItems.map(x => x.productId))
-  console.log("嘗試加入：", item.customTravelId)
-  if (!cartStore.activeItems.some(x => x.productId === item.customTravelId)) {
-    cartStore.addItem(item)
-    ElMessage.success('已加入購物車')
-  } else {
-    ElMessage.warning('此行程已在購物車中')
+// const addToCart = (item) => {
+//   console.log("目前購物車：", cartStore.activeItems.map(x => x.productId))
+//   console.log("嘗試加入：", item.customTravelId)
+//   if (!cartStore.activeItems.some(x => x.productId === item.customTravelId)) {
+//     cartStore.addItem(item)
+//     ElMessage.success('已加入購物車')
+//   } else {
+//     ElMessage.warning('此行程已在購物車中')
+//   }
+// }
+
+const addToCart = (itemFromList) => {
+  if (cartStore.activeItems.some(cartItem => cartItem.productId === String(itemFromList.customTravelId))) {
+    ElMessage.warning('此行程已在購物車中');
+    return;
   }
-}
+
+  const specificData = {
+    memberId: authStore.memberId,
+    people: itemFromList.people || 0,
+    originalNote: itemFromList.title,
+    dailyActivities: itemFromList.dailyActivities || [], // <<-- 現在可以從 itemFromList 獲取
+  };
+
+  const productToAdd = {
+    productId: itemFromList.customTravelId,
+    productType: 'CustomTravel',
+    name: itemFromList.title,
+    details: `會員自訂行程 - ${itemFromList.title}. 共 ${itemFromList.days} 天, ${itemFromList.people} 人參與.`,
+    imageUrl: '/images/tours/custom-default.jpg',
+    destinationCountryCode: 'CUSTOM',
+
+    startDate: itemFromList.startDate,
+    endDate: itemFromList.endDate,
+    totalDays: Number(itemFromList.days),
+    departureDate: itemFromList.startDate,
+
+    flights: null,
+    accommodation: { description: '依客製化需求安排' },
+
+    options: [
+      {
+        type: '客製化專案',
+        quantity: 1,
+        price: Number(itemFromList.totalAmount) || 0,
+        unitLabel: `總計 (${itemFromList.people || 0}人)`
+      }
+    ],
+    category: '客製化旅遊',
+    isFavorite: false,
+    productSpecificData: specificData, // specificData 現在包含了 dailyActivities
+  };
+
+  console.log("準備加入購物車的完整 productToAdd：", JSON.parse(JSON.stringify(productToAdd)));
+
+  cartStore.addItem(productToAdd);
+  ElMessage.success('已加入購物車');
+};
   </script>
   
   <style scoped>

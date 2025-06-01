@@ -40,19 +40,13 @@
     </el-scrollbar>
 
     <div class="message-input-bar">
-      <p
-        v-if="chatRoomStatus === 1"
-        style="color: gray; font-size: 12px; margin-top: 4px; padding-left: 8px"
-      >
-        此聊天室已關閉，無法再發送訊息。
-      </p>
       <el-input
         v-model="newMessage"
         clearable
         type="textarea"
-        :placeholder="chatRoomStatus === 1 ? '聊天室已關閉' : '輸入訊息...'"
+        :placeholder="isChatRoomClosed ? '聊天室已關閉' : '輸入訊息...'"
         @keydown.enter.prevent="send"
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
         autosize
         class="message-input"
       />
@@ -63,7 +57,7 @@
         size="small"
         plain
         circle
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
         ><el-icon><Promotion /></el-icon
       ></el-button>
 
@@ -71,7 +65,7 @@
       <EmojiButton
         @click="toggleEmojiPicker"
         style="margin-left: 0px"
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
       />
       <!-- 貼圖按鈕 -->
       <el-button
@@ -81,7 +75,7 @@
         size="small"
         plain
         circle
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
         ><el-icon><PictureFilled /></el-icon
       ></el-button>
 
@@ -93,12 +87,9 @@
     </div>
     <div class="button-group">
       <!-- 圖片按鈕 -->
-      <ImageUploader
-        style="margin-left: 5px"
-        :disabled="chatRoomStatus === 1"
-      />
+      <ImageUploader style="margin-left: 5px" :disabled="isChatRoomClosed" />
       <!-- 錄音按鈕 -->
-      <VoiceUploader :disabled="chatRoomStatus === 1" />
+      <VoiceUploader :disabled="isChatRoomClosed" />
       <!-- 通話按鈕 -->
       <el-button
         type="success"
@@ -107,7 +98,7 @@
         plain
         circle
         style="margin-left: 0px"
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
         ><el-icon><Phone /></el-icon
       ></el-button>
       <!-- 視訊通話按鈕 -->
@@ -118,19 +109,21 @@
         plain
         circle
         style="margin-left: 0px"
-        :disabled="chatRoomStatus === 1"
+        :disabled="isChatRoomClosed"
         ><el-icon><VideoCamera /></el-icon
       ></el-button>
       <!-- 測試用的假訊息 -->
-      <TestFakeMessage style="margin-left: 0px" />
+      <!-- <TestFakeMessage style="margin-left: 0px" /> -->
+      <!-- 關閉按鈕 -->
       <el-button
         type="danger"
         size="small"
+        circle
         plain
         @click="closeChatRoom"
-        v-if="chatRoomStatus === 0"
+        v-if="chatRoomStatus === 'Opened'"
       >
-        關閉聊天室
+        <el-icon><WarnTriangleFilled /></el-icon>
       </el-button>
       <!-- 搜尋訊息 -->
       <ChatSearchBar
@@ -184,31 +177,53 @@ const showStickerPanel = ref(false);
 const stickerPanelRef = ref(null);
 
 const currentChatRoom = computed(() => {
-  return chatStore.allChatRooms.find(
+  const room = chatStore.allChatRooms.find(
     (r) => r.chatRoomId === chatStore.currentChatRoomId
   );
+  console.log("[currentChatRoom] 目前聊天室資訊:", room);
+  return room;
 });
 
-const chatRoomStatus = computed(() => currentChatRoom.value?.status ?? 0); // Opened = 0 Closed = 1
+const chatRoomStatus = computed(
+  () => currentChatRoom.value?.status ?? "Opened"
+);
+const isChatRoomClosed = computed(() => chatRoomStatus.value === "Closed");
 
 const closeChatRoom = async () => {
   const chatRoomId = chatStore.currentChatRoomId;
   if (!chatRoomId) return;
 
   try {
+    await ElMessageBox.confirm(
+      "關閉後將無法再傳送訊息，是否確定關閉聊天室？",
+      "確認關閉",
+      {
+        confirmButtonText: "確定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
     await closeChatRoomApi(chatRoomId);
     const room = chatStore.allChatRooms.find(
       (r) => r.chatRoomId === chatRoomId
     );
+
     if (room) room.status = "Closed";
     ElMessage.success("聊天室已關閉");
   } catch (err) {
-    console.error("關閉聊天室失敗", err);
-    ElMessage.error("關閉聊天室失敗");
+    if (err !== "cancel") {
+      console.error("關閉聊天室失敗", err);
+      ElMessage.error("關閉聊天室失敗");
+    }
   }
 };
 
 const sendSticker = async (url: string) => {
+  if (isChatRoomClosed.value) {
+    console.warn("[sendSticker] 此聊天室已關閉，禁止發送貼圖");
+    return;
+  }
+
   const chatRoomId = chatStore.currentChatRoomId;
   if (!chatRoomId) return;
 
@@ -414,6 +429,11 @@ function isPureEmoji(str: string) {
 }
 
 const send = async () => {
+  if (isChatRoomClosed.value) {
+    console.warn("[send] 此聊天室已關閉，禁止發送訊息");
+    return;
+  }
+
   const messageContent = newMessage.value.trim();
   if (!messageContent) return;
 

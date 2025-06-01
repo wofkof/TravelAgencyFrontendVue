@@ -16,37 +16,38 @@
               <h3>{{ item.name }}</h3>
               <p class="item-date-range" v-if="item.startDate && item.endDate">
                 <el-icon><Calendar /></el-icon>
-                {{ item.startDate }} ({{ item.startDayOfWeek }}) ~ {{ item.endDate }} ({{ item.endDayOfWeek }})
+                {{ item.startDate }} {{ item.startDayOfWeek ? `(${item.startDayOfWeek})` : '' }} ~
+                {{ item.endDate }} {{ item.endDayOfWeek ? `(${item.endDayOfWeek})` : '' }}
                 共 {{ item.totalDays }} 天
+              </p>
+              <p v-if="getDisplayPeopleCount(item)" class="item-people-info">
+                <el-icon><User /></el-icon>
+                參與人數：{{ getDisplayPeopleCount(item) }}
+              </p>
+              <p v-if="item.productType === 'GroupTravel' && item.productSpecificData?.internalCode" class="item-group-code">
+                團號：{{ item.productSpecificData.internalCode }}
               </p>
             </div>
           </div>
 
           <div v-if="item.flights" class="item-section flight-info">
             <h4>參考航班</h4>
-            <div class="flight-leg">
-              <span>去程</span>
-              <span>{{ item.flights.outbound.airline }} {{ item.flights.outbound.flightNumber }}</span>
-              <span>{{ item.flights.outbound.date }}</span>
-              <span>{{ item.flights.outbound.departureTime }} {{ item.flights.outbound.departureCity }}</span>
-              <span>&rarr;</span>
-              <span>{{ item.flights.outbound.arrivalTime }} {{ item.flights.outbound.arrivalCity }}</span>
             </div>
-            <div class="flight-leg">
-              <span>回程</span>
-              <span>{{ item.flights.return.airline }} {{ item.flights.return.flightNumber }}</span>
-              <span>{{ item.flights.return.date }}</span>
-              <span>{{ item.flights.return.departureTime }} {{ item.flights.return.departureCity }}</span>
-              <span>&rarr;</span>
-              <span>{{ item.flights.return.arrivalTime }} {{ item.flights.return.arrivalCity }}</span>
-            </div>
-          </div>
 
-          <div v-if="item.accommodation" class="item-section accommodation-info">
+          <div v-if="item.accommodation?.description" class="item-section accommodation-info">
             <h4>參考住宿</h4>
             <p>{{ item.accommodation.description }}</p>
-            <p>房型人數：{{ item.accommodation.roomType }}, {{ item.accommodation.occupancy }}</p>
             </div>
+
+          <div v-if="item.productType === 'CustomTravel' && item.productSpecificData?.dailyActivities?.length > 0" class="item-section daily-activities-info">
+            <h4>行程活動摘要</h4>
+            <ul>
+              <li v-for="activity in item.productSpecificData.dailyActivities.slice(0, 3)" :key="activity.day + activity.time + activity.itemId">
+                 D{{ activity.day }} {{ activity.time }}: {{ activity.itemId }} ({{activity.category}}) {{ activity.accommodationName ? `- 宿: ${activity.accommodationName}` : ''}}
+              </li>
+              <li v-if="item.productSpecificData.dailyActivities.length > 3">...等更多活動</li>
+            </ul>
+          </div>
 
           <el-collapse v-model="activeItemCollapse[item.id]" class="item-pricing-collapse">
             <el-collapse-item name="details">
@@ -59,7 +60,7 @@
               <div class="item-options-summary-wrapper">
                 <div v-if="item.options && item.options.length > 0" class="item-options-summary">
                   <div v-for="option in item.options.filter(o => o.quantity > 0)" :key="option.type" class="option-detail">
-                    <span>{{ option.type }} ({{ option.unitLabel || '' }}) x {{ option.quantity }}</span>
+                    <span>{{ option.type }} {{ option.unitLabel ? `(${option.unitLabel})` : '' }} x {{ option.quantity }}</span>
                     <span>NT$ {{ option.price?.toLocaleString() }}</span>
                     <span>小計: NT$ {{ (option.price * option.quantity)?.toLocaleString() }}</span>
                   </div>
@@ -81,7 +82,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref, computed } from 'vue';
+import { defineProps, ref, computed, watch } from 'vue';
 // Props 保持不變
 const props = defineProps({
   items: {
@@ -92,20 +93,30 @@ const props = defineProps({
 });
 
 // 用於控制每個商品明細的展開/收合狀態
-const activeItemCollapse = ref({}); // 例如: { 'product123': ['details'], 'product456': [] }
+const activeItemCollapse = ref({});
 
-// 初始化 activeItemCollapse，預設收合所有明細
-props.items.forEach(item => {
-  if (activeItemCollapse.value[item.id] === undefined) {
-    activeItemCollapse.value[item.id] = []; // 或者預設展開 ['details']
+// 使用 watch 來初始化或更新 activeItemCollapse
+watch(() => props.items, (newItems) => {
+  if (newItems) { // 確保 newItems 不是 undefined
+    newItems.forEach(item => {
+      if (item && item.id && activeItemCollapse.value[item.id] === undefined) { // 確保 item 和 item.id 有效
+        activeItemCollapse.value[item.id] = []; // 預設收合
+      }
+    });
   }
-});
+}, { immediate: true, deep: true });
 
-// 計算小計的方法 (保持不變或稍作調整以適應新 options 結構)
+
+// 計算小計的方法
 const calculateItemSubtotal = (item) => {
+  if (!item) return 0; // 防禦性程式碼
   if (item.options && item.options.length > 0) {
+    // 對於 CustomTravel，其 options[0].price 已經是總價
+    // 對於 GroupTravel，需要累加 options
+    // 你的 store 範例中，CustomTravel 的 options[0].price 是總價，quantity 是 1
+    // GroupTravel 的 options 每個都有 price 和 quantity
     return item.options.reduce((sum, option) => sum + (option.price * option.quantity), 0);
-  } else if (item.totalPrice !== undefined) { // 如果後端直接給了總價
+  } else if (item.totalPrice !== undefined) { 
     return item.totalPrice;
   } else if (item.quantity !== undefined && item.pricePerUnit !== undefined) {
     return item.pricePerUnit * item.quantity;
@@ -113,6 +124,25 @@ const calculateItemSubtotal = (item) => {
   return 0;
 };
 
+// 【新增】👇 獲取用於顯示的參與人數描述
+const getDisplayPeopleCount = (item) => {
+  if (!item) return '';
+  if (item.productType === 'CustomTravel') {
+    return item.productSpecificData?.people ? `${item.productSpecificData.people} 人` : '';
+  } else if (item.productType === 'GroupTravel') {
+    if (item.options && item.options.length > 0) {
+      const totalParticipants = item.options.reduce((sum, opt) => sum + (Number(opt.quantity) || 0), 0);
+      if (totalParticipants > 0) {
+        const details = item.options
+          .filter(opt => opt.quantity > 0)
+          .map(opt => `${opt.type}：${opt.quantity}`)
+          .join('、');
+        return `${totalParticipants} 人 (${details})`;
+      }
+    }
+  }
+  return ''; // 如果無法確定，返回空字串
+};
 
 // 如果需要從 options 動態生成住宿人數描述
 const generateOccupancyFromOptions = (options) => {

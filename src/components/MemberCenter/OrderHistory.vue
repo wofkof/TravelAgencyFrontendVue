@@ -48,6 +48,16 @@
               </template>
             </tbody>
           </table>
+          <div class="example-pagination-block flex justify-center mt-4">
+          <el-pagination
+            v-if="totalCount > pageSize"
+            layout="prev, pager, next"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="totalCount"
+            @current-change="handlePageChange"
+          />
+        </div>
         </div>
       </el-tab-pane>
 
@@ -87,6 +97,16 @@
               </template>
             </tbody>
           </table>
+          <div class="example-pagination-block flex justify-center mt-4">
+          <el-pagination
+            v-if="totalCount > pageSize"
+            layout="prev, pager, next"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="totalCount"
+            @current-change="handlePageChange"
+          />
+        </div>
         </div>
       </el-tab-pane>
 
@@ -126,6 +146,16 @@
               </template>
             </tbody>
           </table>
+          <div class="example-pagination-block flex justify-center mt-4">
+          <el-pagination
+            v-if="totalCount > pageSize"
+            layout="prev, pager, next"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="totalCount"
+            @current-change="handlePageChange"
+          />
+        </div>
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -157,6 +187,14 @@ const orders = ref([]);
 const expandedOrderId = ref(null);
 const expandedOrderDetail = ref(null);
 const loaded = ref(false);
+// 分頁
+const currentPage = ref(1);
+const pageSize = ref(5); 
+const totalCount = ref(0); 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchOrdersByStatuses(statusMap[activeTab.value]);
+};
 
 // 日期格式
 const formatDate = (dateStr) => dateStr ? dayjs(dateStr).format('YYYY-MM-DD') : '—';
@@ -181,6 +219,7 @@ const handleTabChange = (tab) => {
   const newStatuses = statusMap[tab.props.name];
   if (!newStatuses) return;
   activeTab.value = tab.props.name; // 切換分頁前先更新 activeTab
+  currentPage.value = 1;
   fetchOrdersByStatuses(newStatuses);
 };
 
@@ -213,9 +252,12 @@ const fetchOrdersByStatuses = async (statuses) => {
 
   try {
     const queryString = statuses.map(s => `statuses=${encodeURIComponent(s)}`).join('&');
-    const url = `/OrderHistory/list/${memberId.value}?${queryString}`;
+    const url = `/OrderHistory/list/${memberId.value}?${queryString}&page=${currentPage.value}&pageSize=${pageSize.value}`;
+
     const res = await api.get(url);
-    orders.value = res.data;
+    orders.value = res.data.items;
+    totalCount.value = res.data.totalCount;
+
     console.log('OrderHistory fetched orders:', JSON.parse(JSON.stringify(orders.value))); // 深入打印
   } catch (err) {
     console.error(`取得訂單列表 (狀態: ${statuses.join(',')}) 失敗:`, err);
@@ -228,6 +270,7 @@ const fetchOrdersByStatuses = async (statuses) => {
 onMounted(() => {
   if (authStore.isLoggedIn && memberId.value) {
       const defaultStatuses = statusMap[activeTab.value];
+      currentPage.value = 1;
       fetchOrdersByStatuses(defaultStatuses);
   } else {
       const unwatch = watch(() => authStore.memberId, (newMemberId) => {

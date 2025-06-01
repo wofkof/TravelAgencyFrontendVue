@@ -278,8 +278,8 @@ onBeforeUnmount(() => {
 function handleLoginSuccess() {
   authStore.loadFromStorage();
   showAuthModal.value = false;
-  ElMessage.success("登入成功");
   window.location.reload();
+  ElMessage.success("登入成功");
 }
 
 function openLoginModal() {

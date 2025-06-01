@@ -40,11 +40,10 @@ const isHomePage = computed(() => route.path === "/"); // <-- 檢查路徑
 const showCheckoutSteps = computed(() => {
   const currentPath = route.path;
 
-  return (
-    currentPath === "/ShoppingCart" ||
-    currentPath === "/order-form" ||
-    currentPath.startsWith("/order-complete")
-  );
+  return currentPath === "/ShoppingCart" ||
+         currentPath === "/order-form" ||
+         currentPath === "/order-payment" ||
+         currentPath.startsWith("/order-complete");
 });
 function handleLoginSuccess() {
   authStore.loadFromStorage();
