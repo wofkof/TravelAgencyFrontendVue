@@ -120,6 +120,7 @@ const recordCallLog = async (status: "completed" | "missed" | "rejected") => {
     console.log("[CallLog] 本機不是發起者，不紀錄 call log");
     return;
   }
+  const callerId = authStore.memberId;
   const resolvedReceiverId = chatStore.getTargetUserId();
   console.log(
     "[CallLog] callerId:",
