@@ -73,6 +73,9 @@ import { useRouter } from 'vue-router'; // 如果你正在導航到詳細資訊�
 
 const documentMenuStore = useDocumentMenuStore();
 const router = useRouter();
+const documentMenuData = ref({});
+const isLoading = ref(true);
+const { selectedDocumentMenuItem } = storeToRefs(documentMenuStore); // 確保這裡正確地解構了
 
 
 // 從 Store 中解構響應式狀態
@@ -90,9 +93,7 @@ const handleSelect = (item) => {
   router.push({ name: 'OrderFormView', params: { id: item.menuId } }); 
 };
 
-const documentMenuData = ref({});
-const isLoading = ref(true);
-</script>
+</>
 
 <style scoped>
 .visa-info-container {

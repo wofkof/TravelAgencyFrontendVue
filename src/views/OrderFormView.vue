@@ -63,6 +63,7 @@ const orderFormStore = useOrderFormStore();
 
 // === 提交整個訂單的函式 ===
 const submitOrderForm = async () => {
+  console.log('submitOrderForm 函數被觸發了！'); 
   // 1. 前端最終驗證所有必填欄位
   // 這裡的驗證可以直接使用 orderFormStore.data 中的值
   if (!orderFormStore.data.MemberId) {
