@@ -1,8 +1,8 @@
 <template>
-  <div class="max-w-7xl mx-auto p-4 mb-5 border">
+  <div class="max-w-7xl mx-auto p-4 mb-5">
     <h1 class="mb-4 text-2xl font-bold">行程清單</h1>
 
-    <div v-for="(chunk, index) in visibleChunks" :key="index" class="mb-6 border rounded-lg">
+    <div v-for="(chunk, index) in visibleChunks" :key="index" class="mb-6 border rounded-lg shadow-md">
       <!-- 區塊標題 -->
       <div class="bg-gray-100 p-3 font-semibold">
         {{ chunk[0].country }} | {{ formatMonth(chunk[0].departureDate) }} 出發
