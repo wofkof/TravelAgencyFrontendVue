@@ -5,7 +5,7 @@
     </div>
 
     <div v-else-if="error" class="status-container error-container">
-       <el-alert
+      <el-alert
           title="載入訂單資訊時發生錯誤"
           :description="error"
           type="error"
@@ -23,12 +23,12 @@
     </div>
 
       <div v-else-if="!selectedOrderItems || selectedOrderItems.length === 0" class="status-container empty-container">
-         <el-empty description="購物車中沒有選擇任何商品">
+        <el-empty description="購物車中沒有選擇任何商品">
             <router-link to="/ShoppingCart">
               <el-button type="primary" :icon="ShoppingCart">回到購物車選擇商品</el-button>
             </router-link>
-         </el-empty>
-     </div>
+        </el-empty>
+      </div>
 
     <div v-else class="order-form-content">
       <form @submit.prevent="submitOrder" ref="orderFormRef">
@@ -97,7 +97,7 @@
                 @submit-order="handleGoToPayment" 
                 button-text="送出訂單資料" 
                 :show-payment-info="false"       
-                :payment-timer-seconds="30"      
+                :payment-timer-seconds="180"      
                 class="cost-summary-component"
                 :order-items="selectedOrderItems"
                 :orderer-status-message="ordererStatusMessage"
@@ -133,6 +133,7 @@ import { useCartStore } from '@/stores/ShoppingCart'; // Pinia Store
 import { initiateOrder, getMemberDetailsForOrder, getOrderDetails, updateOrderAPI } from '@/utils/orderapi'; // API Service
 import { useAuthStore } from '@/stores/authStore'; // 會員認證 Store
 import { useHesitationStore } from '@/stores/hesitationStore';
+import { watchDebounced } from '@vueuse/core';
 // --- 引入 Element Plus 圖標 ---
 import { RefreshRight, ShoppingCart } from '@element-plus/icons-vue';
 
@@ -164,9 +165,7 @@ const itemTravelerFormRefs = ref({}); // ItemParticipantForm 實例引用物件 
 // ItemParticipantForm 的驗證狀態集合 (key: item.id, value: boolean)
 const itemTravelerValidity = reactive({});
 
-
 // --- Accordion (手風琴) 狀態管理 ---
-// 控制哪些 AccordionSection 區塊是展開的
 const activeCollapseNames = ref(['items', 'ordererInfo']); // 預設展開 商品、訂購人區塊
 
 // --- 表單數據模型 (使用 reactive) ---
@@ -188,9 +187,30 @@ const formData = reactive({
 const currentOrderContextForHesitation = ref({
   orderId: null,
   expiresAt: null,
-  // 如果 OrderForm 頁面本身需要 merchantTradeNo 來傳遞給 hesitationStore (雖然 store 目前沒用)
   merchantTradeNo: null 
 });
+
+const DRAFT_FORM_KEY = computed(() => authStore.memberId ? `draftOrderForm_${authStore.memberId}` : null);
+
+watchDebounced(
+  () => ({
+    ordererInfo: formData.ordererInfo,
+    note: formData.note,
+    // participantsByItem: formData.participantsByItem, // 暫時不直接保存旅客陣列整體
+  }),
+  (newDataToSave) => {
+    // 只在「新訂單流程」(即路由中沒有 orderId) 且已登入時保存
+    if (!route.query.orderId && DRAFT_FORM_KEY.value) {
+      try {
+        sessionStorage.setItem(DRAFT_FORM_KEY.value, JSON.stringify(newDataToSave));
+        console.log("草稿表單資料已自動保存到 sessionStorage");
+      } catch (e) {
+        console.error("保存草稿表單資料到 sessionStorage 失敗:", e);
+      }
+    }
+  },
+  { debounce: 1000, deep: true } // 每隔1秒自動保存，深度監聽
+);
 
 function splitName(fullName) {
     if (!fullName || typeof fullName !== 'string' || fullName.length === 0) return { lastName: '', firstName: '' };
@@ -496,90 +516,151 @@ async function initializeOrdererInfoFromAuthStoreAndApi() {
 
 // --- 生命週期鉤子 onMounted ---
 onMounted(async () => {
-    isLoading.value = true;
-    error.value = null;
-    const routeOrderId = route.query.orderId; // 使用 route (從 useRoute() 獲取)
-    const authMemberId = authStore.memberId;
-    console.log(`OrderForm onMounted: routeOrderId = ${routeOrderId}, authMemberId = ${authMemberId}`);
+  isLoading.value = true;
+  error.value = null;
+  const routeOrderId = route.query.orderId;
+  const authMemberId = authStore.memberId;
+  console.log(`OrderForm onMounted: routeOrderId = ${routeOrderId}, authMemberId = ${authMemberId}`);
 
-    try {
-        if (routeOrderId && authMemberId) {
-            console.log("OrderForm: 偵測到 orderId，將從 API 載入訂單資料:", routeOrderId);
-            console.log("OrderForm: 執行恢復訂單資料流程 (有 orderId)");
-            const response = await getOrderDetails(routeOrderId, authMemberId);
+  try {
+    if (routeOrderId && authStore.isLoggedIn) {
+      // --- 編輯現有訂單的邏輯 (大部分保持不變) ---
+      console.log("OrderForm: 偵測到 orderId，將從 API 載入訂單資料:", routeOrderId);
+      const response = await getOrderDetails(routeOrderId, authStore.memberId);
 
-            if (response && response.data) {
-                const orderDataFromApi = response.data;
-                console.log("OrderForm: getOrderDetails 完整 API 回應:", JSON.parse(JSON.stringify(orderDataFromApi)));
+      if (response && response.data) {
+        const orderDataFromApi = response.data;
+        console.log("OrderForm: getOrderDetails 完整 API 回應:", JSON.parse(JSON.stringify(orderDataFromApi)));
 
-                // << 更新 hesitation context >>
-                currentOrderContextForHesitation.value = {
-                  orderId: String(orderDataFromApi.orderId), // 確保是字串
-                  expiresAt: orderDataFromApi.expiresAt,
-                  merchantTradeNo: orderDataFromApi.merchantTradeNo
-                };
+        currentOrderContextForHesitation.value = {
+          orderId: String(orderDataFromApi.orderId),
+          expiresAt: orderDataFromApi.expiresAt,
+          merchantTradeNo: orderDataFromApi.merchantTradeNo
+        };
 
-                // 1. 恢復 selectedOrderItems
-                // 假設 orderDataFromApi.orderDetails 包含商品詳情列表
-                selectedOrderItems.value = mapApiOrderDetailsToSelectedItems(orderDataFromApi.orderDetails || []);
-                console.log("OrderForm: onMounted - selectedOrderItems.value 在 API 賦值後:", JSON.parse(JSON.stringify(selectedOrderItems.value)));
-                
-                // 2. 恢復 formData.ordererInfo
-                if (orderDataFromApi.ordererInfo && Object.keys(orderDataFromApi.ordererInfo).length > 0) {
-                    console.log("OrderForm: 從 API 恢復訂購人資料:", orderDataFromApi.ordererInfo);
-                    Object.assign(formData.ordererInfo, mapApiOrdererToFormData(orderDataFromApi.ordererInfo));
-                } else {
-                    console.warn("OrderForm: API 未返回有效的 ordererInfo，嘗試從會員預設資料填充 (routeOrderId path)");
-                    await initializeOrdererInfoFromAuthStoreAndApi();
-                }
-
-                // 3. 恢復 formData.participantsByItem
-                // 確保在 watch(selectedOrderItems) 的 immediate 執行前，相關數據已準備好
-                // 或者讓 watch 處理結構，這裡填充數據
-                const mappedParticipants = mapApiParticipantsToFormData(orderDataFromApi.participants || [], selectedOrderItems.value);
-                Object.keys(formData.participantsByItem).forEach(key => delete formData.participantsByItem[key]);
-                Object.assign(formData.participantsByItem, mappedParticipants);
-
-
-                // 4. 恢復 formData.note 和 formData.memberId
-                formData.note = orderDataFromApi.note || ''; // API 應返回 orderNotes
-                formData.memberId = orderDataFromApi.memberId || authMemberId || 0;
-
-                console.log("OrderForm: 已從 API 恢復訂單表單資料。");
-            } else {
-                error.value = "無法載入您的訂單資料，API 未返回有效數據，請重試。";
-                console.log("OrderForm: 執行新訂單流程 (無 orderId)"); 
-                ElMessage.error(error.value);
-                console.error("OrderForm: getOrderDetails API 未返回有效數據 (response.data is falsy)。");
-                // 考慮是否回退到購物車或顯示更明確錯誤頁
-            }
+        selectedOrderItems.value = mapApiOrderDetailsToSelectedItems(orderDataFromApi.orderDetails || []);
+        
+        if (orderDataFromApi.ordererInfo && Object.keys(orderDataFromApi.ordererInfo).length > 0) {
+          Object.assign(formData.ordererInfo, mapApiOrdererToFormData(orderDataFromApi.ordererInfo));
         } else {
-            console.log("OrderForm: 新訂單流程，從購物車和會員資料初始化。");
-            loadOrderItems(); // 從 cartStore 加載商品
-            formData.memberId = authMemberId || 0;
-            await initializeOrdererInfoFromAuthStoreAndApi(); // 初始化訂購人
+          console.warn("OrderForm: API 未返回有效的 ordererInfo，嘗試從會員預設資料填充 (routeOrderId path)");
+          await initializeOrdererInfoFromAuthStoreAndApi();
         }
 
-        // Accordion 展開邏輯 (可以放在 try 內部最後，或 finally 之前)
-        if (selectedOrderItems.value.length > 0 && !routeOrderId) {
-            const firstItemWithTravelers = selectedOrderItems.value.find(item => getItemParticipantCount(item) > 0);
-            if (firstItemWithTravelers && !activeCollapseNames.value.includes(`travelers-${firstItemWithTravelers.id}`)) {
-                activeCollapseNames.value.push(`travelers-${firstItemWithTravelers.id}`);
-            }
-        }
+        const mappedParticipants = mapApiParticipantsToFormData(orderDataFromApi.participants || [], selectedOrderItems.value);
+        Object.keys(formData.participantsByItem).forEach(key => delete formData.participantsByItem[key]);
+        Object.assign(formData.participantsByItem, mappedParticipants);
 
-    } catch (e) {
-        console.error("OrderForm onMounted 過程中發生嚴重錯誤:", e);
-        error.value = "載入頁面資料時發生了錯誤：" + (e.message || "未知錯誤");
+        formData.note = orderDataFromApi.note || '';
+        formData.memberId = orderDataFromApi.memberId || authMemberId || 0;
+        console.log("OrderForm: 已從 API 恢復訂單表單資料。");
+
+        // 載入已存在訂單後，應清除對應的草稿，避免混淆
+        if (DRAFT_FORM_KEY.value) {
+          sessionStorage.removeItem(DRAFT_FORM_KEY.value);
+          console.log("已清除舊的 sessionStorage 草稿，因為正在編輯已存在的訂單。");
+        }
+      } else {
+        error.value = "無法載入您的訂單資料，API 未返回有效數據，請重試。";
         ElMessage.error(error.value);
-        // 如果是新訂單流程出錯，可以嘗試基礎加載
-        if (!routeOrderId) {
-             loadOrderItems();
-             await initializeOrdererInfoFromAuthStoreAndApi();
+        console.error("OrderForm: getOrderDetails API 未返回有效數據 (response.data is falsy)。");
+      }
+    } else {
+      // --- 新訂單流程的邏輯 ---
+      console.log("OrderForm: 新訂單流程，從購物車和會員資料初始化。");
+      loadOrderItems(); // 這會更新 selectedOrderItems
+      formData.memberId = authMemberId || 0;
+      
+      let restoredFromDraft = false;
+      // 僅在登入時檢查草稿
+      if (DRAFT_FORM_KEY.value && authStore.isLoggedIn) {
+        const savedDraftJson = sessionStorage.getItem(DRAFT_FORM_KEY.value);
+        if (savedDraftJson) {
+          try {
+            const parsedDraft = JSON.parse(savedDraftJson);
+            // 檢查草稿是否有實質內容
+            const hasDraftContent = (parsedDraft.ordererInfo && 
+                                  (parsedDraft.ordererInfo.lastName || 
+                                  parsedDraft.ordererInfo.firstName || 
+                                  parsedDraft.ordererInfo.email ||
+                                  parsedDraft.ordererInfo.phoneNumber)) || 
+                                  parsedDraft.note;
+
+            if (hasDraftContent) {
+              const draftOrdererName = `${parsedDraft.ordererInfo?.lastName || ''}${parsedDraft.ordererInfo?.firstName || ''}`.trim();
+              const draftEmail = parsedDraft.ordererInfo?.email || '無';
+              const draftNotePreview = parsedDraft.note ? `"${parsedDraft.note.substring(0, 20)}${parsedDraft.note.length > 20 ? '...' : ''}"` : '無';
+              
+              // 使用 ElMessageBox 詢問使用者
+              try {
+                await ElMessageBox.confirm(
+                  `系統偵測到您上次編輯的訂購人資料：<br>
+                  <strong>訂購人:</strong> ${draftOrdererName || '未填寫'}<br>
+                  <strong>Email:</strong> ${draftEmail}<br>
+                  <strong>備註:</strong> ${draftNotePreview}<br><br>
+                  是否要載入這些資料？`,
+                  '載入草稿確認',
+                  {
+                    confirmButtonText: '載入上次資料',
+                    cancelButtonText: '重新填寫',
+                    type: 'info',
+                    dangerouslyUseHTMLString: true,
+                  }
+                );
+                // 使用者點擊「載入上次資料」
+                if (parsedDraft.ordererInfo) {
+                  Object.assign(formData.ordererInfo, parsedDraft.ordererInfo);
+                }
+                formData.note = parsedDraft.note || '';
+                console.log("使用者選擇從 sessionStorage 恢復草稿表單資料 (訂購人/備註)。");
+                restoredFromDraft = true;
+              } catch (action) {
+                // 使用者點擊「重新填寫」或關閉對話框
+                console.log("使用者選擇不載入草稿，將清除現有草稿並重新填寫。");
+                sessionStorage.removeItem(DRAFT_FORM_KEY.value); // 清除草稿
+              }
+            } else {
+              // 草稿內容為空或不重要，直接移除
+              sessionStorage.removeItem(DRAFT_FORM_KEY.value);
+              console.log("SessionStorage 中的草稿無實質內容，已自動清除。");
+            }
+          } catch (e) {
+            console.error("解析 sessionStorage 中的草稿資料失敗:", e);
+            sessionStorage.removeItem(DRAFT_FORM_KEY.value); // 解析失敗也清除
+          }
         }
-    } finally {
-        isLoading.value = false;
+      }
+
+      // 如果沒有從草稿恢復，或者使用者選擇不恢復，則進行標準初始化
+      if (!restoredFromDraft) {
+        console.log("未從草稿恢復，執行標準訂購人資料初始化。");
+        await initializeOrdererInfoFromAuthStoreAndApi();
+        // 確保 authStore 中的 email (如果存在且表單中沒有) 被填入
+        if (authStore.isLoggedIn && authStore.memberEmail && !formData.ordererInfo.email) {
+            formData.ordererInfo.email = authStore.memberEmail;
+        }
+      }
     }
+
+    // Accordion 展開邏輯
+    if (selectedOrderItems.value.length > 0 && !routeOrderId) {
+      const firstItemWithTravelers = selectedOrderItems.value.find(item => getItemParticipantCount(item) > 0);
+      if (firstItemWithTravelers && !activeCollapseNames.value.includes(`travelers-${firstItemWithTravelers.id}`)) {
+        activeCollapseNames.value.push(`travelers-${firstItemWithTravelers.id}`);
+      }
+    }
+  } catch (e) {
+    console.error("OrderForm onMounted 過程中發生嚴重錯誤:", e);
+    error.value = "載入頁面資料時發生了錯誤：" + (e.message || "未知錯誤");
+    ElMessage.error(error.value);
+    // 如果是新訂單流程出錯，可以嘗試基礎加載
+    if (!routeOrderId) {
+      loadOrderItems();
+      await initializeOrdererInfoFromAuthStoreAndApi();
+    }
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 // --- 計算屬性 (Computed Properties) ---
@@ -605,7 +686,8 @@ const totalAmount = computed(() => {
 const isOrdererBasicInfoFilled = computed(() => {
    const orderer = formData.ordererInfo;
    // 這裡根據你在 ParticipantForm 中的必填欄位做簡易判斷
-   return !!orderer.firstName && !!orderer.lastName && !!orderer.country && !!orderer.phoneNumber && !!orderer.email;
+   return !!orderer.firstName && !!orderer.lastName && !!orderer.country &&
+    !!orderer.phoneNumber && !!orderer.email && !!orderer.documentType && !!orderer.documentNumber;
 });
 
 // 計算已填寫旅客資料的數量 (簡單計數陣列長度，不檢查內容是否有效)
@@ -698,8 +780,6 @@ const isCheckoutButtonDisabled = computed(() => {
         return true;
     }
 
-    // 只有當以上所有簡易檢查都通過，按鈕才不被禁用 (但最終提交前仍需要呼叫所有子組件的 validate 方法來執行嚴謹驗證)
-    // console.log("禁用狀態: false (通過簡易檢查)");
     return false; // 通過簡易檢查，按鈕啟用
 });
 
@@ -726,7 +806,6 @@ const scrollToSection = (sectionName) => {
     }
 };
 
-
 // 滾動到訂單商品區塊並展開 (使用通用滾動方法)
 const scrollToItemsSection = () => {
     scrollToSection('items');
@@ -739,21 +818,41 @@ const handleItemTravelerFormValidityChange = (itemId, isValid) => {
     console.log(`ItemParticipantForm (${itemId}) validity changed: ${isValid}`);
 };
 
-
 // 輔助函式：計算單個商品需要填寫的旅客數量 (使用數字類型，預設0)
 const getItemParticipantCount = (item) => {
     if (item?.participantRequired === false) {
         return 0;
     }
-    let quantity = 0;
-    if (item.options && item.options.length > 0) {
-        // 確保 quantity 是數字
-        quantity = item.options.reduce((sum, option) => sum + (Number(option.quantity) || 0), 0);
-    } else if (item.quantity !== undefined) {
-        // 確保 quantity 是數字
-        quantity = Number(item.quantity) || 0;
-    }
-    return quantity;
+    if (item.productType === 'CustomTravel') {
+        // 嘗試從 productSpecificData.people 獲取人數 (這需要你的 item 結構中有這個欄位)
+        const people = item.productSpecificData?.people !== undefined
+                    ? Number(item.productSpecificData.people)
+                    : NaN;
+
+        if (!isNaN(people) && people > 0) {
+            console.log(`getItemParticipantCount (CustomTravel - ${item.name}): ${people} from productSpecificData`);
+            return people;
+        } else {
+            // 客製化行程若無 people 屬性， fallback 到 options (通常應為1，代表此專案本身)
+            if (item.options && item.options.length > 0) {
+                const customOptionQuantity = item.options.reduce((sum, option) => sum + (Number(option.quantity) || 0), 0);
+                console.log(`getItemParticipantCount (CustomTravel fallback - ${item.name}): ${customOptionQuantity} from options`);
+                return customOptionQuantity; // 通常是 1
+            }
+            console.log(`getItemParticipantCount (CustomTravel no data - ${item.name}): 0`);
+            return 0; // 如果連 options 都沒有
+        }
+    } else {
+        // 非客製化旅遊的邏輯
+        let quantity = 0;
+        if (item.options && item.options.length > 0) {
+            quantity = item.options.reduce((sum, option) => sum + (Number(option.quantity) || 0), 0);
+        } else if (item.quantity !== undefined) {
+            quantity = Number(item.quantity) || 0;
+        }
+        console.log(`getItemParticipantCount (Standard - ${item.name}, ID: ${item.id}): ${quantity} (Options: ${item.options?.length}, Qty: ${item.quantity})`);
+        return quantity;
+    }
 };
 
 // 從 Pinia Store 加載已選中的購物車商品
@@ -782,7 +881,7 @@ const loadOrderItems = () => {
   console.log("OrderForm: loadOrderItems() 完成, selectedOrderItems.value =", JSON.parse(JSON.stringify(selectedOrderItems.value)));
 };
 
-// 提交訂單 - **重要：在提交前需要觸發所有子表單的驗證**
+// 提交訂單 - 在提交前需要觸發所有子表單的驗證
 const handleGoToPayment = async () => {
     // 檢查按鈕是否已被禁用 (避免重複點擊)
     if (isCheckoutButtonDisabled.value || isSubmitting.value) {
@@ -895,6 +994,22 @@ const handleGoToPayment = async () => {
         } else {
             backendPaxDocumentNumber = paxData.documentNumber || null;
         }
+
+        let finalFavoriteTravelerIdForApi = null; // 預設為 null
+        const wantsToSaveOrUpdate = paxData.updateThisTravelerProfile; // 是否勾選了 "更新旅客資料"
+
+        if (wantsToSaveOrUpdate) {
+            // 如果勾選了 "更新/保存至常用"
+            if (paxData.selectedFrequentTraveler && typeof paxData.selectedFrequentTraveler === 'number' && paxData.selectedFrequentTraveler > 0) {
+                // 情況：選擇了【已存在的常用旅客】 (ID是有效的正整數) 且 【勾選了更新】
+                // 意圖：更新此常用旅客
+                finalFavoriteTravelerIdForApi = paxData.selectedFrequentTraveler;
+            } else {
+                // 情況：【選擇了本人資料('MEMBER_SELF')】或 【手動填寫(null)】或 【選擇了無效ID】 且 【勾選了更新】
+                // 意圖：將當前資料新增為一條常用旅客
+                finalFavoriteTravelerIdForApi = null; // 強制為 null，表示新增
+            }
+        }
         return {
             Name: `${paxData.lastNameZh || ''}${paxData.firstNameZh || ''}`.trim(),
             BirthDate: paxData.birthDate,
@@ -909,7 +1024,8 @@ const handleGoToPayment = async () => {
             PassportExpireDate: paxData.passportExpiryDate || null,
             Nationality: paxData.country,
             Note: paxData.remarks || '',
-            FavoriteTravelerId: paxData.selectedFrequentTraveler,
+            FavoriteTravelerId: finalFavoriteTravelerIdForApi, // 【確保這裡傳遞的是 null 或 數字ID】
+            SaveToFavorites: wantsToSaveOrUpdate, 
         };
     });
 
@@ -995,6 +1111,10 @@ const handleGoToPayment = async () => {
               merchantTradeNo: merchantTradeNo
             };
 
+            if (DRAFT_FORM_KEY.value && !route.query.orderId) { // 只在創建新訂單成功後清除
+              sessionStorage.removeItem(DRAFT_FORM_KEY.value);
+              console.log("訂單提交成功，已清除 sessionStorage 草稿。");
+            }
             ElMessage.success(`訂單資料已成功${actionType} (ID: ${orderId})！正在前往付款設定頁面...`);
 
             router.push({
@@ -1040,25 +1160,65 @@ const handleGoToPayment = async () => {
 };
 
 // << 新增: onBeforeRouteLeave 鉤子 >>
-onBeforeRouteLeave((to, from) => {
-  const orderId = currentOrderContextForHesitation.value.orderId;
-  const currentExpiresAt = currentOrderContextForHesitation.value.expiresAt;
+onBeforeRouteLeave(async (to, from, next) => {
+  // 檢查是否處於「新訂單流程」(即尚未提交到後端獲取 orderId)
+  // currentOrderContextForHesitation.orderId 在新訂單提交成功前是 null
+  // route.query.orderId 也可以用來判斷是否是從 URL 帶入的已存在訂單
+  const isTrulyNewOrderAttempt = !route.query.orderId && !currentOrderContextForHesitation.value.orderId;
 
-  // 只有當 orderId 和 currentExpiresAt 都存在時才操作
-  if (orderId && currentExpiresAt) {
-    const relevantOrderPages = ['OrderForm', 'OrderPayment']; // 您的訂單和付款頁面的路由名稱
+  // 檢查是否有填寫任何主要資料
+  const hasFilledData = formData.ordererInfo.firstName || 
+                        formData.ordererInfo.lastName ||
+                        formData.ordererInfo.phoneNumber ||
+                        formData.ordererInfo.email ||
+                        formData.note ||
+                        Object.values(formData.participantsByItem).some(paxList => paxList.length > 0 && paxList.some(p => p.firstNameZh)); // 簡單檢查是否有旅客資料
 
-    // 如果是從 OrderForm 離開，且目標頁面不是 OrderForm 或 OrderPayment
+  // 條件1: 是新訂單填寫流程 (還沒點過"送出訂單資料"去 initiateOrder)
+  // 條件2: 表單中有填寫過資料
+  // 條件3: 目標頁面不是 OrderPayment (因為送出訂單資料後會跳轉到 OrderPayment，此時不應提示)
+  if (isTrulyNewOrderAttempt && hasFilledData && to.name !== 'OrderPayment') {
+    try {
+      await ElMessageBox.confirm(
+        '您已填寫部分訂單資料，若現在離開，這些資料可能會遺失。是否確定要離開？',
+        '提醒',
+        {
+          confirmButtonText: '確定離開',
+          cancelButtonText: '取消',
+          type: 'warning',
+          dangerouslyUseHTMLString: true, // 如果訊息中有 HTML
+          message: `<p>您已填寫部分訂單資料，若現在離開，這些資料可能會遺失或需要重新填寫。</p>
+                    <p style="font-size:0.85em; color: #909399; margin-top: 5px;">(返回購物車修改商品後，已填寫的訂購人及備註資訊會嘗試保留)</p>`,
+        }
+      );
+      // 使用者確認離開，sessionStorage 中的草稿應該已經被 watchDebounced 自動保存了
+      // 所以這裡不需要額外保存，直接允許跳轉
+    } catch (action) {
+      // 使用者點擊「取消」或關閉了對話框
+      ElMessage.info('已取消離開操作');
+      next(false); // 阻止導航
+      return; // 結束 onBeforeRouteLeave 處理
+    }
+  }
+  // --- 原有的猶豫期倒數邏輯 ---
+  // (只有在使用者允許離開，或者不需要提示時，才會執行到這裡)
+  const orderIdForHesitation = currentOrderContextForHesitation.value.orderId;
+  const expiresAtForHesitation = currentOrderContextForHesitation.value.expiresAt;
+
+  // 這個 hesitationStore 邏輯主要針對已在後端創建了 orderId 的情況
+  if (orderIdForHesitation && expiresAtForHesitation) {
+    const relevantOrderPages = ['OrderForm', 'OrderPayment'];
     if (relevantOrderPages.includes(from.name) && !relevantOrderPages.includes(to.name)) {
-      // 並且猶豫期尚未被 store 記錄為已啟動 (這一層判斷 hesitationStore 內部會做，但這裡也可以加)
-      if (!hesitationStore.getEffectiveExpiresAt(orderId)) {
-        console.log(`[OrderForm onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId}`);
-        hesitationStore.startHesitationCountdown(orderId, currentExpiresAt);
+      if (!hesitationStore.getEffectiveExpiresAt(orderIdForHesitation)) {
+        console.log(`[OrderForm onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderIdForHesitation}`);
+        hesitationStore.startHesitationCountdown(orderIdForHesitation, expiresAtForHesitation);
       }
     }
   } else {
-    console.log("[OrderForm onBeforeRouteLeave] No valid orderId or expiresAt in context, skipping hesitation start.");
+    console.log("[OrderForm onBeforeRouteLeave] No valid orderId/expiresAt in context for hesitation timer, or it's a pre-submission navigation.");
   }
+
+  next(); // 允許導航
 });
 
 // 在組件更新之前清理 ItemParticipantForm 的 refs

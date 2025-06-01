@@ -213,50 +213,148 @@
   const cartStore = useCartStore();
   const route = useRoute();
 
-  const handleAddToCart = () => {
+  const selectedAdults = ref(1); // 預設至少1位成人
+  const selectedChildren = ref(0);
+  const selectedBabies = ref(0);
 
-    if (!selectedGroup.value) {
+  // const handleAddToCart = () => {
+
+  //   if (!selectedGroup.value) {
+  //     ElMessage({
+  //       message: '請先選擇一個出團日期！',
+  //       type: 'warning',
+  //     });
+  //     return;
+  //   }
+  //   try
+  //   {
+  //     const cartItem = {
+  //       id: uuidv4(), // 確保每筆都唯一
+  //       projectId: mainInfo.value.projectId,
+  //       title: mainInfo.value.title,
+  //       cover: mainInfo.value.cover,
+  //       description: mainInfo.value.description,
+  //       departure: mainInfo.value.departure,
+  //       return: mainInfo.value.return,
+  //       number: mainInfo.value.number, // 內部行程編號
+  //       adultPrice: mainInfo.value.adultPrice,
+  //       childPrice: mainInfo.value.childPrice,
+  //       babyPrice: mainInfo.value.babyPrice,
+  //       selected: true,
+  //     };
+
+  //     cartStore.addItem(cartItem);
+  //     ElMessage({
+  //       message: '已成功加入購物車！',
+  //       type: 'success',
+  //     });
+  //     console.log("目前購物車：", cartStore.items);
+      
+  //   }
+  //   catch
+  //   {
+  //     ElMessage({
+  //       message: '加入購物車失敗，請稍後再試。',
+  //       type: 'error',
+  //     });
+  //   }
+    
+  // };
+        
+  const handleAddToCart = () => {
+  if (!selectedGroup.value) {
+    ElMessage({
+      message: '請先選擇一個出團日期！',
+      type: 'warning',
+    });
+    return;
+  }
+
+  const adultQuantity = selectedAdults.value || 0; 
+  const childQuantity = selectedChildren.value || 0;
+  const babyQuantity = selectedBabies.value || 0;
+
+  if (adultQuantity === 0 && childQuantity === 0 && babyQuantity === 0) {
       ElMessage({
-        message: '請先選擇一個出團日期！',
-        type: 'warning',
+          message: '請至少選擇一位旅客的數量！',
+          type: 'warning',
       });
       return;
-    }
-    try
-    {
-      const cartItem = {
-        id: uuidv4(), // 確保每筆都唯一
-        projectId: mainInfo.value.projectId,
-        title: mainInfo.value.title,
-        cover: mainInfo.value.cover,
-        description: mainInfo.value.description,
-        departure: mainInfo.value.departure,
-        return: mainInfo.value.return,
-        number: mainInfo.value.number, // 內部行程編號
-        adultPrice: mainInfo.value.adultPrice,
-        childPrice: mainInfo.value.childPrice,
-        babyPrice: mainInfo.value.babyPrice,
-        selected: true,
-      };
+  }
 
-      cartStore.addItem(cartItem);
-      ElMessage({
-        message: '已成功加入購物車！',
-        type: 'success',
-      });
-      console.log("目前購物車：", cartStore.items);
-      
-    }
-    catch
-    {
-      ElMessage({
-        message: '加入購物車失敗，請稍後再試。',
+  const totalSelectedPeople = adultQuantity + childQuantity + babyQuantity;
+  const availableSeatsForSelectedGroup = selectedGroup.value?.availableSeats || mainInfo.value.availableSeats || 0;
+  if (totalSelectedPeople > availableSeatsForSelectedGroup) {
+    ElMessage({
+        message: `選擇的總人數 (${totalSelectedPeople}) 超過可賣名額 (${availableSeatsForSelectedGroup})！`,
         type: 'error',
-      });
+    });
+    return;
+  }
+
+  const adultPrice = selectedGroup.value.price || 0; // 確保有值
+  const childPrice = mainInfo.value.childPrice || 0;
+  const babyPrice = mainInfo.value.babyPrice || 0;
+
+  // 準備要傳遞給 Pinia store 的 productToAdd 物件
+  const productToAdd = {
+    productId: selectedGroup.value.groupId, // 官方行程的 ID
+    productType: 'GroupTravel',                 // 標識為官方團體旅遊
+
+    name: mainInfo.value.title,
+    details: mainInfo.value.description,        // 考慮是否需要更具體的團描述
+    imageUrl: mainInfo.value.cover,
+    destinationCountryCode: mainInfo.value.country, // 假設 mainInfo.value 有此資訊
+
+    // 日期和天數應基於選中的團 (selectedGroup.value)
+    startDate: formatDateTime(selectedGroup.value.departure, { type: 'date' }),
+    endDate: formatDateTime(selectedGroup.value.return, { type: 'date' }),
+    // startDayOfWeek, endDayOfWeek 如果需要，應在此計算
+    totalDays: selectedGroup.value.departure && selectedGroup.value.return ? 
+               Math.ceil((new Date(selectedGroup.value.return) - new Date(selectedGroup.value.departure)) / (1000 * 60 * 60 * 24)) + 1 
+               : mainInfo.value.days || 0, // 簡化天數計算或從 mainInfo 獲取
+    departureDate: formatDateTime(selectedGroup.value.departure, { type: 'date' }), // 用於過期判斷
+
+    flights: null, // 如果您的 mainInfo 或 selectedGroup 包含航班資訊，請填充
+    accommodation: { description: '行程所示飯店或同級' }, // 或從 mainInfo/selectedGroup 獲取
+
+    options: [],
+    category: mainInfo.value.category || '官方旅遊', // 假設 mainInfo.value 有 category
+    selected: true,
+    isFavorite: false,
+    productSpecificData: {
+      internalCode: selectedGroup.value.number, // 使用選中團的團號 (行程編號)
+      groupStatus: selectedGroup.value.groupStatus,
+      availableSeats: selectedGroup.value.availableSeats,
     }
-    
   };
-        
+
+  if (adultQuantity > 0) {
+      productToAdd.options.push({ type: '成人', quantity: adultQuantity, price: adultPrice, unitLabel: '佔床' });
+  }
+  if (childQuantity > 0) {
+      productToAdd.options.push({ type: '兒童', quantity: childQuantity, price: childPrice, unitLabel: '佔床' });
+  }
+  if (babyQuantity > 0) {
+      productToAdd.options.push({ type: '嬰兒', quantity: babyQuantity, price: babyPrice, unitLabel: '不佔床' });
+  }
+  try {
+    cartStore.addItem(productToAdd); // 將構造好的 productToAdd 物件傳給 store
+    ElMessage({
+      message: '已成功加入購物車！',
+      type: 'success',
+    });
+    console.log("加入購物車的官方行程:", JSON.parse(JSON.stringify(productToAdd)));
+    console.log("目前購物車所有商品：", cartStore.items);
+  } catch (err) { // 更通用的錯誤捕獲
+    ElMessage({
+      message: '加入購物車失敗，請稍後再試。',
+      type: 'error',
+    });
+    console.error("加入購物車失敗:", err);
+  }
+};
+
   const handleGroupClick = async (row) => {
     
     selectedGroup.value = row;

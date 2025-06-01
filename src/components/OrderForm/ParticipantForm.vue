@@ -115,15 +115,6 @@
       />
     </el-form-item>
 
-    <!-- <el-form-item label="" prop="updateProfile"> 
-      <el-checkbox
-        :model-value="modelValue.updateProfile"
-        @update:modelValue="updateField('updateProfile', $event)"
-        label="同時更新會員資料"
-        size="large" 
-      />
-    </el-form-item> -->
-
   </el-form>
 </template>
 

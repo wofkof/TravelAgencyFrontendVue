@@ -50,11 +50,11 @@
         style="width: 100%;"
         @click="onButtonClick" >
         {{ isSubmitting ? '處理中...' : buttonText }} </el-button>
-
       <div class="important-notes">
         <p>請注意：</p>
         <ul>
-          <li>點擊「{{ buttonText }}」即表示您已閱讀並同意本站的 <a href="/terms" target="_blank">訂購條款</a> 與 <a href="/privacy" target="_blank">服務約定</a>。</li> <li>請在 <span class="timer">{{ paymentTimerDisplay }}</span> 內完成支付流程，逾時訂單可能自動取消。</li>
+          <li>點擊「{{ buttonText }}」即表示您已閱讀並同意本站的 <a href="/terms" target="_blank">訂購條款</a> 與 <a href="/privacy" target="_blank">服務約定</a>。</li>
+          <li>請在 <span class="timer">{{ paymentTimerDisplay }}</span> 內完成支付流程，逾時訂單可能自動取消。</li>
         </ul>
       </div>
     </div>
@@ -84,7 +84,7 @@ const props = defineProps({
   // << 新增/修改 Props 以適應不同階段 >>
   buttonText: { type: String, default: '前往付款' }, // 按鈕文字，由父組件提供
   showPaymentInfo: { type: Boolean, default: true }, // 是否顯示支付方式區域，預設顯示 (用於付款頁)
-  paymentTimerSeconds: { type: Number, default: 30 * 60 } // 支付時限（秒），預設30分鐘
+  paymentTimerSeconds: { type: Number, default: 30 * 60 } // 支付時限（秒），預設3分鐘
 });
 
 // << 新增 emit，因為 native-type="submit" 的按鈕會觸發 form 的 submit 事件，但我們通常在父組件處理 >>

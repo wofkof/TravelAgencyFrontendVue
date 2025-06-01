@@ -22,7 +22,7 @@
     </div>
 
     <div v-else class="payment-content-wrapper">
-      <h1 class="page-main-title text-2xl font-semibold mb-6">訂單付款設定</h1>
+      <h1 class="page-main-title text-2xl font-semibold mb-6">訂單付款</h1>
 
       <div class="content-panel">
         <OrderItemsSummary
@@ -161,6 +161,42 @@ const paymentFormData = reactive({
   },
 });
 
+// 新增：輔助函數來更新瀏覽器 URL
+const updateBrowserUrl = (orderId) => {
+  // 檢查 orderId 是否存在，以及瀏覽器是否支援 History API
+  if (!orderId || !window.history || !window.history.replaceState) {
+    return;
+  }
+
+  // 目標 URL 路徑和查詢字符串，只包含 orderId
+  const targetPathQuery = `${window.location.pathname}?orderId=${orderId}`;
+  // 解析當前 URL 的查詢參數
+  const currentQuery = new URLSearchParams(window.location.search);
+  
+  let shouldUpdate = false; // 標記是否需要更新 URL
+
+  // 檢查當前 URL 中的 orderId 是否與目標 orderId 不同 (通常情況下應該相同)
+  if (currentQuery.get('orderId') !== String(orderId)) {
+      shouldUpdate = true; 
+  } else {
+      // 如果 orderId 相同，則檢查是否存在其他您想要從 URL 中移除的參數
+      if (currentQuery.has('mtn') || currentQuery.has('exp') || currentQuery.has('ordererEmail')) {
+          shouldUpdate = true;
+      }
+  }
+
+  // 如果根據上述條件判斷需要更新 URL
+  if (shouldUpdate) {
+    try {
+      // 使用 history.replaceState 更新瀏覽器地址欄的 URL，不會導致頁面刷新
+      window.history.replaceState(null, '', targetPathQuery);
+      // console.log(`Address bar URL updated to: ${window.location.origin}${targetPathQuery}`); // 可選：用於調試
+    } catch (e) {
+      console.error("Error updating URL with history.replaceState:", e);
+    }
+  }
+};
+
 // remainingSeconds 計算的是 payment-deadline (activePaymentDeadline) 的剩餘時間
 // 這個倒數主要是給用戶看的付款總時限
 const remainingSeconds = computed(() => {
@@ -250,9 +286,14 @@ const loadInitialData = async () => {
       }
 
       currentOrderItems.value = response.data.orderDetails || [];
-
       orderItemCount.value = currentOrderItems.value.reduce((sum, item) => sum + (item.quantity || 0), 0);
       orderParticipants.value = response.data.participants || [];
+
+      // 在所有數據成功加載和處理後，調用 updateBrowserUrl 函數來清理 URL
+      // 確保 orderIdFromRoute.value 是有效的
+      if (orderIdFromRoute.value) {
+        updateBrowserUrl(orderIdFromRoute.value);
+      }
 
       // << 修改：判斷訂單是否已過期或不適合付款的邏輯 >>
       // << currentOrderStatus.value 應該是後端 OrderStatus enum 的 ToString() 結果，例如 "Awaiting" >>
