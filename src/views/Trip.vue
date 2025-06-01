@@ -213,6 +213,10 @@
   const cartStore = useCartStore();
   const route = useRoute();
 
+  const selectedAdults = ref(1); // 預設至少1位成人
+  const selectedChildren = ref(0);
+  const selectedBabies = ref(0);
+
   // const handleAddToCart = () => {
 
   //   if (!selectedGroup.value) {
@@ -266,10 +270,27 @@
     return;
   }
 
-  const adultQuantity = 1; // 用戶選擇1位成人
-  const childQuantity = 0; // 用戶選擇0位兒童
-  const babyQuantity = 0;  // 用戶選擇0位嬰兒
+  const adultQuantity = selectedAdults.value || 0; 
+  const childQuantity = selectedChildren.value || 0;
+  const babyQuantity = selectedBabies.value || 0;
 
+  if (adultQuantity === 0 && childQuantity === 0 && babyQuantity === 0) {
+      ElMessage({
+          message: '請至少選擇一位旅客的數量！',
+          type: 'warning',
+      });
+      return;
+  }
+
+  const totalSelectedPeople = adultQuantity + childQuantity + babyQuantity;
+  const availableSeatsForSelectedGroup = selectedGroup.value?.availableSeats || mainInfo.value.availableSeats || 0;
+  if (totalSelectedPeople > availableSeatsForSelectedGroup) {
+    ElMessage({
+        message: `選擇的總人數 (${totalSelectedPeople}) 超過可賣名額 (${availableSeatsForSelectedGroup})！`,
+        type: 'error',
+    });
+    return;
+  }
 
   const adultPrice = selectedGroup.value.price || 0; // 確保有值
   const childPrice = mainInfo.value.childPrice || 0;
@@ -297,11 +318,7 @@
     flights: null, // 如果您的 mainInfo 或 selectedGroup 包含航班資訊，請填充
     accommodation: { description: '行程所示飯店或同級' }, // 或從 mainInfo/selectedGroup 獲取
 
-    options: [
-      { type: '成人', quantity: adultQuantity, price: adultPrice, unitLabel: '佔床' },
-      { type: '兒童', quantity: childQuantity, price: childPrice, unitLabel: '佔床' }, 
-      { type: '嬰兒', quantity: babyQuantity, price: babyPrice, unitLabel: '不佔床' }
-    ],
+    options: [],
     category: mainInfo.value.category || '官方旅遊', // 假設 mainInfo.value 有 category
     selected: true,
     isFavorite: false,
@@ -312,6 +329,15 @@
     }
   };
 
+  if (adultQuantity > 0) {
+      productToAdd.options.push({ type: '成人', quantity: adultQuantity, price: adultPrice, unitLabel: '佔床' });
+  }
+  if (childQuantity > 0) {
+      productToAdd.options.push({ type: '兒童', quantity: childQuantity, price: childPrice, unitLabel: '佔床' });
+  }
+  if (babyQuantity > 0) {
+      productToAdd.options.push({ type: '嬰兒', quantity: babyQuantity, price: babyPrice, unitLabel: '不佔床' });
+  }
   try {
     cartStore.addItem(productToAdd); // 將構造好的 productToAdd 物件傳給 store
     ElMessage({

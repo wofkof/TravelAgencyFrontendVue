@@ -87,7 +87,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="出生年月日" :prop="`passengers[${pIndex}].birthDate`" :rules="getRulesForField(pIndex, 'birthDate')">
-              <el-date-picker type="date" :model-value="participant.birthDate" @update:modelValue="updateParticipantField(pIndex, 'birthDate', $event)" placeholder="選擇日期" format="YYYY/MM/DD" value-format="YYYY-MM-DD" style="width: 100%;" />
+              <el-date-picker type="date" :model-value="participant.birthDate" @update:modelValue="updateParticipantField(pIndex, 'birthDate', $event)" placeholder="選擇日期" format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%;" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -383,9 +383,9 @@ function mapMemberDetailsToTravelerData(memberDetails, isIntl) {
     }
     
     let birthDate = null;
-    if (memberDetails.birthDate) {
+    if (memberDetails.birthday) {
         try {
-            birthDate = new Date(memberDetails.birthDate).toISOString().split('T')[0];
+            birthDate = new Date(memberDetails.birthday).toISOString().split('T')[0];
         } catch (e) {
             console.error("Error formatting member birthDate:", e);
         }
@@ -463,6 +463,7 @@ onMounted(async () => {
       // 2. 獲取並轉換當前登入會員的資料
       try {
         const memberDetails = await getMemberDetailsForOrder(memberId);
+        console.log('RAW memberDetails from API for "本人資料":', JSON.parse(JSON.stringify(memberDetails)));
         const memberDataForTraveler = mapMemberDetailsToTravelerData(memberDetails, isInternationalTravel.value); // 【使用輔助函數】
 
         if (memberDataForTraveler) {
@@ -1076,6 +1077,7 @@ const handleFrequentTravelerSelect = (index, selectedValue) => { // selectedValu
     const memberOption = frequentTravelers.value.find(ft => ft.dbId === 'MEMBER_SELF');
     if (memberOption && memberOption.data) {
       travelerDataToFill = { ...travelerDataToFill, ...memberOption.data };
+      console.log('BirthDate being filled from "本人資料":', travelerDataToFill.birthDate);
     }
     travelerDataToFill.favoriteTravelerId = null; // 本人資料不對應實際常用旅客DB ID
     

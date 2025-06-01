@@ -101,7 +101,7 @@ export const useCartStore = defineStore('ShoppingCart', () => {
     return items.value.filter(item => {
       if (!item.departureDate) return false;
       try {
-        const parts = item.departureDate.split('/');
+        const parts = item.departureDate.split('-');
         if (parts.length !== 3) {
           console.warn(`項目 ${item.id} 的日期格式無效: ${item.departureDate}`);
           return false;
@@ -178,9 +178,9 @@ export const useCartStore = defineStore('ShoppingCart', () => {
         imageUrl: productToAdd.imageUrl || null,
         destinationCountryCode: productToAdd.destinationCountryCode,
         startDate: productToAdd.startDate,
-        startDayOfWeek: productToAdd.startDayOfWeek, // 從 productToAdd 獲取
+        startDayOfWeek: productToAdd.startDayOfWeek, 
         endDate: productToAdd.endDate,
-        endDayOfWeek: productToAdd.endDayOfWeek,     // 從 productToAdd 獲取
+        endDayOfWeek: productToAdd.endDayOfWeek, 
         totalDays: productToAdd.totalDays,
         departureDate: productToAdd.departureDate,
         flights: productToAdd.flights ? JSON.parse(JSON.stringify(productToAdd.flights)) : null,
