@@ -14,10 +14,9 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="4">
-                <el-form-item label="性別":label-width="50">
-                   <el-select placeholder="請選擇"
-                     v-model="genderProxy">
+              <el-col :span="6">
+                <el-form-item label="性別":label-width="40">
+                   <el-select placeholder="請選擇" v-model="genderProxy">
                     <el-option label="男" value="male"></el-option>
                     <el-option label="女" value="female"></el-option>
                    </el-select>
@@ -37,17 +36,17 @@
 
           <el-form-item label="出生日期">
             <el-row :gutter="10">
-              <el-col :span="6">
+              <el-col :span="15">
                  <el-select placeholder="西元年" v-model="birthYearProxy"> 
                  <el-option v-for="year in years" :key="year" :label="year" :value="year"></el-option>
                    </el-select>
               </el-col>
-              <el-col :span="4">
+              <el-col :span="15">
                  <el-select placeholder="月" v-model="birthMonthProxy"> 
                  <el-option v-for="month in months" :key="month" :label="month" :value="month"></el-option>
                  </el-select>
               </el-col>
-              <el-col :span="4">
+              <el-col :span="15">
                  <el-select placeholder="日" v-model="birthDayProxy"> 
                  <el-option v-for="day_val in days" :key="day_val" :label="day_val" :value="day_val"></el-option>
                  </el-select>
@@ -188,13 +187,19 @@ const birthDayProxy = computed({
 const genderProxy = computed({
   get: () => {
     // 從 store 讀取數值，轉換為 UI 顯示的字串
-    if (orderFormStore.data.Gender === 0) return 0; // 對應 '男'
-    if (orderFormStore.data.Gender === 1) return 1; // 對應 '女'
+    if (orderFormStore.data.Gender === 0) return 'male'; // 對應 '男'
+    if (orderFormStore.data.Gender === 1) return 'female'; // 對應 '女'
     return null; // 預設值或未選擇
   },
   set: (value) => {
     // 當 UI 選擇字串時，轉換為 store 儲存的數值 (0 for Male, 1 for Female)
-    orderFormStore.data.Gender = value;
+    if (value === 'male') {
+      orderFormStore.data.Gender = 0; // 將 'male' 轉換為數字 0
+    } else if (value === 'female') {
+      orderFormStore.data.Gender = 1; // 將 'female' 轉換為數字 1
+    } else {
+      orderFormStore.data.Gender = null; // 如果選擇了空值或其他意外值
+    }
   }
 });
 
