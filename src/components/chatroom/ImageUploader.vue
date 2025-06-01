@@ -4,8 +4,9 @@
     :show-file-list="false"
     accept="image/*"
     :on-change="handleImageSelect"
+    :disabled="disabled"
   >
-    <el-button size="small" type="info" plain circle
+    <el-button size="small" type="info" plain circle :disabled="disabled"
       ><el-icon><PictureFilled /></el-icon
     ></el-button>
   </el-upload>
@@ -14,6 +15,9 @@
 <script setup>
 import { sendImageMessage } from "@/services/chatService";
 import { useChatStore } from "@/stores/chatStore";
+defineProps({
+  disabled: Boolean,
+});
 
 const chatStore = useChatStore();
 
