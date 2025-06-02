@@ -19,8 +19,8 @@
           <VisaReceiptInformation />
 
           <VisaTotalAmount /> <el-button type="primary"
-                     style="width: 200px; margin-top: 30px; margin-left: 50%; transform: translateX(-50%);"
-                     @click="submitOrderForm">
+            style="width: 200px; margin-top: 30px; margin-left: 50%; transform: translateX(-50%);"
+            @click="submitOrderForm">
             確認訂單並送出
           </el-button>
 

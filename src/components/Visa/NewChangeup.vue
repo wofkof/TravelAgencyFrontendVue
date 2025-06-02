@@ -7,7 +7,6 @@
        {{ selectedDocumentMenuItem ? selectedDocumentMenuItem.rocPassportOption : '中華民國護照' }}｜{{ selectedDocumentMenuItem ? selectedDocumentMenuItem.applicationType : '申辦項目' }} |
       {{ selectedDocumentMenuItem ? selectedDocumentMenuItem.processingItem : '新辦/更換(14歲以上)' }}
     </h3>
-
     <div class="VisaOrderdetails">
        <el-card class="visa-info-card" v-if="loading">
         <p>載入中...</p>
@@ -43,7 +42,6 @@
                 </el-col>
               </el-card>
             </el-row>
-
             <el-row>
               <el-card class="item-info-card">
                 <el-col :span="16">超特急件：7個工作天</el-col>
@@ -61,9 +59,6 @@
   </div>
 </template>
 
-
-
-
 <script setup>
 import { Avatar } from '@element-plus/icons-vue';
 import { onMounted, ref } from 'vue'; // 確保引入 ref
@@ -75,11 +70,6 @@ import { useRouter } from 'vue-router';
 const documentMenuStore = useDocumentMenuStore();
 const orderFormStore = useOrderFormStore(); // ***新增：實例化 orderFormStore***
 const router = useRouter();
-
-// 這兩行可以移除，因為你已經從 storeToRefs 解構了 loading 和 error
-// const documentMenuData = ref({});
-// const isLoading = ref(true);
-
 const { selectedDocumentMenuItem, allDocumentMenus, loading, error } = storeToRefs(documentMenuStore); // 確保這裡正確地解構了所有需要的響應式狀態
 
 onMounted(() => {
@@ -104,24 +94,16 @@ const handleSelect = (item) => {
 .visa-info-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  /* 讓每個卡片之間有點間距 */
-  padding: 30px;
-  /* 讓內容不要太貼邊 */
-  background-color: #f9f9f9;
-  /* 幫 Footer 加個淺灰色背景 */
+  gap: 10px; /* 讓每個卡片之間有點間距 */
+  padding: 30px; /* 讓內容不要太貼邊 */
+  background-color: #f9f9f9;/* 幫 Footer 加個淺灰色背景 */
 }
-
 .visa-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
 }
-
 .item-title {
-  font-weight: bold;
-  /* 讓標題粗體一點 */
+  font-weight: bold; /* 讓標題粗體一點 */
 }
-
 .item-info-card {
   /* 可以調整卡片的樣式，例如陰影 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -132,7 +114,6 @@ const handleSelect = (item) => {
   align-items: center;
   justify-content: space-between;
 }
-
 .item-info-card .el-col:nth-child(1) { width: 40%; }
 .item-info-card .el-col:nth-child(2) { width: 30%; }
 .item-info-card .el-col:nth-child(3) { width: 30%; text-align: right;}
@@ -141,5 +122,4 @@ const handleSelect = (item) => {
   color: red;
   font-weight: bold;
 }
-
 </style>

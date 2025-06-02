@@ -1,8 +1,9 @@
 <!-- 我是證件選單第一頁 -->
 <template>
   <div class="common-layout" style="height:1300px;"> 
+    <!-- 上方輪播圖 -->
     <el-container>
-      <el-header style="height: auto"> <!-- 上面的輪播圖 -->
+      <el-header style="height: auto">
         <div style="margin-bottom: 20px">
           <el-carousel :interval="4000" type="card" height="300px">
             <el-carousel-item v-for="(img, index) in images" :key="index">
@@ -11,7 +12,6 @@
           </el-carousel>
         </div>
       </el-header>
-
       <!-- 側邊Aside -->
       <el-container>
         <el-aside width="500px" style="background-color: #EEDACB;height:1300">
@@ -37,7 +37,6 @@
                   <el-menu-item index="1-3-2" @click="activeMenu = 'domesticlostdown'">14歲以下</el-menu-item>
                 </el-sub-menu>
               </el-sub-menu>
-
               <el-sub-menu index="2">
                 <template #title>
                   <el-icon><Document /></el-icon>各國簽證
@@ -77,8 +76,6 @@
             </el-menu>
           </el-scrollbar>
         </el-aside>
-
-
         <el-container>
           <NewChangeup v-if="activeMenu === 'newchangeup'" />
           <NewChangedown v-if="activeMenu === 'newchangedown'" />
@@ -99,7 +96,6 @@
           <Brazil v-if="activeMenu === 'brazil'" />
           <Turkiye v-if="activeMenu === 'turkiye'" />
           <ArabEmirates v-if="activeMenu === 'Arabemirates'" />
-
           <el-main>
             <div class="main-content-area">
               <div v-if="currentImage">
@@ -117,25 +113,12 @@
 </template>
 
 
-
+<!-- 引入的東西 -->
 <script setup>
-import { ref, computed, onMounted } from "vue"; // 注意這裡需要引入 onMounted
-import { useDocumentMenuStore } from '@/stores/documentMenuStore'; // 引入你的 Pinia Store
+import { ref, computed, onMounted } from "vue"; 
+import { useDocumentMenuStore } from '@/stores/documentMenuStore';
 
-
-
-// 上方輪播圖圖片
-const images = [
-  new URL("../assets/images/visa1.jpg", import.meta.url).href,
-  new URL("../assets/images/visa2.jpg", import.meta.url).href,
-  new URL("../assets/images/visa3.jpg", import.meta.url).href,
-  new URL("../assets/images/visa4.jpg", import.meta.url).href,
-  new URL("../assets/images/visa5.jpg", import.meta.url).href,
-  new URL("../assets/images/visa6.jpg", import.meta.url).href,
-];
-
-// 左側引用到的component元件
-// import { ref, computed } from "vue";
+// 左側選單引入的component
 import NewChangeup from "@/components/Visa/NewChangeup.vue";
 import NewChangedown from "@/components/Visa/NewChangedown.vue";
 import Foreignlostup from "@/components/Visa/Foreignlostup.vue";
@@ -156,6 +139,15 @@ import Brazil from "@/components/Visa/Brazil.vue";
 import Turkiye from "@/components/Visa/Turkiye.vue";
 import ArabEmirates from "@/components/Visa/ArabEmirates.vue";
 
+// 上方輪播圖
+const images = [
+  new URL("../assets/images/visa1.jpg", import.meta.url).href,
+  new URL("../assets/images/visa2.jpg", import.meta.url).href,
+  new URL("../assets/images/visa3.jpg", import.meta.url).href,
+  new URL("../assets/images/visa4.jpg", import.meta.url).href,
+  new URL("../assets/images/visa5.jpg", import.meta.url).href,
+  new URL("../assets/images/visa6.jpg", import.meta.url).href,
+];
 
 // 主要內容區的選單圖片
 const menuImages = {
