@@ -131,9 +131,9 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  // scrollBehavior(to, from, savedPosition) {
-  //   return { top: 0 };
-  // },
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 };
+  },
 });
 
 export default router;//富成
