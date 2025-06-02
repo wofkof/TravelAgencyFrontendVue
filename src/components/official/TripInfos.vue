@@ -23,21 +23,19 @@
         v-if="expandedIndexes.includes(index)"
       >
         <!-- 圖片區塊 -->
-        <div>
-          <div
-            class="border rounded-lg bg-blue-200 w-full h-80 flex items-center justify-center"
-          >
-            <img
-              v-if="hoverImage[index]"
-              :src="hoverImage[index]"
-              class="object-cover w-full h-full rounded-lg"
-            />
-            <img
-              v-else
-              src="/src/assets/images/newlogo.png"
-              class="object-cover"
-            />
-          </div>
+        <div
+          class="border rounded-lg bg-blue-200 w-full h-80 flex items-center justify-center overflow-hidden"
+        >
+          <img
+            v-if="hoverImage[index]"
+            :src="hoverImage[index]"
+            class="object-cover w-full h-full rounded-lg"
+          />
+          <img
+            v-else
+            :src="currentImageMap[index] || '/src/assets/images/newlogo.png'"
+            class="object-cover w-full h-full rounded-lg"
+          />
         </div>
 
         <!-- 表格區塊 -->
@@ -77,7 +75,7 @@
                 {{ row.departureDate?.split("T")[0] }}
               </template>
             </el-table-column>
-            <!-- 聖凱新增 -->
+
             <el-table-column
               label="收藏"
               align="center"
@@ -123,6 +121,16 @@ const hoverImage = ref({});
 const chunkSize = 5;
 const chunkIndex = ref(1);
 const expandedIndexes = ref([0]);
+const currentImageMap = ref({});
+
+watch(trips, () => {
+  for (let i = 0; i < chunks.value.length; i++) {
+    const chunk = chunks.value[i];
+    if (chunk.length > 0) {
+      currentImageMap.value[i] = chunk[0].cover;
+    }
+  }
+});
 
 const chunks = computed(() => {
   const list = [];
