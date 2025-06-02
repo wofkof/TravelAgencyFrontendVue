@@ -3,7 +3,7 @@
 
     <div class="grid grid-cols-4 gap-4">
       <!-- 左邊篩選器區塊 -->
-      <div class="rounded-xl p-4 text-center text-gray-700 shadow-lg col-span-1 h-full max-h-96 ">
+      <div class="rounded-xl p-4 text-center text-gray-700 shadow-lg col-span-1 h-dvh ">
         <div class="text-left p-4 text-lg">
           <h1 class="text-xl font-semibold">類型</h1>
           <label><input type="checkbox" value="Domestic" v-model="selectedTypes" /> 國內旅遊</label><br>
@@ -14,6 +14,7 @@
           <div class="slider-demo-block">
             <el-slider v-model="value" range :format-tooltip="formatTooltip" />
           </div>
+          <p class="text-sm text-gray-500 mt-1">最高價格：NT${{ formattedMaxPrice }}</p>
           <hr class="my-2"/>
           <h1 class="text-xl font-semibold">旅遊天數</h1>
           <input type="checkbox" value="1-4" v-model="selectedDays"> 1-4<br>
@@ -36,7 +37,7 @@
             >
               <div class="shadow-lg rounded-lg p-4 mb-4 grid grid-cols-3 gap-4 h-auto">
                 <div class="shadow-lg w-full h-52">
-                  <img :src="item.cover" alt="" class="h-full object-cover">
+                  <img :src="item.cover" alt="" class="h-full w-full object-cover">
                 </div>
                 <div class="col-span-2 w-full relative p-4">
                   <div class="text-start">
@@ -85,6 +86,10 @@ const formatTooltip = (val: number) => {
   return val*3000 + 3000;
 }
 
+const formattedMaxPrice = computed(() => {
+  const rawMax = value.value[1];
+  return rawMax * 3000 + 3000;
+});
 const selectedTypes = ref<string[]>([]); // 類型
 const selectedDays = ref<string[]>([]);  // 天數
 
