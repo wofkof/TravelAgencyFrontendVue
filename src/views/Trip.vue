@@ -83,7 +83,7 @@
     <div class="demo-collapse">
         <el-collapse >
           <el-collapse-item v-for="s in scheduleList" :key="s.scheduleId">
-            <template #title="{ isActive }">
+            <template #title="">
               <div :class="['title-wrapper']" class="text-xl font-bold">
                 第{{s.day}}天
               </div>
@@ -96,7 +96,7 @@
               <p class="mb-4">{{ s.hotel }}</p>
               <p class="mb-2">今日景點</p>
               <div class="grid grid-cols-2">
-                <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="mb-5">
+                <div v-for="(a) in s.attractions" :key="a.attractionId" class="mb-5">
                   <!-- 使用唯一 map ID -->
                   <el-popover
                     :width="300"
@@ -491,6 +491,7 @@ onMounted(async () => {
           }
         }
       }
+      window.scrollTo({ top: 0, behavior: 'auto' })
     }, 500);
 
   } catch (err) {
