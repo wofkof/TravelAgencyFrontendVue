@@ -72,61 +72,76 @@
 
     </div>
 
-<div class="bg-white rounded-xl p-4 shadow mb-6 text-xl font-medium">
-{{ mainInfo.description }}
+  <div class="bg-white rounded-xl p-4 shadow mb-6 text-xl font-medium h-52">
+  {{ mainInfo.description }}
 
   </div>
 
   <!-- 行程手風琴區塊 -->
 
-  <div class="bg-white rounded-xl p-4 shadow mb-6">
-    <div class="demo-collapse">
-        <el-collapse >
-          <el-collapse-item v-for="s in scheduleList" :key="s.scheduleId">
-            <template #title="{ isActive }">
-              <div :class="['title-wrapper']" class="text-xl font-bold">
-                第{{s.day}}天
-              </div>
-            </template>
-            <div class="text-lg text-gray-900 leading-relaxed">
-              <p class="text-xl mb-2">{{ s.description }}</p>
-              <p class="mb-2">早餐: {{ s.breakfast }}</p>
-              <p class="mb-2">午餐: {{ s.lunch }}</p>
-              <p class="mb-2">晚餐: {{ s.dinner }}</p>
-              <p class="mb-4">{{ s.hotel }}</p>
-              <p class="mb-2">今日景點</p>
-              <div class="grid grid-cols-2">
-                <div v-for="(a, index) in s.attractions" :key="a.attractionId" class="mb-5">
-                  <!-- 使用唯一 map ID -->
-                  <el-popover
-                    :width="300"
-                    trigger="hover"
-                    placement="top"
+  <div class="bg-white rounded-xl p-4 shadow mb-6" v-loading="isLoadingSchedule">
+    <el-collapse>
+      <el-collapse-item
+        v-for="s in scheduleList"
+        :key="s.scheduleId"
+      >
+        <template #title>
+          <div class="text-xl font-bold">第{{ s.day }}天</div>
+        </template>
 
-                  >
-                    <template #reference>
-                        <el-button plain round size="large" class="mb-3 shadow">{{ a.name }}
-                        </el-button>
-                    </template>
+        <div class="text-lg text-gray-900 leading-relaxed">
+          <p class="text-xl mb-2">{{ s.description }}</p>
+          <p class="mb-2">早餐: {{ s.breakfast }}</p>
+          <p class="mb-2">午餐: {{ s.lunch }}</p>
+          <p class="mb-2">晚餐: {{ s.dinner }}</p>
+          <p class="mb-4">{{ s.hotel }}</p>
 
-                    <template #default>
-                      <div>
-                        <p class="font-bold text-lg mb-3">{{ a.name }}</p>
-                        <p class="text-base text-gray-700 mb-2">{{ a.description }}</p>
-                        <div :id="`map-popover-${s.scheduleId}-${a.attractionId}`" class="w-full h-40 rounded" ></div>
-                      </div>
-                    </template>
-                  </el-popover>
-                  <p class="">{{ a.description }}</p>
-                </div>
+          <p class="mb-2">今日景點</p>
+          <div class="grid grid-cols-2">
+            <div
+              v-for="(a, index) in s.attractions"
+              :key="index"
+              class="mb-5"
+            >
+              <div>
+                <!-- Skeleton 替代按鈕 -->
+                <el-skeleton
+                  v-if="isLoadingSchedule"
+                  style="width: 120px; height: 40px;"
+                  animated
+                  :rows="0"
+                />
+
+                <!-- 真正的按鈕 + popover -->
+                <el-popover
+                  v-else
+                  :width="300"
+                  trigger="hover"
+                  placement="top"
+                >
+                  <template #reference>
+                    <el-button plain round size="large" class="mb-3 shadow">
+                      {{ a.name }}
+                    </el-button>
+                  </template>
+
+                  <template #default>
+                    <p class="font-bold text-lg mb-3">{{ a.name }}</p>
+                    <p class="text-base text-gray-700 mb-2">{{ a.description }}</p>
+                    <div :id="`map-popover-${s.scheduleId}-${a.attractionId}`" class="w-full h-40 rounded"></div>
+                  </template>
+                </el-popover>
               </div>
-              
+
+              <p class="text-gray-700">
+                <el-skeleton v-if="isLoadingSchedule" animated :rows="1" />
+                <span v-else>{{ a.description }}</span>
+              </p>
             </div>
-          </el-collapse-item>
+          </div>
+        </div>
+      </el-collapse-item>
     </el-collapse>
-</div>
-
-
   </div>
 
   </div>
@@ -146,7 +161,7 @@
     import { Check } from '@element-plus/icons-vue';
     import { ElMessage } from 'element-plus';
     
-
+    const isLoadingSchedule = ref(true);
     const mainInfo = ref(
     {
       "projectId": 0,
@@ -196,7 +211,7 @@
           "attraction3": 0,
           "attraction4": 0,
           "attraction5": 0,
-          "attractions": []
+          "attractions": Array(5).fill({ name: '', description: '', isLoading: true })
         }
       ]
     );
@@ -407,6 +422,9 @@
     } catch (err) {
       console.error("點擊行程後取得日程失敗", err);
     }
+    finally {
+  isLoadingSchedule.value = false;
+  }
   };
 
 
@@ -422,6 +440,7 @@ const getAttractionById = async (attractionId) => {
     };
 
 onMounted(async () => {
+  isLoadingSchedule.value = true;
   const projectId = route.params.projectId;
   const detailId = route.params.detailId;
   const groupId = route.params.groupId;
@@ -443,7 +462,6 @@ onMounted(async () => {
   try {
     const slist = await api.get(`/OfficialSearch/getSchedulelist/${detailId}`);
     scheduleList.value = slist.data;
-    console.log(slist.data)
     for (const schedule of scheduleList.value) {
     const ids = [
       schedule.attraction1,
@@ -458,7 +476,6 @@ onMounted(async () => {
     for (const id of ids) {
       const attr = await getAttractionById(id);
       if (attr) schedule.attractions.push(attr);
-      console.log(attr);
     }
   }
     setTimeout(() => {
@@ -496,6 +513,9 @@ onMounted(async () => {
 
   } catch (err) {
     console.error("取得行程scheduleList失敗", err);
+  }
+  finally {
+  isLoadingSchedule.value = false;
   }
 
 });

@@ -11,17 +11,21 @@
   ref="carousel"
   class="col-start-2 col-span-10 gap-2 justify-center md:justify-start content-center py-1 overflow-x-auto whitespace-nowrap scroll-smooth scrollbar-hidden"
 >
-  <button
-    v-for="tag in tags"
-    :key="tag"
-    class="inline-block px-4 py-2 mx-1 rounded-full border text-sm transition"
-    :class="selectedTag === tag
-      ? 'bg-blue-600 text-white border-blue-600'
-      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100'"
-    @click="selectTag(tag)"
-  >
-    {{ tag }}
-  </button>
+<div class="flex justify-center">
+
+    <button
+      v-for="tag in tags"
+      :key="tag"
+      class="inline-block px-4 py-2 mx-1 rounded-full border text-sm transition "
+      :class="selectedTag === tag
+        ? 'bg-blue-600 text-white border-blue-600'
+        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100'"
+      @click="selectTag(tag)"
+    >
+      {{ tag }}
+    </button>
+</div>
+  
 </div>
   <div class="col-start-12 col-span-1 px-3 flex justify-start">
     <div class="relative flex justify-center">
