@@ -110,7 +110,7 @@
 
 <script>
 import api from '@/utils/api'; // 重新引入 api instance
-
+import { useAuthStore } from '@/stores/authStore';
 export default {
   name: 'OrderCompletePage',
   props: ['orderId'],
@@ -125,7 +125,6 @@ export default {
       internalPaymentDate: null,
       internalTradeAmt: null,
       internalPaymentTypeChargeFee: null,
-      internalCustomField1: null, // OrderId
       internalCustomField2: null,
       internalCustomField3: null,
       rawPaymentType: null,
@@ -137,6 +136,16 @@ export default {
     };
   },
   computed: {
+    // 【新增】從 Pinia store 獲取 memberId
+    memberIdFromAuth() {
+      const authStore = useAuthStore(); // 在 computed 內部獲取 store 實例
+      return authStore.memberId;
+    },
+    // 【新增】從 Pinia store 獲取登入狀態
+    isUserLoggedIn() {
+      const authStore = useAuthStore();
+      return authStore.isLoggedIn;
+    },
     formattedPaymentDate() {
       if (this.internalPaymentDate && typeof this.internalPaymentDate === 'string') {
         return this.internalPaymentDate.replace('T', ' ');
@@ -190,12 +199,12 @@ export default {
 
       // 如果付款成功，則查詢發票資訊
       if (this.internalPaymentStatus === 'success' && this.orderId) {
-        const memberIdFromStorage = localStorage.getItem('memberId');
-        console.log('Retrieved memberId from localStorage:', memberIdFromStorage);
-        if (memberIdFromStorage) {
-          await this.fetchInvoiceDetails(this.orderId, memberIdFromStorage);
+        // 【修改】👇 使用計算屬性 this.memberIdFromAuth
+        if (this.isUserLoggedIn && this.memberIdFromAuth) {
+          console.log('Using memberId from Pinia store:', this.memberIdFromAuth);
+          await this.fetchInvoiceDetails(this.orderId, this.memberIdFromAuth);
         } else {
-          console.error('Member ID is missing from localStorage, cannot fetch invoice details.');
+          console.error('Member ID is missing from Pinia store or user not logged in, cannot fetch invoice details.');
           this.fetchInvoiceError = '無法獲取用戶會員資訊，無法查詢發票。請確認您已登入。';
         }
       }

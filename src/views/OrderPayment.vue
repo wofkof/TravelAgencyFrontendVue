@@ -104,7 +104,7 @@ import { finalizeOrderPayment, getOrderDetails, activateOrderShortExpiration } f
 import { useCartStore } from '@/stores/ShoppingCart';
 import { useHesitationStore } from '@/stores/hesitationStore';
 import { ArrowLeft, ShoppingCart, RefreshRight } from '@element-plus/icons-vue';
-
+import { useAuthStore } from '@/stores/authStore';
 // 子元件
 import AccordionSection from '@/components/OrderForm/AccordionSection.vue';
 import PaymentOptions from '@/components/OrderForm/PaymentOptions.vue';
@@ -115,6 +115,7 @@ const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
 const hesitationStore = useHesitationStore();
+const authStore = useAuthStore(); 
 
 const isLoading = ref(true);
 const loadError = ref(null);
@@ -138,12 +139,11 @@ const expiresAtForCountdown = ref(route.query.exp || null);
 // --- 響應式數據 ---
 const currentOrderItems = ref([]);
 const orderParticipants = ref([]);
-const currentOrderStatus = ref(''); // << 新增：儲存從後端 API (getOrderDetails) 獲取的訂單狀態 >>
+const currentOrderStatus = ref('');
 const orderTotalAmount = ref(0);
 const orderItemCount = ref(0);
 
 // << 新增：用於猶豫期判斷 >>
-const memberId = ref(null); // 將從 localStorage 讀取
 let isNavigatingToPaymentGateway = false; // 標記是否正跳轉至 ECPay，避免誤觸發猶豫期
 let successRedirect = false; // << 新增：用於 handleFinalizePayment 中標記是否成功準備跳轉到金流 >>
 
@@ -158,6 +158,8 @@ const paymentFormData = reactive({
     companyTitle: '',
     addBillingAddress: false,
     billingAddress: '',
+    remarks: '',
+    deliveryEmail: ''
   },
 });
 
@@ -246,34 +248,29 @@ const loadInitialData = async () => {
   activePaymentDeadline.value = route.query.exp || null;
 
   try {
-    // << 修改：memberId 的獲取應在此處，而不是在全域 >>
-    const storedMemberId = localStorage.getItem('memberId');
-    if (!storedMemberId) {
-      // _logger is not defined here, use console.error or ElMessage
-      console.error("OrderPayment.vue - loadInitialData: 未找到 memberId");
+    if (!authStore.isLoggedIn || !authStore.memberId) {
+      console.error("OrderPayment.vue - loadInitialData: 使用者未登入或 memberId 無效。");
       ElMessage.error("無法獲取會員資訊，請重新登入。");
-      // throw new Error("無法獲取會員資訊，請重新登入。"); // 可以選擇拋出錯誤或直接 return
       loadError.value = "無法獲取會員資訊，請重新登入。";
       isLoading.value = false;
       if (loadingInstance) loadingInstance.close();
-      return; // 終止執行
+      return;
     }
-    memberId.value = parseInt(storedMemberId, 10); // << 賦值給 ref >>
 
     // << 修改：getOrderDetails 第二個參數應為 memberId.value >>
-    const response = await getOrderDetails(orderIdFromRoute.value, memberId.value);
-    if (response && response.data) {
-      orderTotalAmount.value = response.data.totalAmount;
-      currentOrderStatus.value = response.data.orderStatus || response.data.status; // << 修改/確認：確保獲取正確的訂單狀態字串 >>
+    const response = await getOrderDetails(orderIdFromRoute.value, authStore.memberId);
+    if (response && response.data) {
+      orderTotalAmount.value = response.data.totalAmount;
+      // 【確認】👇 API返回的訂單狀態欄位是 orderStatus 還是 status
+      currentOrderStatus.value = response.data.orderStatus || response.data.status; 
 
-      // 關鍵修改：使用從 getOrderDetails API 返回的 expiresAt 更新倒數計時的截止時間
-      if (response.data.expiresAt) {
-        expiresAtForCountdown.value = response.data.expiresAt; // <--- 更新為 API 返回的最新到期時間
-        console.log("付款倒數計時將基於 API 返回的到期時間:", activePaymentDeadline.value);
-      } else {
-        expiresAtForCountdown.value = route.query.exp || null;
-        console.warn("API getOrderDetails 未返回 expiresAt，將使用路由傳入的到期時間。");
-      }
+      if (response.data.expiresAt) {
+        expiresAtForCountdown.value = response.data.expiresAt;
+        console.log("付款倒數計時將基於 API 返回的到期時間:", expiresAtForCountdown.value); // 修正日誌變數
+      } else {
+        expiresAtForCountdown.value = route.query.exp || null;
+        console.warn("API getOrderDetails 未返回 expiresAt，將使用路由傳入的到期時間。");
+      }
 
       const emailFromApi = response.data.ordererEmail;
       const emailFromRouteQuery = route.query.ordererEmail;
@@ -300,7 +297,7 @@ const loadInitialData = async () => {
       if (currentOrderStatus.value !== 'Awaiting') { // << 確認 'Awaiting' 是否為正確的待付款狀態字串 >>
         orderExpired.value = true; // 標記為過期，禁用付款按鈕
         ElMessage.warning(`訂單 (狀態: ${currentOrderStatus.value}) 已處理或已失效，無法繼續付款。`);
-      } else if (activePaymentDeadline.value && new Date(activePaymentDeadline.value) < new Date()) { // << 使用從API獲取的最新expiresAt判斷 >>
+      } else if (expiresAtForCountdown.value && new Date(expiresAtForCountdown.value) < new Date()) { // << 使用從API獲取的最新expiresAt判斷 >>
         if (!orderExpired.value) {
             handleCountdownFinish(); // 觸發總付款時間過期處理
         }
@@ -314,7 +311,7 @@ const loadInitialData = async () => {
     console.error("載入付款頁面初始資料失敗:", err);
     loadError.value = err.response?.data?.message || err.message || "載入訂單資料時發生錯誤。";
     ElMessage.error(loadError.value);
-    if (!activePaymentDeadline.value) activePaymentDeadline.value = route.query.exp || null;
+    if (!expiresAtForCountdown.value) expiresAtForCountdown.value = route.query.exp || null;
   } finally {
     isLoading.value = false;
     if (loadingInstance) loadingInstance.close();
@@ -329,7 +326,7 @@ const triggerHesitationIfNeeded = async () => {
   // 3. isSubmitting.value 為 false (表示不是因為點擊「確認付款並送出訂單」按鈕觸發的)
   // 4. isNavigatingToPaymentGateway 為 false (表示目的地不是金流頁面)
   const canActivate = orderIdFromRoute.value &&
-                      memberId.value &&
+                      authStore.memberId &&
                       currentOrderStatus.value === 'Awaiting' &&
                       !isSubmitting.value &&
                       !isNavigatingToPaymentGateway;
@@ -338,7 +335,7 @@ const triggerHesitationIfNeeded = async () => {
     try {
       console.log(`使用者準備離開 OrderPayment 頁面 (訂單ID: ${orderIdFromRoute.value})，嘗試啟動猶豫期。`);
       // << 修改：調用 activateOrderShortExpiration >>
-      const response = await activateOrderShortExpiration(orderIdFromRoute.value, memberId.value);
+      const response = await activateOrderShortExpiration(orderIdFromRoute.value, authStore.memberId);
       console.log('訂單猶豫期啟動成功:', response.data);
       // 後端會將 ExpiresAt 更新為30秒後，OrderExpirationService 會處理實際的過期
     } catch (error) {
@@ -351,7 +348,7 @@ const triggerHesitationIfNeeded = async () => {
 // << 新增：處理瀏覽器關閉/刷新事件 (盡力而為) >>
 const handleBeforeUnload = (event) => {
   const canActivateOnUnload = orderIdFromRoute.value &&
-                              memberId.value &&
+                              authStore.memberId &&
                               currentOrderStatus.value === 'Awaiting' &&
                               !isSubmitting.value &&
                               !isNavigatingToPaymentGateway;
@@ -366,18 +363,10 @@ const handleBeforeUnload = (event) => {
 };
 
 
-onMounted(async () => { // << 修改：將 onMounted 內容移至此處，並設為 async >>
+onMounted(async () => {
   const ordererEmailFromRouteQuery = route.query.ordererEmail;
   if (ordererEmailFromRouteQuery && paymentFormData.eInvoiceInfo && !paymentFormData.eInvoiceInfo.deliveryEmail) {
     paymentFormData.eInvoiceInfo.deliveryEmail = ordererEmailFromRouteQuery;
-  }
-  // << 修改：在 loadInitialData 前獲取 memberId (雖然 loadInitialData 內部也會獲取一次，但這裡先獲取有利於後續邏輯) >>
-  const storedMemberId = localStorage.getItem('memberId');
-  if (storedMemberId) {
-    memberId.value = parseInt(storedMemberId, 10);
-  } else {
-    console.error("OrderPayment.vue - onMounted: 未找到 memberId，某些功能可能受影響。");
-    // 可以在此提示用戶或採取其他措施
   }
 
   await loadInitialData(); // 確保 loadInitialData 完成後再執行後續操作
@@ -480,12 +469,12 @@ const handleFinalizePayment = async () => {
   }
 
   // << 修改：memberId 已在 onMounted 或 loadInitialData 中獲取並存於 memberId.value >>
-  if (!memberId.value) {
-    ElMessage.error("無法獲取會員ID，請重新整理頁面或登入。");
-    isSubmitting.value = false;
-    isNavigatingToPaymentGateway = false; // << 新增：提交失敗，重設標記 >>
-    return;
-  }
+  if (!authStore.isLoggedIn || !authStore.memberId) {
+    ElMessage.error("無法獲取會員ID，請重新整理頁面或登入。");
+    isSubmitting.value = false;
+    isNavigatingToPaymentGateway = false; 
+    return;
+  }
 
   let backendPaymentMethodValue;
   switch (paymentFormData.paymentMethod) {
@@ -499,7 +488,7 @@ const handleFinalizePayment = async () => {
   }
 
   const finalPayload = {
-    memberId: memberId.value, // << 使用 ref 的值 >>
+    memberId: authStore.memberId,
     selectedPaymentMethod: backendPaymentMethodValue,
     invoiceRequestInfo: {
       InvoiceOption: paymentFormData.eInvoiceInfo.type === 'company' ? 1 : 0,

@@ -170,9 +170,15 @@ import { useAuthStore } from '@/stores/authStore';
 import OrderDetail from './OrderDetail.vue';
 import { debounce } from 'lodash-es';
 import AwaitingOrderActionCell from '@/components/tools/AwaitingOrderActionCell.vue'; //柏亦新增
+import { useHesitationStore } from '@/stores/hesitationStore'; //柏亦新增
 
 const authStore = useAuthStore();
 const memberId = computed(() => authStore.memberId);
+
+const hesitationStore = useHesitationStore();// 柏亦新增：使用 Hesitation Store 來處理通知
+const clearNotification = () => {
+  hesitationStore.markNotificationAsSeen();
+};// 柏亦新增
 
 // 狀態選擇與對應 map
 const activeTab = ref('Awaiting'); // 預設顯示 "即將到來" 以便測試
@@ -288,6 +294,7 @@ onMounted(() => {
           // orders.value = [];
       }
   }
+  clearNotification();
 });
 
 onActivated(() => {
@@ -299,6 +306,7 @@ onActivated(() => {
     }
   }
 });
+clearNotification(); 
 </script>
 
 <style scoped>
