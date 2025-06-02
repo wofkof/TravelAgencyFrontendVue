@@ -1,6 +1,8 @@
 <!-- 填寫信用卡資料 -->
 <template>
-  <el-form :model="formData" label-width="100px">
+  <el-card class="credit-card">
+  <h2 class="title">填寫信用卡資料</h2>
+  <el-form label-width="80px">
     <el-form-item label="持卡人卡號">
       <el-input v-model="formData.cardNumberPart1" maxlength="4" style="width: 80px"></el-input>
       -
@@ -42,12 +44,13 @@
 
       <el-button type="primary" 
       
-      @click="visaRouter.VisaCompleteOrderView"
+      @click="visaRouter.CompletedOrderDetailView"
       
       >確認送出</el-button>
 
     </el-form-item>
   </el-form>
+</el-card>
 </template>
 
 <script setup>
@@ -90,3 +93,20 @@ const submitForm = () => {
 import useVisaRouter from "@/utils/visaRouterHelp";
 const visaRouter = useVisaRouter();
 </script>
+
+<style scoped>
+.credit-card {
+  /* 區塊的最大寬度 */
+  max-width: 1400px;
+  /* 頁面中水平置中 */
+  margin: 0 auto;
+  /* 這個區塊的內邊距 */
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+</style>

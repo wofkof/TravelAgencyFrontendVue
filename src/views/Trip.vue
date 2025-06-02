@@ -329,15 +329,9 @@
     }
   };
 
-  if (adultQuantity > 0) {
-      productToAdd.options.push({ type: '成人', quantity: adultQuantity, price: adultPrice, unitLabel: '佔床' });
-  }
-  if (childQuantity > 0) {
-      productToAdd.options.push({ type: '兒童', quantity: childQuantity, price: childPrice, unitLabel: '佔床' });
-  }
-  if (babyQuantity > 0) {
-      productToAdd.options.push({ type: '嬰兒', quantity: babyQuantity, price: babyPrice, unitLabel: '不佔床' });
-  }
+  productToAdd.options.push({ type: '成人', quantity: adultQuantity, price: adultPrice, unitLabel: '佔床' });
+  productToAdd.options.push({ type: '兒童', quantity: childQuantity, price: childPrice, unitLabel: '佔床' });
+  productToAdd.options.push({ type: '嬰兒', quantity: babyQuantity, price: babyPrice, unitLabel: '不佔床' });
   try {
     cartStore.addItem(productToAdd); // 將構造好的 productToAdd 物件傳給 store
     ElMessage({

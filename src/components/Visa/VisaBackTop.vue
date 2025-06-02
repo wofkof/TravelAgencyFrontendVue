@@ -1,9 +1,6 @@
 <!-- Backtop 回到頂部 -->
 <template>
-
-  Scroll down to see the bottom-right button.
   <el-backtop :bottom="100">
-
     <div
       style="
         height: 100%;
@@ -17,16 +14,11 @@
     >
       UP
     </div>
-
   </el-backtop>
-
 </template>
-
 
 <!-- 套件來源 -->
 <script setup>
-
 import useVisaRouter from "@/utils/visaRouterHelp";
 const visaRouter = useVisaRouter();
-
 </script>

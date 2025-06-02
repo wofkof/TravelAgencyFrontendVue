@@ -1,3 +1,4 @@
+<!-- google地圖-->
 <template>
   <l-map ref="map" :zoom="zoom" :center="center" style="height: 500px; width: 100%;" @click="onMapClick">
     <l-tile-layer :url="tileUrl"></l-tile-layer>
