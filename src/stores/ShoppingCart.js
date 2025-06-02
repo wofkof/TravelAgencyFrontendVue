@@ -40,77 +40,7 @@ const formatDateToStore = (dateInput) => {
 
 // 使用 setup 函數語法定義購物車 store
 export const useCartStore = defineStore('ShoppingCart', () => {
-  const items = ref([
-    // 範例商品：官方團體旅遊
-    {
-      id: uuidv4(),
-      productId: '1',
-      productType: 'GroupTravel',
-      destinationCountryCode: 'TW',
-      name: '台北經典三天兩夜探索之旅',
-      details: '深入體驗台北魅力：暢遊故宮、登頂101、品嚐夜市小吃、漫步迪化街。包含兩晚市中心舒適住宿與部分景點門票。',
-      imageUrl: '/images/tours/taipei-101-skyline.jpg',
-      startDate: '2025-08-20',
-      endDate: '2025-08-22',
-      totalDays: 3,
-      departureDate: '2025-08-20',
-      flights: null,
-      accommodation: {
-        description: '市中心舒適住宿',
-        roomType: '標準雙人房',
-      },
-      options: [
-        { type: '成人', quantity: 1, price: 10000, unitLabel: '佔床' },
-        { type: '兒童', quantity: 0, price: 6500, unitLabel: '佔床' },
-        { type: '嬰兒', quantity: 0, price: 1000, unitLabel: '不佔床' }
-      ],
-      category: '國內旅遊',
-      selected: true,
-      isFavorite: false,
-      productSpecificData: { internalCode: 'TPE001-G' }
-    },
-
-    // --- 修改後的客製化旅遊範例 ---
-    {
-      id: uuidv4(), // 購物車項目的唯一 ID
-      productId: '1', // 更真實的客製化行程產品 ID (例如 "CT_" + customTravelId + "_MEMBER" + memberId)
-      productType: 'CustomTravel',
-      name: '我的夏日沖繩七日遊', // 來自前端的 itemFromList.title (原 Note)
-      details: '會員自訂行程 - 我的夏日沖繩七日遊. 共 7 天, 2 人參與.', // 根據前端格式
-      imageUrl: '/images/tours/custom-default.jpg', // 前端使用的預設圖片
-      destinationCountryCode: 'CUSTOM', // 前端設定的值
-
-      startDate: '2025-07-10', // 範例日期
-      endDate: '2025-07-16',     // 範例日期
-      totalDays: 7,              // 範例天數
-      departureDate: '2025-07-10', // 同 startDate
-
-      flights: null, // 前端設定為 null
-      accommodation: { description: '依客製化需求安排' }, // 前端設定的描述
-
-      options: [
-        {
-          type: '客製化專案',
-          quantity: 1, // 固定為 1
-          price: 60000, // 範例總價
-          unitLabel: '總計 (2人)' // 根據前端格式 (假設2人)
-        }
-      ],
-      category: '客製化旅遊', // 前端設定的值
-      selected: true,        // 預設選中
-      isFavorite: false,       // 預設未收藏
-      productSpecificData: {
-        memberId: 77, // 範例會員 ID
-        people: 2,    // 範例人數
-        originalNote: '我的夏日沖繩七日遊', // 同 name
-        dailyActivities: [ // 範例每日活動，或保持空陣列 []
-          { day: 1, time: '10:00', itemId: 'OKINAWA_BEACH_001', category: '景點', accommodationName: '海濱飯店A' },
-          { day: 1, time: '19:00', itemId: 'OKINAWA_RESTAURANT_002', category: '餐飲', accommodationName: null },
-          { day: 2, time: '全天', itemId: 'OKINAWA_AQUARIUM_003', category: '景點', accommodationName: '海濱飯店A' }
-        ]
-      }
-    },
-  ]);
+  const items = ref([]);
 
 
   // --- 計算屬性 (Getters) ---

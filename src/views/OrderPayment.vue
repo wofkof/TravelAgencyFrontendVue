@@ -158,6 +158,8 @@ const paymentFormData = reactive({
     companyTitle: '',
     addBillingAddress: false,
     billingAddress: '',
+    remarks: '',
+    deliveryEmail: ''
   },
 });
 
