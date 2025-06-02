@@ -497,6 +497,7 @@ onMounted(async () => {
           }
         }
       }
+      window.scrollTo({ top: 0, behavior: 'auto' })
     }, 500);
 
   } catch (err) {
