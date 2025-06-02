@@ -9,7 +9,7 @@
     <el-card v-else-if="error">
       <p class="error-message">{{ error }}</p>
     </el-card>
-    <el-descriptions column="1" border v-else-if="selectedDocumentMenuItem">
+    <el-descriptions key=2 :column="1" border="" v-else-if="selectedDocumentMenuItem">
       <el-descriptions-item label="商品名稱">
         <!-- 中華民國護照代辦-新辦/更換(14歲以上)-一般件 -->
           {{ selectedDocumentMenuItem.rocPassportOption }} - {{ selectedDocumentMenuItem.processingItem }} - {{ selectedDocumentMenuItem.caseType === 'general' ? '一般件' : '' }}
@@ -51,8 +51,9 @@
       </el-descriptions-item>
 
       <el-descriptions-item label="備註">
-        <li><a href="#">文件下載區</a></li>
+        <ul class="note-list"> <li><a href="#">文件下載區</a></li>
         <li>申請人本人委任旅行社委任書⭐D式範例</li>
+        </ul>
         <li>申請人委託代送件(受委任人)複委託委任書，另需檢附雙方關係證明(如下)⭐E式範例</li>
         <li>(註) 雙方關係證明需含有照片之相關證件(如同學代送提供雙方學生證影本)</li>
         <li>(註) 受委任人限親屬(三等親內)、配偶、同事、同學</li>

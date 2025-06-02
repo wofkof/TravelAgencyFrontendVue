@@ -34,12 +34,12 @@
                   <!-- 效期：10年 -->
                    效期：{{ item.documentValidityPeriod }}
                 </el-col>
-                <el-col :span="30" style="text-align: right;" styl="text-align: left;">
-                  <el-col :span="24" style="text-align: right;">
-                    <!-- TWD 1,700 -->
+                <el-col :span="30" style="text-align: right;"> <el-col :span="24" style="text-align: right;">
                     {{ item.fee }}
                   </el-col>
-                  <el-button type="primary" size="large" @click="handleSelect(item)">選擇1</el-button>
+                  <el-button type="primary">
+                    <el-button link size="large" @click="handleSelect(item)">選擇1</el-button>
+                  </el-button>
                 </el-col>
               </el-card>
             </el-row>
@@ -50,7 +50,7 @@
                 <el-col :span="12">效期：10年</el-col>
                 <el-col :span="30" style="text-align: right;" styl="text-align: left;">
                   <el-col :span="24" style="text-align: right;">TWD 2,850</el-col>
-                   <el-button type="primary" size="large">選擇2</el-button>
+                   <el-button link size="large">選擇2</el-button>
                 </el-col>
               </el-card>
             </el-row>
@@ -66,34 +66,39 @@
 
 <script setup>
 import { Avatar } from '@element-plus/icons-vue';
-import { onMounted } from 'vue'; // 確保 onMounted 被導入
-import { useDocumentMenuStore } from '@/stores/documentMenuStore'; // 引入 Store
-import { storeToRefs } from 'pinia'; // 用於解構響應式屬性
-import { useRouter } from 'vue-router'; // 如果你正在導航到詳細資訊頁面
+import { onMounted, ref } from 'vue'; // 確保引入 ref
+import { useDocumentMenuStore } from '@/stores/documentMenuStore'; // 引入 documentMenuStore
+import { useOrderFormStore } from '@/stores/orderForm'; // ***新增：引入 orderFormStore***
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 
 const documentMenuStore = useDocumentMenuStore();
+const orderFormStore = useOrderFormStore(); // ***新增：實例化 orderFormStore***
 const router = useRouter();
-const documentMenuData = ref({});
-const isLoading = ref(true);
-const { selectedDocumentMenuItem } = storeToRefs(documentMenuStore); // 確保這裡正確地解構了
 
+// 這兩行可以移除，因為你已經從 storeToRefs 解構了 loading 和 error
+// const documentMenuData = ref({});
+// const isLoading = ref(true);
 
-// 從 Store 中解構響應式狀態
-const { allDocumentMenus, loading, error } = storeToRefs(documentMenuStore);
+const { selectedDocumentMenuItem, allDocumentMenus, loading, error } = storeToRefs(documentMenuStore); // 確保這裡正確地解構了所有需要的響應式狀態
 
 onMounted(() => {
   // NewChangeup 也可能會觸發抓取，如果資料尚未被 VisaView 載入
-  documentMenuStore.fetchAllDocumentMenus(); 
+  documentMenuStore.fetchAllDocumentMenus();
 });
 
 const handleSelect = (item) => {
-  documentMenuStore.setSelectedDocumentMenuItem(item); // 在 Store 中設定選定的項目
-  // 導航到詳細資訊頁面 (例如 VisainDetail)
-  // 如果詳細資訊頁面可以直接存取，你可能希望透過路由參數傳遞 ID。
-  router.push({ name: 'OrderFormView', params: { id: item.menuId } }); 
-};
+  // 1. 在 documentMenuStore 中設定選定的項目 (這部分您已完成)
+  documentMenuStore.setSelectedDocumentMenuItem(item);
 
-</>
+  // 2. ***關鍵步驟：將選定的 DocumentMenuId 更新到 orderFormStore.data 中***
+  orderFormStore.updateField('DocumentMenuId', item.menuId);
+  console.log('✅ DocumentMenuId 已更新到 orderFormStore 從選單頁面:', orderFormStore.data.DocumentMenuId); // 調試用
+
+  // 3. 導航到詳細資訊頁面 (例如 OrderFormView)
+  router.push({ name: 'OrderFormView', params: { id: item.menuId } });
+};
+</script>
 
 <style scoped>
 .visa-info-container {

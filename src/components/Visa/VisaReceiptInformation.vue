@@ -8,8 +8,8 @@
       如行程取消或更動時，為加速退款作業，同意授權本公司代為處理銷貨退回或折讓證明單。
     </div>
     <el-radio-group v-model="orderFormStore.data.TaxIdOption" @change="handleTaxIdOptionChange">
-      <el-radio :label="0">不需要抬頭統編</el-radio>
-      <el-radio :label="1">需要抬頭統編</el-radio>
+      <el-radio :value="0">不需要抬頭統編</el-radio>
+      <el-radio :value="1">需要抬頭統編</el-radio>
     </el-radio-group>
     <div v-if="orderFormStore.data.TaxIdOption === 1" class="company-info">
       <el-form label-width="80px">
@@ -22,7 +22,7 @@
       </el-form>
     </div>
     <div class="need-help">
-      <el-button type="text" icon="el-icon-plus">需協助事項</el-button>
+      <el-button link icon="el-icon-plus">需協助事項</el-button>
     </div>
   </el-card>
 </template>

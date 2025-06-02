@@ -3,8 +3,8 @@
     <h3>電子發票 / 收據</h3>
 
     <el-radio-group :model-value="invoiceType" @update:modelValue="updateType">
-      <el-radio label="personal">個人 (二聯式)</el-radio>
-      <el-radio label="company">公司 (三聯式)</el-radio>
+      <el-radio :value="'personal'">個人 (二聯式)</el-radio>
+      <el-radio :value="'company'">公司 (三聯式)</el-radio>
        </el-radio-group>
 
     <div v-if="invoiceType === 'company'" class="company-fields">

@@ -30,7 +30,8 @@
               </el-col>
             </el-row>
             <div class="passport-note">
-              同護照拼音，無須符號或空格 <el-link type="primary" :underline="false">護照範例</el-link>
+              同護照拼音，無須符號或空格
+              <el-link type="primary" underline="never">護照範例</el-link>
             </div>
           </el-form-item>
 
