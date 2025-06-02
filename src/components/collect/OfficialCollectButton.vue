@@ -41,7 +41,7 @@ const fetchCollectStatus = async () => {
       params: { memberId },
     });
     const found = res.data.find(
-      (c) => c.travelId === props.travelId && c.travelType === "Official"
+      (c) => c.travelId === props.travelId && c.travelType === 0
     );
     collected.value = !!found;
   } catch (err) {
@@ -55,7 +55,7 @@ const toggleCollect = async () => {
     const res = await api.post("/CollectAndComment/toggleCollection", {
       memberId,
       travelId: props.travelId,
-      travelType: "Official",
+      travelType: 0,
     });
     collected.value = res.data.collected;
   } catch (err) {

@@ -1,46 +1,56 @@
 <template>
-  <div>
-    <h2 class="text-xl font-bold mb-4">我的收藏</h2>
-    <div v-if="loading">載入中...</div>
-    <div v-else-if="collections.length === 0">目前沒有收藏行程</div>
-    <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+  <div class="max-w-7xl mx-auto p-4">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">我的收藏</h2>
+
+    <div v-if="loading" class="text-gray-500 text-center">載入中...</div>
+
+    <div v-else-if="collections.length === 0" class="text-gray-500 text-center">
+      目前沒有收藏行程
+    </div>
+
+    <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <el-card
         v-for="item in collections"
         :key="item.collectId"
-        class="relative flex flex-col"
+        class="relative flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200"
+        body-style="display: flex; flex-direction: column; height: 100%; padding: 16px"
       >
+        <!-- 卡片標題 -->
         <template #header>
           <div
-            class="font-semibold text-sm leading-snug"
-            style="min-height: 48px"
+            class="font-semibold text-base text-gray-800 leading-snug truncate"
+            :title="item.title"
           >
             {{ item.title }}
           </div>
         </template>
 
+        <!-- 封面圖 -->
         <img
           :src="item.coverPath || logoImage"
           alt="travel cover"
-          class="w-full mb-3 object-cover rounded"
-          style="height: 230px"
+          class="w-full rounded-md mb-4 object-cover"
+          style="height: 200px"
         />
 
-        <div class="flex-1 overflow-auto pr-1">
-          <p class="text-xs text-gray-500 mb-1">
+        <!-- 行程資訊 -->
+        <div class="flex-1 overflow-auto text-sm text-gray-600 mb-3">
+          <p class="text-gray-500 mb-2">
             行程類型：{{ getTravelTypeName(item.travelType) }}
           </p>
           <transition name="fade">
             <p
               v-if="expanded[item.collectId]"
-              class="text-gray-600 text-sm line-clamp-5"
+              class="line-clamp-5 leading-relaxed"
               style="overflow: auto; max-height: 80px"
             >
               {{ item.description || "（此為客製化行程，無說明）" }}
             </p>
           </transition>
         </div>
-        <!-- ✅ 下方按鈕同側靠右 -->
-        <div class="flex justify-end gap-2 mt-auto pt-2">
+
+        <!-- 按鈕區塊 -->
+        <div class="flex justify-between mt-auto pt-3 border-t border-gray-200">
           <el-button
             type="primary"
             plain
@@ -48,6 +58,15 @@
             @click="toggleDetails(item.collectId)"
           >
             {{ expanded[item.collectId] ? "收合資訊" : "詳細資訊" }}
+          </el-button>
+
+          <el-button
+            type="success"
+            plain
+            size="small"
+            @click="goToDetail(item)"
+          >
+            查看行程
           </el-button>
 
           <el-button
@@ -70,11 +89,24 @@ import api from "@/utils/api";
 import { useAuthStore } from "@/stores/authStore";
 import { ElMessageBox, ElMessage } from "element-plus";
 import logoImage from "@/assets/images/newlogo.png";
+import { useRouter } from "vue-router";
+const router = useRouter();
+
+const goToDetail = (item) => {
+  router.push({
+    name: "DetailPage",
+    params: {
+      projectId: item.projectId,
+      detailId: item.detailId,
+      groupId: item.groupId,
+    },
+  });
+};
 
 const authStore = useAuthStore();
 const collections = ref([]);
 const loading = ref(true);
-const expanded = ref({}); // 控制每個 collectId 是否展開
+const expanded = ref({});
 
 const getTravelTypeName = (type) => {
   return type === 0 ? "客製化行程" : "官方行程";
@@ -91,7 +123,6 @@ const loadCollections = async () => {
       params: { memberId: authStore.memberId },
     });
     collections.value = res.data;
-    // 初始化展開狀態為 false
     res.data.forEach((item) => {
       expanded.value[item.collectId] = false;
     });
@@ -133,4 +164,14 @@ onMounted(() => {
 });
 </script>
 
-<style></style>
+<style scoped>
+/* 卡片動態效果 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
