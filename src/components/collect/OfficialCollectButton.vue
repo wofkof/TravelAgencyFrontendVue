@@ -19,10 +19,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed } from "vue";
 import api from "@/utils/api";
 import FavoriteIcon from "@/components/tools/FavoriteIcon.vue";
 import { useAuthStore } from "@/stores/authStore";
+import { useCollectStore } from "@/stores/collectStore";
 
 const props = defineProps({
   travelId: {
@@ -32,45 +33,23 @@ const props = defineProps({
 });
 
 const authStore = useAuthStore();
+const collectStore = useCollectStore();
 const memberId = authStore.memberId || 0;
-const collected = ref(false);
-
-const fetchCollectStatus = async () => {
-  try {
-    const res = await api.post("/CollectAndComment/getMyCollections", null, {
-      params: { memberId },
-    });
-    const found = res.data.find(
-      (c) => c.travelId === props.travelId && c.travelType === 0
-    );
-    collected.value = !!found;
-  } catch (err) {
-    console.warn("讀取收藏失敗", err);
-  }
-};
+const collected = computed(() => collectStore.isCollected(props.travelId));
 
 const toggleCollect = async () => {
   if (!memberId) return alert("請先登入");
   try {
-    const res = await api.post("/CollectAndComment/toggleCollection", {
+    await api.post("/CollectAndComment/toggleCollection", {
       memberId,
       travelId: props.travelId,
       travelType: 0,
     });
-    collected.value = res.data.collected;
+    collectStore.toggle(props.travelId);
   } catch (err) {
     console.warn("收藏切換失敗", err);
   }
 };
-
-onMounted(() => {
-  if (!props.travelId) {
-    console.warn("❗ travelId 為無效值：", props.travelId);
-    return;
-  }
-  console.log("[❤️ mounted] travelId =", props.travelId);
-  fetchCollectStatus();
-});
 </script>
 
 <style scoped>

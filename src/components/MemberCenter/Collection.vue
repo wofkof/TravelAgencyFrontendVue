@@ -145,6 +145,13 @@ const handleDelete = async (collectId) => {
       params: { collectId },
     });
     ElMessage.success("已取消收藏");
+    const removed = collections.value.find((c) => c.collectId === collectId);
+    if (removed) {
+      const { travelId } = removed;
+      const { useCollectStore } = await import("@/stores/collectStore");
+      const collectStore = useCollectStore();
+      collectStore.toggle(travelId);
+    }
     await loadCollections();
   } catch (err) {
     if (err !== "cancel") {
