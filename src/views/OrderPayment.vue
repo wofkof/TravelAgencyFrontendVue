@@ -333,16 +333,25 @@ const triggerHesitationIfNeeded = async () => {
 
   if (canActivate) {
     try {
-      console.log(`使用者準備離開 OrderPayment 頁面 (訂單ID: ${orderIdFromRoute.value})，嘗試啟動猶豫期。`);
-      // << 修改：調用 activateOrderShortExpiration >>
+      console.log(`[triggerHesitationIfNeeded] User leaving OrderPayment (Order ID: ${orderIdFromRoute.value}), attempting to activate short expiration.`);
+      // 調用後端 API
       const response = await activateOrderShortExpiration(orderIdFromRoute.value, authStore.memberId);
-      console.log('訂單猶豫期啟動成功:', response.data);
-      // 後端會將 ExpiresAt 更新為30秒後，OrderExpirationService 會處理實際的過期
+
+      if (response && response.data && response.data.expiresAt) {
+        console.log('[triggerHesitationIfNeeded] Short expiration activated successfully. API response data:', response.data);
+        return response.data.expiresAt; // << 返回從 API 獲取的新 expiresAt
+      } else {
+        console.warn('[triggerHesitationIfNeeded] Short expiration API called, but response did not contain new expiresAt. Response:', response);
+        return null; // 表示未能從 API 獲取新的 expiresAt
+      }
     } catch (error) {
-      console.error("啟動訂單猶豫期失敗:", error.response?.data?.message || error.message);
-      // 即使啟動失敗，通常也允許使用者離開
+      console.error("[triggerHesitationIfNeeded] Failed to activate short expiration:", error.response?.data?.message || error.message);
+      return null; // 表示API調用失敗或未獲取新 expiresAt
     }
   }
+  // 如果 canActivate 為 false，也返回 null
+  console.log(`[triggerHesitationIfNeeded] Conditions not met to activate short expiration. CanActivate: ${canActivate}`);
+  return null;
 };
 
 // << 新增：處理瀏覽器關閉/刷新事件 (盡力而為) >>
@@ -382,35 +391,56 @@ onUnmounted(() => {
 });
 
 
-// << 新增：Vue Router 的導航守衛，在離開此頁面前觸發 >>
+// 2. 修改 onBeforeRouteLeave 以使用 triggerHesitationIfNeeded 返回的值
 onBeforeRouteLeave(async (to, from, next) => {
-  // 1. 執行您現有的 triggerHesitationIfNeeded (啟動後端短時效過期)
-  await triggerHesitationIfNeeded();
+  console.log(`[onBeforeRouteLeave] Attempting to leave from ${from.name} to ${to.name}. Order ID: ${orderIdFromRoute.value}`);
 
-  // 2. << 新增: 與 hesitationStore 互動，用於 AwaitingOrderActions.vue 的猶豫期倒數 >>
+  // 步驟 1: 調用 triggerHesitationIfNeeded 並獲取 API 可能返回的新 expiresAt
+  const newExpiresAtFromApi = await triggerHesitationIfNeeded();
+
+  if (newExpiresAtFromApi) {
+    console.log(`[onBeforeRouteLeave] triggerHesitationIfNeeded returned new expiresAt: ${newExpiresAtFromApi}`);
+  } else {
+    console.log(`[onBeforeRouteLeave] triggerHesitationIfNeeded did not return a new expiresAt (either not applicable, API issue, or conditions not met).`);
+  }
+
+  // 步驟 2: 與 hesitationStore 互動
   const orderId = orderIdFromRoute.value ? String(orderIdFromRoute.value) : null;
-  // expiresAtForCountdown.value 應該是當前頁面認為的有效付款期限
-  const currentEffectiveExpiresAt = expiresAtForCountdown.value; 
 
-  if (orderId && currentEffectiveExpiresAt) {
+  // 決定用於 hesitationStore 的最合適的 expiresAt：
+  // 優先使用 API 調用直接返回的 newExpiresAtFromApi。
+  // 如果 API 沒有返回新的時間（例如，因為不滿足啟動條件，或 API 調用失敗），則回退到 OrderPayment 頁面當前使用的 expiresAtForCountdown.value。
+  const expiryForHesitationStore = newExpiresAtFromApi || expiresAtForCountdown.value; // expiresAtForCountdown 假設是 ref
+
+  if (orderId && expiryForHesitationStore) {
     const relevantOrderPages = ['OrderForm', 'OrderPayment'];
 
-    // 如果是從 OrderPayment 離開，且目標頁面不是 OrderForm 或 OrderPayment
-    // 並且沒有正在跳轉到金流 (isNavigatingToPaymentGateway 為 false)
-    if (relevantOrderPages.includes(from.name) && 
+    // 判斷是否是從 OrderForm 或 OrderPayment 離開，且目標頁面不是這兩者之一，並且不是跳轉到金流
+    if (relevantOrderPages.includes(from.name) &&
         !relevantOrderPages.includes(to.name) &&
-        !isNavigatingToPaymentGateway) { // 新增條件：確保不是跳轉金流
-          
-      // hesitationStore 內部會判斷是否已啟動，避免重複啟動
-      if (!hesitationStore.getEffectiveExpiresAt(orderId)) {
-          console.log(`[OrderPayment onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId} with expiry ${currentEffectiveExpiresAt}`);
-          hesitationStore.startHesitationCountdown(orderId, currentEffectiveExpiresAt);
+        !isNavigatingToPaymentGateway) {
+
+      // 如果 hesitationStore 中還沒有此訂單的記錄，或者我們從 API 獲取了一個新的 expiresAt (表示我們肯定想要更新/設定它)
+      // 這確保了即使用戶來回切換頁面，hesitationStore 也會被最新的 API 設定的猶豫期更新。
+      if (!hesitationStore.getEffectiveExpiresAt(orderId) || newExpiresAtFromApi) {
+        console.log(`[onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId} with effective expiry: ${expiryForHesitationStore}`);
+        hesitationStore.startHesitationCountdown(orderId, expiryForHesitationStore);
+      } else {
+        console.log(`[onBeforeRouteLeave] Hesitation countdown for order ${orderId} already exists in store and no new API expiry was provided. Store expiry: ${hesitationStore.getEffectiveExpiresAt(orderId)}, Current page expiry for fallback: ${expiresAtForCountdown.value}`);
       }
+    } else {
+      let reason = "";
+      if (!relevantOrderPages.includes(from.name)) reason += "Not leaving from a relevant order page. ";
+      if (relevantOrderPages.includes(to.name)) reason += "Navigating to another relevant order page. ";
+      if (isNavigatingToPaymentGateway) reason += "Navigating to payment gateway. ";
+      console.log(`[onBeforeRouteLeave] Conditions for starting hesitation store not met for order ${orderId}. ${reason}`);
     }
   } else {
-      console.log("[OrderPayment onBeforeRouteLeave] No valid orderId or currentEffectiveExpiresAt for hesitationStore, skipping.");
+    console.warn("[onBeforeRouteLeave] No valid orderId or effective expiryForHesitationStore, skipping hesitationStore interaction.");
+    if (!orderId) console.warn("[onBeforeRouteLeave] Reason: orderId is invalid/null.");
+    if (!expiryForHesitationStore) console.warn(`[onBeforeRouteLeave] Reason: expiryForHesitationStore is invalid/null (newExpiresAtFromApi: ${newExpiresAtFromApi}, expiresAtForCountdown.value: ${expiresAtForCountdown.value}).`);
   }
-  
+
   next(); // 允許導航
 });
 
