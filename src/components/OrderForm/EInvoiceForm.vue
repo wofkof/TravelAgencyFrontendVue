@@ -3,10 +3,17 @@
     <h3>電子發票 / 收據</h3>
 
     <el-radio-group :model-value="invoiceType" @update:modelValue="updateType">
-      <el-radio :value="'personal'">個人 (二聯式)</el-radio>
-      <el-radio :value="'company'">公司 (三聯式)</el-radio>
-       </el-radio-group>
+      <el-radio label="personal">個人 (二聯式)</el-radio>
+      <el-radio label="company">公司 (三聯式)</el-radio>
+    </el-radio-group>
 
+    <el-form-item label="發票寄送 Email" prop="deliveryEmail" :rules="emailRules">
+      <el-input
+        :model-value="form.deliveryEmail"
+        placeholder="預設同訂購人Email"
+        readonly
+      ></el-input>
+    </el-form-item>
     <div v-if="invoiceType === 'company'" class="company-fields">
       <el-form :model="form" label-width="80px" :rules="rules" ref="companyFormRef">
         <el-form-item label="統一編號" prop="taxId">
@@ -28,24 +35,11 @@
       </el-form>
     </div>
 
-     <div class="invoice-description">
-      <p>依財政部台財稅第821481937號函，本公司開立「旅行業代收轉付電子收據」，收據以email寄送，感謝您為地球環保盡一份心。如行程異動或取消時，為加速退款作業，同意授權本公司代為處理銷貨退回或折讓證明。</p>
-       <a href="#" @click.prevent="toggleRemarks">
-        需協助事項備註 <el-icon><component :is="showRemarks ? ArrowUp : ArrowDown" /></el-icon>
-      </a>
-    </div>
+    <div class="invoice-description">
+      </div>
 
     <el-collapse-transition>
-      <div v-show="showRemarks" class="remarks-field">
-        <el-input
-          type="textarea"
-          :rows="3"
-          placeholder="請在此輸入您需要特別協助的事項備註"
-          :model-value="form.remarks"
-          @update:modelValue="updateField('remarks', $event)"
-        ></el-input>
-         </div>
-    </el-collapse-transition>
+      </el-collapse-transition>
 
   </div>
 </template>
@@ -53,21 +47,6 @@
 <script setup>
 import { ref, watch, reactive, defineProps, defineEmits, defineExpose, nextTick, computed } from 'vue'; // 引入所有必要的 Composition API
 
-// 引入 Element Plus 組件和圖標 (如果沒有全局自動註冊，這裡需要顯式引入)
-// 假設 ElRadioGroup, ElRadio, ElForm, ElFormItem, ElInput, ElCheckbox, ElIcon, ElCollapseTransition 是全局註冊的，所以註解掉顯式引入
-/*
-import {
-  ElRadioGroup,
-  ElRadio,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElCheckbox,
-  ElIcon,
-  ElCollapseTransition
-} from 'element-plus';
-*/
-// Element Plus Icons 需要顯式引入，因為它們是組件
 import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 
 
@@ -118,17 +97,19 @@ const rules = reactive({
   ],
   // 報帳地址的規則是當 addBillingAddress 為 true 時才必填
   billingAddress: [
-     {
+    {
           // 使用 computed 屬性來動態判斷是否必填
           // 這裡直接在規則對象中使用 computed，Element Plus 會處理其響應性
           required: computed(() => form.addBillingAddress),
           message: '選擇加註報帳地址時，請輸入報帳地址',
           trigger: 'blur'
-     }
+    }
       // 如果需要地址格式驗證，可以在這裡添加 validator
+  ],
+  deliveryEmail: [
+    { required: true, message: '請輸入發票寄送的電子郵件', trigger: 'blur' },
+    { type: 'email', message: '請輸入有效的電子郵件格式', trigger: ['blur', 'change'] }
   ]
-   // TODO: 如果備註或 deliveryEmail 需要驗證，在這裡添加規則
-   // deliveryEmail: [ { required: true, message: '請輸入電子郵件', trigger: 'blur' }, { type: 'email', message: '請輸入有效的電子郵件格式', trigger: ['blur', 'change'] } ]
 });
 
 // 用於獲取「公司」類型發票的 el-form 引用

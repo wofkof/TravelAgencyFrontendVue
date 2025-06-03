@@ -4,18 +4,36 @@
     <h3>
       <el-icon><Avatar /></el-icon>
       <!-- 中華民國護照｜申辦項目|新辦/更換(14歲以上) -->
-       {{ selectedDocumentMenuItem ? selectedDocumentMenuItem.rocPassportOption : '中華民國護照' }}｜{{ selectedDocumentMenuItem ? selectedDocumentMenuItem.applicationType : '申辦項目' }} |
-      {{ selectedDocumentMenuItem ? selectedDocumentMenuItem.processingItem : '新辦/更換(14歲以上)' }}
+      {{
+        selectedDocumentMenuItem
+          ? selectedDocumentMenuItem.rocPassportOption
+          : "中華民國護照"
+      }}｜{{
+        selectedDocumentMenuItem
+          ? selectedDocumentMenuItem.applicationType
+          : "申辦項目"
+      }}
+      |
+      {{
+        selectedDocumentMenuItem
+          ? selectedDocumentMenuItem.processingItem
+          : "新辦/更換(14歲以上)"
+      }}
     </h3>
     <div class="VisaOrderdetails">
-       <el-card class="visa-info-card" v-if="loading">
+      <el-card class="visa-info-card" v-if="loading">
         <p>載入中...</p>
       </el-card>
       <el-card class="visa-info-card" v-else-if="error">
         <p class="error-message">{{ error }}</p>
       </el-card>
       <el-card class="visa-info-card" v-else>
-        <el-row :gutter="2" align="middle" v-for="item in allDocumentMenus" :key="item.menuId">
+        <el-row
+          :gutter="2"
+          align="middle"
+          v-for="item in allDocumentMenus"
+          :key="item.menuId"
+        >
           <el-col :span="5">
             <div class="item-title">
               <!-- 新辦/更換(14歲以上) -->
@@ -27,11 +45,13 @@
               <el-card class="item-info-card">
                 <el-col :span="16">
                   <!-- 一般件：16個工作天 -->
-                     {{ item.caseType === 'general' ? '一般件' : '' }}：{{ item.processingDays }}
+                  {{ item.caseType === "general" ? "一般件" : "" }}：{{
+                    item.processingDays
+                  }}
                 </el-col>
                 <el-col :span="12">
                   <!-- 效期：10年 -->
-                   效期：{{ item.documentValidityPeriod }}
+                  效期：{{ item.documentValidityPeriod }}
                 </el-col>
                 <el-col :span="30" style="text-align: right;"> <el-col :span="24" style="text-align: right;">
                     {{ item.fee }}

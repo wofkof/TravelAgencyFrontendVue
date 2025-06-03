@@ -24,6 +24,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useHesitationStore } from '@/stores/hesitationStore'; //柏亦新增
 
 import MemberSidebar from '@/components/MemberCenter/MemberSidebar.vue'
 import TravelerList from '@/components/MemberCenter/TravelerList.vue'
@@ -35,7 +36,10 @@ import StatusMain from '@/components/customtravel/StatusMain.vue'
 
 
 const route = useRoute()
+const hesitationStore = useHesitationStore(); //柏亦新增
 const currentView = ref('TravelerList')
+
+const showHesitationNotification = computed(() => hesitationStore.shouldShowHesitationNotification); //柏亦新增
 
 const syncViewFromRoute = () => {
   const path = route.path.toLowerCase()

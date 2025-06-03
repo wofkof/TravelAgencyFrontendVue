@@ -68,22 +68,21 @@ const search = reactive({
   checkout: null
 });
 
-// 將日期轉為 yyyy-MM-dd 格式，空值不送
-const formatDate = (date) => {
-  return date instanceof Date ? date.toISOString().slice(0, 10) : "";
-};
-
 const handleSearch = async () => {
   const params = {
     destination: search.keyword,
     peopleCount: search.person,
   };
 
-  // 只有有填才加進參數
-  const startDate = formatDate(search.checkin);
-  const endDate = formatDate(search.checkout);
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
+  if (search.checkin) {
+    params.startDate = search.checkin; // yyyy-MM-dd 格式
+  }
+
+  if (search.checkout) {
+    params.endDate = search.checkout;
+  }
+
+  console.log("發送參數：", params); // 除錯用
 
   try {
     const response = await api.get("/OfficialSearch/search", { params });
@@ -101,9 +100,9 @@ const handleSearch = async () => {
   } catch (err) {
     console.error(err);
     ElMessage({
-        message: '輸入正確的關鍵字！',
-        type: 'error',
-      });
+      message: '輸入正確的關鍵字！',
+      type: 'error',
+    });
   }
 };
 </script>
@@ -126,4 +125,3 @@ const handleSearch = async () => {
   }
 }
 </style>
-

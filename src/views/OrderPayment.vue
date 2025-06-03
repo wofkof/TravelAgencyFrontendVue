@@ -104,7 +104,7 @@ import { finalizeOrderPayment, getOrderDetails, activateOrderShortExpiration } f
 import { useCartStore } from '@/stores/ShoppingCart';
 import { useHesitationStore } from '@/stores/hesitationStore';
 import { ArrowLeft, ShoppingCart, RefreshRight } from '@element-plus/icons-vue';
-
+import { useAuthStore } from '@/stores/authStore';
 // 子元件
 import AccordionSection from '@/components/OrderForm/AccordionSection.vue';
 import PaymentOptions from '@/components/OrderForm/PaymentOptions.vue';
@@ -115,6 +115,7 @@ const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
 const hesitationStore = useHesitationStore();
+const authStore = useAuthStore(); 
 
 const isLoading = ref(true);
 const loadError = ref(null);
@@ -138,12 +139,11 @@ const expiresAtForCountdown = ref(route.query.exp || null);
 // --- 響應式數據 ---
 const currentOrderItems = ref([]);
 const orderParticipants = ref([]);
-const currentOrderStatus = ref(''); // << 新增：儲存從後端 API (getOrderDetails) 獲取的訂單狀態 >>
+const currentOrderStatus = ref('');
 const orderTotalAmount = ref(0);
 const orderItemCount = ref(0);
 
 // << 新增：用於猶豫期判斷 >>
-const memberId = ref(null); // 將從 localStorage 讀取
 let isNavigatingToPaymentGateway = false; // 標記是否正跳轉至 ECPay，避免誤觸發猶豫期
 let successRedirect = false; // << 新增：用於 handleFinalizePayment 中標記是否成功準備跳轉到金流 >>
 
@@ -153,11 +153,12 @@ const paymentFormData = reactive({
   creditCardDetails: { /* ... */ },
   eInvoiceInfo: {
     type: 'personal',
-    deliveryEmail: '',
     taxId: '',
     companyTitle: '',
     addBillingAddress: false,
     billingAddress: '',
+    remarks: '',
+    deliveryEmail: ''
   },
 });
 
@@ -246,37 +247,34 @@ const loadInitialData = async () => {
   activePaymentDeadline.value = route.query.exp || null;
 
   try {
-    // << 修改：memberId 的獲取應在此處，而不是在全域 >>
-    const storedMemberId = localStorage.getItem('memberId');
-    if (!storedMemberId) {
-      // _logger is not defined here, use console.error or ElMessage
-      console.error("OrderPayment.vue - loadInitialData: 未找到 memberId");
+    if (!authStore.isLoggedIn || !authStore.memberId) {
+      console.error("OrderPayment.vue - loadInitialData: 使用者未登入或 memberId 無效。");
       ElMessage.error("無法獲取會員資訊，請重新登入。");
-      // throw new Error("無法獲取會員資訊，請重新登入。"); // 可以選擇拋出錯誤或直接 return
       loadError.value = "無法獲取會員資訊，請重新登入。";
       isLoading.value = false;
       if (loadingInstance) loadingInstance.close();
-      return; // 終止執行
+      return;
     }
-    memberId.value = parseInt(storedMemberId, 10); // << 賦值給 ref >>
 
     // << 修改：getOrderDetails 第二個參數應為 memberId.value >>
-    const response = await getOrderDetails(orderIdFromRoute.value, memberId.value);
-    if (response && response.data) {
-      orderTotalAmount.value = response.data.totalAmount;
-      currentOrderStatus.value = response.data.orderStatus || response.data.status; // << 修改/確認：確保獲取正確的訂單狀態字串 >>
+    const response = await getOrderDetails(orderIdFromRoute.value, authStore.memberId);
+    if (response && response.data) {
+      orderTotalAmount.value = response.data.totalAmount;
+      // 【確認】👇 API返回的訂單狀態欄位是 orderStatus 還是 status
+      currentOrderStatus.value = response.data.orderStatus || response.data.status; 
 
-      // 關鍵修改：使用從 getOrderDetails API 返回的 expiresAt 更新倒數計時的截止時間
-      if (response.data.expiresAt) {
-        expiresAtForCountdown.value = response.data.expiresAt; // <--- 更新為 API 返回的最新到期時間
-        console.log("付款倒數計時將基於 API 返回的到期時間:", activePaymentDeadline.value);
-      } else {
-        expiresAtForCountdown.value = route.query.exp || null;
-        console.warn("API getOrderDetails 未返回 expiresAt，將使用路由傳入的到期時間。");
+      if (response.data.expiresAt) {
+        expiresAtForCountdown.value = response.data.expiresAt;
+        console.log("付款倒數計時將基於 API 返回的到期時間:", expiresAtForCountdown.value); // 修正日誌變數
+      } else {
+        expiresAtForCountdown.value = route.query.exp || null;
+        console.warn("API getOrderDetails 未返回 expiresAt，將使用路由傳入的到期時間。");
+      }
+
+      let emailFromApi = null;
+      if (response.data && response.data.ordererInfo) {
+        emailFromApi = response.data.ordererInfo.email;
       }
-
-      const emailFromApi = response.data.ordererEmail;
-      const emailFromRouteQuery = route.query.ordererEmail;
       if (paymentFormData.eInvoiceInfo) {
         if (emailFromApi) {
           paymentFormData.eInvoiceInfo.deliveryEmail = emailFromApi;
@@ -300,7 +298,7 @@ const loadInitialData = async () => {
       if (currentOrderStatus.value !== 'Awaiting') { // << 確認 'Awaiting' 是否為正確的待付款狀態字串 >>
         orderExpired.value = true; // 標記為過期，禁用付款按鈕
         ElMessage.warning(`訂單 (狀態: ${currentOrderStatus.value}) 已處理或已失效，無法繼續付款。`);
-      } else if (activePaymentDeadline.value && new Date(activePaymentDeadline.value) < new Date()) { // << 使用從API獲取的最新expiresAt判斷 >>
+      } else if (expiresAtForCountdown.value && new Date(expiresAtForCountdown.value) < new Date()) { // << 使用從API獲取的最新expiresAt判斷 >>
         if (!orderExpired.value) {
             handleCountdownFinish(); // 觸發總付款時間過期處理
         }
@@ -314,7 +312,7 @@ const loadInitialData = async () => {
     console.error("載入付款頁面初始資料失敗:", err);
     loadError.value = err.response?.data?.message || err.message || "載入訂單資料時發生錯誤。";
     ElMessage.error(loadError.value);
-    if (!activePaymentDeadline.value) activePaymentDeadline.value = route.query.exp || null;
+    if (!expiresAtForCountdown.value) expiresAtForCountdown.value = route.query.exp || null;
   } finally {
     isLoading.value = false;
     if (loadingInstance) loadingInstance.close();
@@ -329,29 +327,38 @@ const triggerHesitationIfNeeded = async () => {
   // 3. isSubmitting.value 為 false (表示不是因為點擊「確認付款並送出訂單」按鈕觸發的)
   // 4. isNavigatingToPaymentGateway 為 false (表示目的地不是金流頁面)
   const canActivate = orderIdFromRoute.value &&
-                      memberId.value &&
+                      authStore.memberId &&
                       currentOrderStatus.value === 'Awaiting' &&
                       !isSubmitting.value &&
                       !isNavigatingToPaymentGateway;
 
   if (canActivate) {
     try {
-      console.log(`使用者準備離開 OrderPayment 頁面 (訂單ID: ${orderIdFromRoute.value})，嘗試啟動猶豫期。`);
-      // << 修改：調用 activateOrderShortExpiration >>
-      const response = await activateOrderShortExpiration(orderIdFromRoute.value, memberId.value);
-      console.log('訂單猶豫期啟動成功:', response.data);
-      // 後端會將 ExpiresAt 更新為30秒後，OrderExpirationService 會處理實際的過期
+      console.log(`[triggerHesitationIfNeeded] User leaving OrderPayment (Order ID: ${orderIdFromRoute.value}), attempting to activate short expiration.`);
+      // 調用後端 API
+      const response = await activateOrderShortExpiration(orderIdFromRoute.value, authStore.memberId);
+
+      if (response && response.data && response.data.expiresAt) {
+        console.log('[triggerHesitationIfNeeded] Short expiration activated successfully. API response data:', response.data);
+        return response.data.expiresAt; // << 返回從 API 獲取的新 expiresAt
+      } else {
+        console.warn('[triggerHesitationIfNeeded] Short expiration API called, but response did not contain new expiresAt. Response:', response);
+        return null; // 表示未能從 API 獲取新的 expiresAt
+      }
     } catch (error) {
-      console.error("啟動訂單猶豫期失敗:", error.response?.data?.message || error.message);
-      // 即使啟動失敗，通常也允許使用者離開
+      console.error("[triggerHesitationIfNeeded] Failed to activate short expiration:", error.response?.data?.message || error.message);
+      return null; // 表示API調用失敗或未獲取新 expiresAt
     }
   }
+  // 如果 canActivate 為 false，也返回 null
+  console.log(`[triggerHesitationIfNeeded] Conditions not met to activate short expiration. CanActivate: ${canActivate}`);
+  return null;
 };
 
 // << 新增：處理瀏覽器關閉/刷新事件 (盡力而為) >>
 const handleBeforeUnload = (event) => {
   const canActivateOnUnload = orderIdFromRoute.value &&
-                              memberId.value &&
+                              authStore.memberId &&
                               currentOrderStatus.value === 'Awaiting' &&
                               !isSubmitting.value &&
                               !isNavigatingToPaymentGateway;
@@ -366,18 +373,10 @@ const handleBeforeUnload = (event) => {
 };
 
 
-onMounted(async () => { // << 修改：將 onMounted 內容移至此處，並設為 async >>
+onMounted(async () => {
   const ordererEmailFromRouteQuery = route.query.ordererEmail;
   if (ordererEmailFromRouteQuery && paymentFormData.eInvoiceInfo && !paymentFormData.eInvoiceInfo.deliveryEmail) {
     paymentFormData.eInvoiceInfo.deliveryEmail = ordererEmailFromRouteQuery;
-  }
-  // << 修改：在 loadInitialData 前獲取 memberId (雖然 loadInitialData 內部也會獲取一次，但這裡先獲取有利於後續邏輯) >>
-  const storedMemberId = localStorage.getItem('memberId');
-  if (storedMemberId) {
-    memberId.value = parseInt(storedMemberId, 10);
-  } else {
-    console.error("OrderPayment.vue - onMounted: 未找到 memberId，某些功能可能受影響。");
-    // 可以在此提示用戶或採取其他措施
   }
 
   await loadInitialData(); // 確保 loadInitialData 完成後再執行後續操作
@@ -393,35 +392,56 @@ onUnmounted(() => {
 });
 
 
-// << 新增：Vue Router 的導航守衛，在離開此頁面前觸發 >>
+// 2. 修改 onBeforeRouteLeave 以使用 triggerHesitationIfNeeded 返回的值
 onBeforeRouteLeave(async (to, from, next) => {
-  // 1. 執行您現有的 triggerHesitationIfNeeded (啟動後端短時效過期)
-  await triggerHesitationIfNeeded();
+  console.log(`[onBeforeRouteLeave] Attempting to leave from ${from.name} to ${to.name}. Order ID: ${orderIdFromRoute.value}`);
 
-  // 2. << 新增: 與 hesitationStore 互動，用於 AwaitingOrderActions.vue 的猶豫期倒數 >>
+  // 步驟 1: 調用 triggerHesitationIfNeeded 並獲取 API 可能返回的新 expiresAt
+  const newExpiresAtFromApi = await triggerHesitationIfNeeded();
+
+  if (newExpiresAtFromApi) {
+    console.log(`[onBeforeRouteLeave] triggerHesitationIfNeeded returned new expiresAt: ${newExpiresAtFromApi}`);
+  } else {
+    console.log(`[onBeforeRouteLeave] triggerHesitationIfNeeded did not return a new expiresAt (either not applicable, API issue, or conditions not met).`);
+  }
+
+  // 步驟 2: 與 hesitationStore 互動
   const orderId = orderIdFromRoute.value ? String(orderIdFromRoute.value) : null;
-  // expiresAtForCountdown.value 應該是當前頁面認為的有效付款期限
-  const currentEffectiveExpiresAt = expiresAtForCountdown.value; 
 
-  if (orderId && currentEffectiveExpiresAt) {
+  // 決定用於 hesitationStore 的最合適的 expiresAt：
+  // 優先使用 API 調用直接返回的 newExpiresAtFromApi。
+  // 如果 API 沒有返回新的時間（例如，因為不滿足啟動條件，或 API 調用失敗），則回退到 OrderPayment 頁面當前使用的 expiresAtForCountdown.value。
+  const expiryForHesitationStore = newExpiresAtFromApi || expiresAtForCountdown.value; // expiresAtForCountdown 假設是 ref
+
+  if (orderId && expiryForHesitationStore) {
     const relevantOrderPages = ['OrderForm', 'OrderPayment'];
 
-    // 如果是從 OrderPayment 離開，且目標頁面不是 OrderForm 或 OrderPayment
-    // 並且沒有正在跳轉到金流 (isNavigatingToPaymentGateway 為 false)
-    if (relevantOrderPages.includes(from.name) && 
+    // 判斷是否是從 OrderForm 或 OrderPayment 離開，且目標頁面不是這兩者之一，並且不是跳轉到金流
+    if (relevantOrderPages.includes(from.name) &&
         !relevantOrderPages.includes(to.name) &&
-        !isNavigatingToPaymentGateway) { // 新增條件：確保不是跳轉金流
-          
-      // hesitationStore 內部會判斷是否已啟動，避免重複啟動
-      if (!hesitationStore.getEffectiveExpiresAt(orderId)) {
-          console.log(`[OrderPayment onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId} with expiry ${currentEffectiveExpiresAt}`);
-          hesitationStore.startHesitationCountdown(orderId, currentEffectiveExpiresAt);
+        !isNavigatingToPaymentGateway) {
+
+      // 如果 hesitationStore 中還沒有此訂單的記錄，或者我們從 API 獲取了一個新的 expiresAt (表示我們肯定想要更新/設定它)
+      // 這確保了即使用戶來回切換頁面，hesitationStore 也會被最新的 API 設定的猶豫期更新。
+      if (!hesitationStore.getEffectiveExpiresAt(orderId) || newExpiresAtFromApi) {
+        console.log(`[onBeforeRouteLeave] Calling startHesitationCountdown for order ${orderId} with effective expiry: ${expiryForHesitationStore}`);
+        hesitationStore.startHesitationCountdown(orderId, expiryForHesitationStore);
+      } else {
+        console.log(`[onBeforeRouteLeave] Hesitation countdown for order ${orderId} already exists in store and no new API expiry was provided. Store expiry: ${hesitationStore.getEffectiveExpiresAt(orderId)}, Current page expiry for fallback: ${expiresAtForCountdown.value}`);
       }
+    } else {
+      let reason = "";
+      if (!relevantOrderPages.includes(from.name)) reason += "Not leaving from a relevant order page. ";
+      if (relevantOrderPages.includes(to.name)) reason += "Navigating to another relevant order page. ";
+      if (isNavigatingToPaymentGateway) reason += "Navigating to payment gateway. ";
+      console.log(`[onBeforeRouteLeave] Conditions for starting hesitation store not met for order ${orderId}. ${reason}`);
     }
   } else {
-      console.log("[OrderPayment onBeforeRouteLeave] No valid orderId or currentEffectiveExpiresAt for hesitationStore, skipping.");
+    console.warn("[onBeforeRouteLeave] No valid orderId or effective expiryForHesitationStore, skipping hesitationStore interaction.");
+    if (!orderId) console.warn("[onBeforeRouteLeave] Reason: orderId is invalid/null.");
+    if (!expiryForHesitationStore) console.warn(`[onBeforeRouteLeave] Reason: expiryForHesitationStore is invalid/null (newExpiresAtFromApi: ${newExpiresAtFromApi}, expiresAtForCountdown.value: ${expiresAtForCountdown.value}).`);
   }
-  
+
   next(); // 允許導航
 });
 
@@ -480,12 +500,12 @@ const handleFinalizePayment = async () => {
   }
 
   // << 修改：memberId 已在 onMounted 或 loadInitialData 中獲取並存於 memberId.value >>
-  if (!memberId.value) {
-    ElMessage.error("無法獲取會員ID，請重新整理頁面或登入。");
-    isSubmitting.value = false;
-    isNavigatingToPaymentGateway = false; // << 新增：提交失敗，重設標記 >>
-    return;
-  }
+  if (!authStore.isLoggedIn || !authStore.memberId) {
+    ElMessage.error("無法獲取會員ID，請重新整理頁面或登入。");
+    isSubmitting.value = false;
+    isNavigatingToPaymentGateway = false; 
+    return;
+  }
 
   let backendPaymentMethodValue;
   switch (paymentFormData.paymentMethod) {
@@ -499,7 +519,7 @@ const handleFinalizePayment = async () => {
   }
 
   const finalPayload = {
-    memberId: memberId.value, // << 使用 ref 的值 >>
+    memberId: authStore.memberId,
     selectedPaymentMethod: backendPaymentMethodValue,
     invoiceRequestInfo: {
       InvoiceOption: paymentFormData.eInvoiceInfo.type === 'company' ? 1 : 0,

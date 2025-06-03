@@ -15,9 +15,12 @@ import { useAuthStore } from "@/stores/authStore";
 import AuthModal from "@/components/SignUp/AuthModal.vue";
 import { useChatStore } from "@/stores/chatStore.js";
 import { joinAllChatRooms, setupSocket, waitForConnectionReady } from "@/utils/socket";
+import { useHesitationStore } from '@/stores/hesitationStore';
+import { useCollectStore } from "@/stores/collectStore";
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const collectStore = useCollectStore();
 
 onMounted(async () => {
   authStore.loadFromStorage();
@@ -27,6 +30,7 @@ onMounted(async () => {
     await setupSocket(null);
     await waitForConnectionReady();
     await joinAllChatRooms(chatStore.allChatRooms);
+    await collectStore.loadCollections(authStore.memberId);
   }
 });
 
@@ -45,6 +49,9 @@ const showCheckoutSteps = computed(() => {
          currentPath === "/order-payment" ||
          currentPath.startsWith("/order-complete");
 });
+const hesitationStore = useHesitationStore();
+hesitationStore.loadPersistentState();
+
 function handleLoginSuccess() {
   authStore.loadFromStorage();
   authStore.closeLoginModal();
