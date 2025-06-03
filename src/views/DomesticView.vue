@@ -7,7 +7,7 @@
     </div>
     
     <div class="bg-slate-100 rounded-md pb-1 pt-3 m-5">
-      <filterCard :tags="['全部', '北部', '中部', '南部', '東部','離島']"
+      <filterCard :tags="['全部', '北部', '中部', '南部', '東部','離島','台北','夜市','文化','闔家歡','墾丁','演唱會專區','文青','遊樂園']"
       v-model="currentRegion"class="mb-6"/>
     </div>
     
