@@ -34,9 +34,9 @@
           <hr class="my-2" />
           <h1 class="text-xl font-semibold">旅遊天數</h1>
           <input type="checkbox" value="1-4" v-model="selectedDays" /> 1-4<br />
-          <input type="checkbox" value="5-9" v-model="selectedDays" /> 5-9<br />
-          <input type="checkbox" value="10-14" v-model="selectedDays" />
-          10-14<br />
+          <input type="checkbox" value="5-10" v-model="selectedDays" /> 5-10<br />
+          <input type="checkbox" value="11-14" v-model="selectedDays" />
+          11-14<br />
           <input
             type="checkbox"
             value="其他"
@@ -156,10 +156,10 @@ const filteredResults = computed(() => {
       // 預期 item.days 是一個數字
       const day = item.days;
       dayOk = selectedDays.value.some((range) => {
-        if (range === "1-4") return day >= 1 && day <= 4;
-        if (range === "5-9") return day >= 5 && day <= 9;
-        if (range === "10-14") return day >= 10 && day <= 14;
-        if (range === "其他") return day < 1 || day > 14;
+        if (range === "1-4") return day >= 1 && day < 5;
+        if (range === "5-10") return day >= 5 && day < 11;
+        if (range === "11-14") return day >= 11 && day <= 14;
+        if (range === "其他") return day > 14;
         return false;
       });
     }
