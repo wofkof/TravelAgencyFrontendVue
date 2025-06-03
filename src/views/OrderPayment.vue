@@ -153,7 +153,6 @@ const paymentFormData = reactive({
   creditCardDetails: { /* ... */ },
   eInvoiceInfo: {
     type: 'personal',
-    deliveryEmail: '',
     taxId: '',
     companyTitle: '',
     addBillingAddress: false,
@@ -272,8 +271,10 @@ const loadInitialData = async () => {
         console.warn("API getOrderDetails 未返回 expiresAt，將使用路由傳入的到期時間。");
       }
 
-      const emailFromApi = response.data.ordererEmail;
-      const emailFromRouteQuery = route.query.ordererEmail;
+      let emailFromApi = null;
+      if (response.data && response.data.ordererInfo) {
+        emailFromApi = response.data.ordererInfo.email;
+      }
       if (paymentFormData.eInvoiceInfo) {
         if (emailFromApi) {
           paymentFormData.eInvoiceInfo.deliveryEmail = emailFromApi;
