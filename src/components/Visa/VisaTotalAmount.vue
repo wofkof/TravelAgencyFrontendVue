@@ -17,13 +17,18 @@
     </div>
 
     <el-button type="primary" 
-
     @click="visaRouter.PaymentView"
-
-    size="large" style="width: 100%;font-size: 25px">送出訂單資料</el-button>
+    size="large" style="width: 100%;font-size: 25px">送出訂單資料
+    </el-button>
     
   </el-card>
 </template>
+
+<script setup>
+
+
+
+</script>
 
 <style scoped>
 .order-summary {
