@@ -12,14 +12,14 @@
           </el-carousel>
         </div>
       </el-header>
-      <!-- 側邊Aside -->
+      <!-- 左側邊欄Aside -->
       <el-container>
         <el-aside width="500px" style="background-color: #EEDACB;height:1300">
           <el-scrollbar>
             <el-menu>
               <el-sub-menu index="1">
                 <template #title>
-                  <el-icon><Avatar /></el-icon>護照申辦
+                  <el-icon><Avatar/></el-icon>護照申辦
                 </template>
                 <el-sub-menu index="1-1">
                   <template #title>新辦/更換</template>
@@ -39,43 +39,45 @@
               </el-sub-menu>
               <el-sub-menu index="2">
                 <template #title>
-                  <el-icon><Document /></el-icon>各國簽證
+                  <el-icon><Document/></el-icon>各國簽證
                 </template>
-                <el-sub-menu index="3-4">
+                <el-sub-menu index="2-1">
                   <template #title>港澳大陸</template>
-                  <el-menu-item index="3-4-1" @click="activeMenu = 'china'">中國</el-menu-item>
-                  <el-menu-item index="3-4-2" @click="activeMenu = 'hongkong'">香港</el-menu-item>
-                  <el-menu-item index="3-4-3" @click="activeMenu = 'mongolia'">蒙古</el-menu-item>
+                  <el-menu-item index="2-1-1" @click="activeMenu = 'china'">中國</el-menu-item>
+                  <el-menu-item index="2-1-2" @click="activeMenu = 'hongkong'">香港</el-menu-item>
+                  <el-menu-item index="2-1-3" @click="activeMenu = 'mongolia'">蒙古</el-menu-item>
                 </el-sub-menu>
-                <el-sub-menu index="3-5">
+                <el-sub-menu index="2-2">
                   <template #title>東南亞</template>
-                  <el-menu-item index="3-5-1" @click="activeMenu = 'brunei'">汶萊</el-menu-item>
-                  <el-menu-item index="3-5-2" @click="activeMenu = 'philippines'">菲律賓</el-menu-item>
-                  <el-menu-item index="3-5-3" @click="activeMenu = 'thailand'">泰國</el-menu-item>
-                  <el-menu-item index="3-5-4" @click="activeMenu = 'vietnam'">越南</el-menu-item>
+                  <el-menu-item index="2-2-1" @click="activeMenu = 'brunei'">汶萊</el-menu-item>
+                  <el-menu-item index="2-2-2" @click="activeMenu = 'philippines'">菲律賓</el-menu-item>
+                  <el-menu-item index="2-2-3" @click="activeMenu = 'thailand'">泰國</el-menu-item>
+                  <el-menu-item index="2-2-4" @click="activeMenu = 'vietnam'">越南</el-menu-item>
                 </el-sub-menu>
-                <el-sub-menu index="3-6">
+                <el-sub-menu index="2-3">
                   <template #title>印度周邊</template>
-                  <el-menu-item index="3-6-1" @click="activeMenu = 'india'">印度</el-menu-item>
+                  <el-menu-item index="2-3-1" @click="activeMenu = 'india'">印度</el-menu-item>
                 </el-sub-menu>
-                <el-sub-menu index="3-7">
+                <el-sub-menu index="2-4">
                   <template #title>美加</template>
-                  <el-menu-item index="3-7-1" @click="activeMenu = 'canada'">加拿大</el-menu-item>
-                  <el-menu-item index="3-7-2" @click="activeMenu = 'usa'">美國</el-menu-item>
+                  <el-menu-item index="2-4-1" @click="activeMenu = 'canada'">加拿大</el-menu-item>
+                  <el-menu-item index="2-4-2" @click="activeMenu = 'usa'">美國</el-menu-item>
                 </el-sub-menu>
-                <el-sub-menu index="3-8">
+                <el-sub-menu index="2-5">
                   <template #title>中南美洲</template>
-                  <el-menu-item index="3-8-1" @click="activeMenu = 'brazil'">巴西聯邦共和國</el-menu-item>
+                  <el-menu-item index="2-5-1" @click="activeMenu = 'brazil'">巴西聯邦共和國</el-menu-item>
                 </el-sub-menu>
-                <el-sub-menu index="3-9">
+                <el-sub-menu index="2-6">
                   <template #title>西亞</template>
-                  <el-menu-item index="3-9-1" @click="activeMenu = 'turkiye'">土耳其共和國</el-menu-item>
-                  <el-menu-item index="3-9-2" @click="activeMenu = 'Arabemirates'">阿拉伯聯合大公國</el-menu-item>
+                  <el-menu-item index="2-6-1" @click="activeMenu = 'turkiye'">土耳其共和國</el-menu-item>
+                  <el-menu-item index="2-6-2" @click="activeMenu = 'Arabemirates'">阿拉伯聯合大公國</el-menu-item>
                 </el-sub-menu>
               </el-sub-menu>
             </el-menu>
           </el-scrollbar>
         </el-aside>
+
+        <!-- 上方@click 事件處理器會更新下方 activeMenu 這個響應式變數，該變數控制著主內容區域要顯示哪個元件或圖片。 -->
         <el-container>
           <NewChangeup v-if="activeMenu === 'newchangeup'" />
           <NewChangedown v-if="activeMenu === 'newchangedown'" />
@@ -113,10 +115,10 @@
 </template>
 
 
-<!-- 引入的東西 -->
+<!-- 引入的東西、元件的 JavaScript 邏輯 -->
 <script setup>
 import { ref, computed, onMounted } from "vue"; 
-import { useDocumentMenuStore } from '@/stores/documentMenuStore';
+import { useDocumentMenuStore } from '@/stores/documentMenuStore';// Pinia Store
 
 // 左側選單引入的component
 import NewChangeup from "@/components/Visa/NewChangeup.vue";
@@ -172,14 +174,12 @@ const menuImages = {
   Arabemirates: new URL("../assets/images/arab_emirates.jpg", import.meta.url).href,
 };
 
-
-
-// --- 響應式狀態和邏輯 ---
+const documentMenuStore = useDocumentMenuStore();// Pinia Store存取其狀態和動作
 const activeMenu = ref('newchangeup'); // 預設顯示護照申辦 
 const currentImage = computed(() => {
   return menuImages[activeMenu.value];
-});// 計算屬性，用於獲取當前圖片的路徑
-const documentMenuStore = useDocumentMenuStore();// 存取 Pinia Store
+});
+
 onMounted(() => {
   documentMenuStore.fetchAllDocumentMenus();
 });
@@ -194,7 +194,6 @@ onMounted(() => {
   object-fit: cover;
   border-radius: 8px;
 }
-
 .main-content-image {
   width: 1500px;
   /* 設定圖片的固定寬度 */
@@ -206,5 +205,4 @@ onMounted(() => {
   margin: 0 auto;
   border-radius: 8px;
 }
-
 </style>
