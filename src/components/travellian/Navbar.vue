@@ -1,77 +1,155 @@
 <template>
   <div class="navbar">
     <!-- logo -->
-    <router-link to="/" class="header__logo logo">
+    <router-link to="/">
       <img
         src="@/assets/images/newlogo.png"
         alt="Travellian logo"
         class="logo__img"
-        style="width: 180px; margin-left: 100px; margin-top: 21px"
+        style="width: 180px; margin-top: 21px"
       />
     </router-link>
 
-    <!-- 上導覽列 -->
-    <header
-      class="hero__header header"
-      v-if="!isSimpleNavbarRoute"
-      style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-grow: 1;
-      "
+    <!-- 漢堡選單按鈕 -->
+    <button
+      class="md:hidden ml-auto p-2 rounded-lg hover:bg-gray-100 focus:outline-none"
+      @click="toggleMobileMenu"
     >
-      <nav class="header__menu main-menu">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-6 h-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
+      </svg>
+    </button>
+
+    <!-- 桌面導覽列 -->
+    <header
+      class="hero__header header hidden md:flex"
+      v-if="!isSimpleNavbarRoute"
+      style="flex-grow: 1; justify-content: center"
+    >
+      <nav class="header__menu main-menu flex gap-6">
         <router-link
           to="/"
+          exact
           class="main-menu__item"
           active-class="main-menu__item--active"
-          exact
           style="color: black"
           >首頁</router-link
         >
         <router-link
           to="/Domestic"
-          class="main-menu__item"
           exact
+          class="main-menu__item"
           active-class="main-menu__item--active"
           style="color: black"
           >國內旅遊</router-link
         >
         <router-link
           to="/ForeignView"
-          class="main-menu__item"
           exact
+          class="main-menu__item"
           active-class="main-menu__item--active"
           style="color: black"
           >國外旅遊</router-link
         >
         <router-link
           to="/FreeTravelView"
-          class="main-menu__item"
           exact
+          class="main-menu__item"
           active-class="main-menu__item--active"
           style="color: black"
           >自由行</router-link
         >
         <router-link
           to="/CruiseView"
-          class="main-menu__item"
           exact
+          class="main-menu__item"
           active-class="main-menu__item--active"
           style="color: black"
           >遊輪旅遊</router-link
         >
         <router-link
           to="/DocumentMenuView"
-          class="main-menu__item"
           exact
+          class="main-menu__item"
           active-class="main-menu__item--active"
           style="color: black"
           >代辦簽證</router-link
         >
       </nav>
     </header>
+
+    <!-- 背景遮罩（點擊可關閉選單） -->
+    <transition name="fade">
+      <div
+        v-if="mobileMenuOpen && !isSimpleNavbarRoute"
+        class="fixed inset-0 bg-black/30 z-[998]"
+        @click="closeMobileMenu"
+      ></div>
+    </transition>
+
+    <!-- 行動版導覽列 -->
+    <transition name="slide-down">
+      <div
+        v-if="mobileMenuOpen && !isSimpleNavbarRoute"
+        class="absolute top-[150px] left-0 w-full bg-white shadow-lg z-[999] border-t border-gray-200"
+      >
+        <nav class="flex flex-col px-6 py-4 divide-y divide-gray-200">
+          <router-link
+            @click="closeMobileMenu"
+            to="/"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>🏠</span> 首頁
+          </router-link>
+          <router-link
+            @click="closeMobileMenu"
+            to="/Domestic"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>🗾</span> 國內旅遊
+          </router-link>
+          <router-link
+            @click="closeMobileMenu"
+            to="/ForeignView"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>✈️</span> 國外旅遊
+          </router-link>
+          <router-link
+            @click="closeMobileMenu"
+            to="/FreeTravelView"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>🧳</span> 自由行
+          </router-link>
+          <router-link
+            @click="closeMobileMenu"
+            to="/CruiseView"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>🚢</span> 遊輪旅遊
+          </router-link>
+          <router-link
+            @click="closeMobileMenu"
+            to="/DocumentMenuView"
+            class="py-3 text-gray-800 hover:text-red-500 flex items-center gap-2"
+          >
+            <span>📄</span> 代辦簽證
+          </router-link>
+        </nav>
+      </div>
+    </transition>
 
     <!--  登入與註冊直接放在 navbar 右側 -->
     <nav
@@ -110,7 +188,10 @@
                 class="inline-flex items-center gap-1 px-4 py-2 bg-transparent rounded-xl shadow hover:bg-gray-50 transition whitespace-nowrap"
                 @click="toggleMenu"
               >
-                <span v-if="showOrderNotificationDot" class="navbar-notification-dot main-button-dot"></span>
+                <span
+                  v-if="showOrderNotificationDot"
+                  class="navbar-notification-dot main-button-dot"
+                ></span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="w-5 h-5 text-indigo-600"
@@ -141,9 +222,11 @@
                       to="/member/orders"
                       class="block px-4 py-3 hover:bg-red-50 rounded-t-xl"
                       >📦 訂單管理
-                      <span v-if="showOrderNotificationDot" class="navbar-notification-dot menu-item-dot"></span>
-                    </router-link
-                    >
+                      <span
+                        v-if="showOrderNotificationDot"
+                        class="navbar-notification-dot menu-item-dot"
+                      ></span>
+                    </router-link>
                   </li>
                   <li>
                     <router-link
@@ -214,14 +297,14 @@ import { useChatStore } from "@/stores/chatStore";
 import { useAuthStore } from "@/stores/authStore";
 import AuthModal from "@/components/SignUp/AuthModal.vue";
 import { getConnection } from "@/utils/socket";
-import { useHesitationStore } from "@/stores/hesitationStore"; 
+import { useHesitationStore } from "@/stores/hesitationStore";
 const showAuthModal = ref(false);
 const authStep = ref("Login"); // 可為 'Login' | 'SignUp' | 'ForgetPassword'
 const chatStore = useChatStore();
 const route = useRoute();
 const authStore = useAuthStore();
 const router = useRouter();
-const hesitationStore = useHesitationStore(); 
+const hesitationStore = useHesitationStore();
 
 // 計算屬性：判斷當前路由是否為需要簡化導覽列的頁面
 const isSimpleNavbarRoute = computed(() => {
@@ -232,7 +315,19 @@ const isSimpleNavbarRoute = computed(() => {
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const memberName = computed(() => authStore.memberName);
 
-const showOrderNotificationDot = computed(() => hesitationStore.shouldShowHesitationNotification);
+const showOrderNotificationDot = computed(
+  () => hesitationStore.shouldShowHesitationNotification
+);
+
+const mobileMenuOpen = ref(false);
+
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+}
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false;
+}
 
 onMounted(() => {
   authStore.loadFromStorage();
@@ -300,6 +395,30 @@ function openSignUpModal() {
 </script>
 
 <style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-down-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-down-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.slide-down-leave-active {
+  transition: all 0.2s ease-in;
+}
+.slide-down-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
 .navbar {
   position: fixed;
   top: 0;
@@ -340,17 +459,17 @@ function openSignUpModal() {
 }
 
 .navbar-notification-dot {
-  position: absolute; 
+  position: absolute;
   display: inline-block;
   width: 8px;
   height: 8px;
   background-color: red;
   border-radius: 50%;
-  animation: pulse-dot 1.5s infinite; 
+  animation: pulse-dot 1.5s infinite;
 }
 
 .main-button-dot {
-  top: 6px; 
+  top: 6px;
   right: 6px;
 }
 
@@ -367,7 +486,7 @@ function openSignUpModal() {
   }
   50% {
     transform: scale(1.6);
-    opacity: 0.5;        
+    opacity: 0.5;
   }
   100% {
     transform: scale(1);
@@ -378,7 +497,6 @@ function openSignUpModal() {
 .navbar .auth-menu .relative ul li .block {
   position: relative; /* 給下拉菜單項的 router-link 添加 relative */
 }
-
 
 @media (max-width: 768px) {
   .navbar > .header__logo {
