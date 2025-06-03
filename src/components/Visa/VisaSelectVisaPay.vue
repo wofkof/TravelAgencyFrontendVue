@@ -4,7 +4,7 @@
      <h2 class="title">選擇付款方式</h2>
        <el-form label-width="80px">
        <el-radio-group v-model="selectedPaymentMethod">
-         <el-radio label="credit_card">
+         <el-radio :value="'credit_card'">
            <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 150px; text-align: center;">
              <el-icon><CreditCard /></el-icon>
              信用卡
@@ -12,13 +12,13 @@
         <div v-if="selectedPaymentMethod === 'credit_card'" style="margin-top: 10px; padding-left: 20px;">
           <h3>信用卡選項</h3>
           <el-radio-group v-model="selectedInstallment">
-            <el-radio label="一次付清">一次付清</el-radio>
-            <el-radio label="3期零利率">3期零利率</el-radio>
-            <el-radio label="6期零利率">6期零利率</el-radio>
+            <el-radio :value="'一次付清'">一次付清</el-radio>
+            <el-radio :value="'3期零利率'">3期零利率</el-radio>
+            <el-radio :value="'6期零利率'">6期零利率</el-radio>
             </el-radio-group>
         </div>
       </el-radio>
-      <el-radio label="mobile_payment">
+      <el-radio :value="'mobile_payment'">
         <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 200px; display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center;">
             <el-icon><Smartphone /></el-icon>
@@ -29,13 +29,13 @@
         <div v-if="selectedPaymentMethod === 'mobile_payment'" style="margin-top: 10px; padding-left: 20px;">
            <h3>選擇支付平台</h3>
           <el-radio-group v-model="selectedMobilePayment">
-            <el-radio label="line_pay">
+            <el-radio :value="'line_pay'">
                <div style="display: flex; align-items: center;">
                  <el-icon color="#00C300"><Coin /></el-icon>
                  LINE Pay <el-tag type="success" size="small">LINE Pay</el-tag>
                </div>
             </el-radio>
-               <el-radio label="google_pay">
+               <el-radio :value="'google_pay'">
                  <div style="display: flex; align-items: center;">
                  <el-icon><Google /></el-icon>
                  Google Pay <el-tag type="info" size="small">G Pay</el-tag>

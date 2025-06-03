@@ -1,7 +1,6 @@
 <template>
   <div class="visa-info-container">
     <h3><el-icon><Avatar /></el-icon>中華民國護照｜申辦項目|新辦/更換(14歲以下)</h3>
-
     <div class="VisaOrderdetails">
       <el-card class="visa-info-card">
         <el-row :gutter="2" align="middle">
@@ -19,7 +18,6 @@
                 </el-col>
               </el-card>
             </el-row>
-
             <el-row>
               <el-card class="item-info-card">
                 <el-col :span="16">超特急件：7個工作天</el-col>
@@ -40,7 +38,6 @@
 <script setup>
 import { ArrowRight } from '@element-plus/icons-vue';
 import useVisaRouter from '@/utils/visaRouterHelp';
-
 const visaRouter = useVisaRouter();
 </script>
 
@@ -48,27 +45,18 @@ const visaRouter = useVisaRouter();
 .visa-info-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  /* 讓每個卡片之間有點間距 */
-  padding: 30px;
-  /* 讓內容不要太貼邊 */
-  background-color: #f9f9f9;
-  /* 幫 Footer 加個淺灰色背景 */
+  gap: 10px;/* 讓每個卡片之間有點間距 */
+  padding: 30px;/* 讓內容不要太貼邊 */
+  background-color: #f9f9f9;/* 幫 Footer 加個淺灰色背景 */
 }
-
 .visa-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
 }
-
 .item-title {
-  font-weight: bold;
-  /* 讓標題粗體一點 */
+  font-weight: bold;/* 讓標題粗體一點 */
 }
-
 .item-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
   width: 450px;
 }
 </style>

@@ -12,7 +12,7 @@
     </div>
     <div class="summary-item view-items-link" @click="handleViewItemsClick" title="點擊可查看訂單商品明細">
       <span>訂購商品明細</span>
-      <el-link type="primary" :underline="false">點此查看 <el-icon><DArrowRight /></el-icon></el-link>
+      <el-link type="primary" underline="never">點此查看 <el-icon><DArrowRight /></el-icon></el-link>
     </div>
     <hr class="summary-divider">
     <div class="summary-status-area">

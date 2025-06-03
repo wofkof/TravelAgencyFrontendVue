@@ -15,7 +15,7 @@
             @input="handleCardNumberInput(index, $event)"
             @keydown.delete="handleCardNumberDelete(index, $event)"
             :ref="el => { if (el) cardNumberInputRefs[index] = el }"
-            type="text" inputmode="numeric" pattern="[0-9]*" />
+            link inputmode="numeric" pattern="[0-9]*" />
           <span v-if="index < 3" class="separator">-</span>
         </template>
       </div>
@@ -43,7 +43,7 @@
         v-model="formState.cvc"
         placeholder="卡片背面末三碼"
         maxlength="3" class="cvc-input"
-        type="text" inputmode="numeric" pattern="[0-9]*" >
+        link inputmode="numeric" pattern="[0-9]*" >
         <template #append>
           <el-tooltip
             placement="bottom"
