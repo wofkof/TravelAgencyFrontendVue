@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import useVisaRouter from "@/utils/visaRouterHelp";
 import { onMounted } from 'vue';
 import api from '@/utils/api'; 
 import { ElMessage } from 'element-plus';
@@ -51,8 +52,11 @@ import VisaPickupMethod from '@/components/Visa/VisaPickupMethod.vue';
 import VisaReceiptInformation from '@/components/Visa/VisaReceiptInformation.vue';
 import VisaTotalAmount from '@/components/Visa/VisaTotalAmount.vue';
 
+const visaRouter = useVisaRouter();
 const orderFormStore = useOrderFormStore();
 const authStore = useAuthStore();
+
+
 
 onMounted(() => {
   authStore.loadFromStorage();
@@ -147,6 +151,7 @@ const submitOrderForm = async () => {
     ElMessage.success('訂單已成功建立！');
     console.log('Order created successfully:', response.data);
     orderFormStore.resetForm();
+      visaRouter.PaymentView(); 
   } catch (error) {
     console.error('Order submission failed:', error);
     ElMessage.error('提交訂單失敗，請檢查網路或輸入內容。');
