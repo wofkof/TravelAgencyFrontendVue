@@ -116,12 +116,16 @@ const commentedOrders = computed(() =>
 );
 
 onMounted(async () => {
-  if (!authStore.memberId) return;
+  const memberId = authStore.memberId;
+  if (!memberId) return;
+
   try {
     const res = await api.get(
-      `/orderhistory/list/${authStore.memberId}?statuses=Completed`
+      `/orderhistory/list/${memberId}?statuses=Completed`
     );
-    allOrders.value = res.data.map((o) => ({
+    const orders = res.data.items || [];
+
+    allOrders.value = orders.map((o) => ({
       ...o,
       form: {
         rating: 5,
@@ -129,7 +133,7 @@ onMounted(async () => {
       },
     }));
 
-    const commentRes = await api.get(`/comments/member/${authStore.memberId}`);
+    const commentRes = await api.get(`/comments/member/${memberId}`);
     const rawComments = commentRes.data || [];
     commentMap.value = Object.fromEntries(
       rawComments.map((c) => [
@@ -139,6 +143,8 @@ onMounted(async () => {
     );
   } catch (err) {
     console.warn("取得訂單失敗", err);
+    const msg = err?.response?.data?.message || err.message || "取得訂單失敗";
+    ElMessage.error(msg);
   }
 });
 
@@ -167,23 +173,19 @@ const submitComment = async (order) => {
       res.data.message || `「${order.description}」評論送出成功`
     );
 
-    // 更新評論內容
     commentMap.value[order.orderDetailId] = {
       rating: order.form.rating,
       content: order.form.content,
       createdAt: new Date().toISOString(),
     };
 
-    // 標記為已評論
     order.isCommented = true;
 
-    // 移除原始位置並重新加入（觸發 reactivity）
     allOrders.value = [
       ...allOrders.value.filter((o) => o.orderDetailId !== order.orderDetailId),
       order,
     ];
 
-    // 切換到已評論
     activeTab.value = "completed";
   } catch (err) {
     const msg = err?.response?.data?.message || "發送評論失敗";
