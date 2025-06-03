@@ -10,9 +10,8 @@
     <el-form-item label="發票寄送 Email" prop="deliveryEmail" :rules="emailRules">
       <el-input
         :model-value="form.deliveryEmail"
-        @update:modelValue="updateField('deliveryEmail', $event)"
         placeholder="預設同訂購人Email"
-        clearable
+        readonly
       ></el-input>
     </el-form-item>
     <div v-if="invoiceType === 'company'" class="company-fields">
@@ -40,7 +39,7 @@
       </div>
 
     <el-collapse-transition>
-       </el-collapse-transition>
+      </el-collapse-transition>
 
   </div>
 </template>
