@@ -29,21 +29,6 @@
               <span>商品已過期，請選擇其他商品</span> </div>
           </div>
           <div class="item-actions-icons">
-            <el-tooltip :content="item.isFavorite ? '取消收藏' : '加入收藏'" placement="top">
-              <span
-                class="action-icon favorite-icon-action"
-                role="button"
-                tabindex="0"
-                :aria-pressed="item.isFavorite"
-                :aria-label="item.isFavorite ? '取消收藏' : '加入收藏'"
-                @click="cartStore.toggleFavorite(item.id)" >
-                <FavoriteIcon
-                  :is-favorite="item.isFavorite"
-                  :size="18" :class="{ 'favorited': item.isFavorite }"
-                />
-              </span>
-            </el-tooltip>
-
             <el-tooltip content="刪除" placement="top">
               <el-button
                 type="danger"

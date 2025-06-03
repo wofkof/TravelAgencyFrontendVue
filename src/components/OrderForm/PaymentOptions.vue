@@ -4,7 +4,7 @@
       <el-radio
         v-for="option in paymentMethods"
         :key="option.value"
-        :label="option.value"
+        :value="option.value"
         border
         class="payment-radio-card"
         :class="{ 'is-selected-style': modelValue === option.value }"

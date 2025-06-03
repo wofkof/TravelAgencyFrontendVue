@@ -96,7 +96,7 @@
           </div>
 
           <div class="item-actions-icons">
-            <el-tooltip :content="item.isFavorite ? '取消收藏' : '加入收藏'" placement="top">
+            <!-- <el-tooltip :content="item.isFavorite ? '取消收藏' : '加入收藏'" placement="top">
               <span
                 class="action-icon favorite-icon-action" role="button"
                 tabindex="0"
@@ -108,7 +108,7 @@
                   :size="18" :class="{ 'favorited': item.isFavorite }"
                 />
               </span>
-            </el-tooltip>
+            </el-tooltip> -->
 
             <el-tooltip content="刪除" placement="top">
               <el-button
@@ -361,8 +361,17 @@ const goToCheckout = () => {
 
 /* --- Grid 佈局下的子元素定位 --- */
 /* 根據 grid-template-columns 的定義，為各部分指定其佔據的列 */
-.item-checkbox { grid-column: 1 / 2; } /* 複選框在第 1 列 */
-.item-image { grid-column: 2 / 3; } /* 圖片在第 2 列 */
+.item-checkbox {
+  grid-column: 1 / 2; 
+  align-self: center;
+} /* 複選框在第 1 列 */
+.item-image {
+  grid-column: 2 / 3;
+  display: flex; /* 新增: 啟用 flexbox 以便於居中內容 */
+  align-items: center; /* 新增: 垂直居中圖片 (在其單元格內) */
+  justify-content: center; /* 新增: 水平居中圖片 (在其單元格內) */
+  align-self: center; /* 新增: 使此單元格在 Grid 行中垂直居中 */
+} /* 圖片在第 2 列 */
 .item-info {
   grid-column: 3 / 4; /* 商品資訊在第 3 列 */
   min-width: 0; /* 允許內容收縮，避免溢出 */
@@ -372,6 +381,7 @@ const goToCheckout = () => {
   text-align: center;
   font-size: 0.9em;
   color: #333;
+  align-self: center; 
 }
 .item-quantity-options {
   grid-column: 5 / 6; /* 數量選項在第 5 列 */
@@ -384,7 +394,7 @@ const goToCheckout = () => {
   grid-column: 6 / 7; /* 價格在第 6 列 */
   font-weight: bold;
   text-align: left; /* 價格靠左對齊 */
-  align-self: start;
+  align-self: center;
 }
 .item-actions-icons {
   grid-column: 7 / 8; /* 操作按鈕在第 7 列 */
@@ -393,6 +403,7 @@ const goToCheckout = () => {
   gap: 8px; /* 按鈕間幾乎無間距 (或根據需要調整) */
   justify-content: center; /* 圖標在自己的列中居中 */
   min-width: 50px;
+  align-self: center; 
 }
 
 .action-icon {

@@ -16,11 +16,10 @@
       <span class="total-price">TWD 1,700</span>
     </div>
 
-    <el-button type="primary" 
-
+    <!-- <el-button type="primary" 
     @click="visaRouter.PaymentView"
-
-    size="large" style="width: 100%;font-size: 25px">送出訂單資料</el-button>
+    size="large" style="width: 100%;font-size: 25px">送出訂單資料
+    </el-button> -->
     
   </el-card>
 </template>
@@ -71,7 +70,7 @@
 <!-- 套件來源 -->
 <script setup>
 
-import useVisaRouter from "@/utils/visaRouterHelp";
-const visaRouter = useVisaRouter();
+// import useVisaRouter from "@/utils/visaRouterHelp";
+// const visaRouter = useVisaRouter();
 
 </script>

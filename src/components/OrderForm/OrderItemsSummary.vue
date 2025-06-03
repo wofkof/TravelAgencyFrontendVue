@@ -113,7 +113,7 @@ const tableData = computed(() => {
     if (props.items && props.items.length > 0) {
       return props.items.map(item => ({
         departureDate: formatDate(item.startDate || props.items[0]?.startDate), // 假設 item 有 startDate
-        travelerName: `商品項目 (${item.quantity}份)`, // 或者其他通用描述
+        travelerName: `${item.description || '商品項目'} (${item.quantity}份)`, // 或者其他通用描述
         productAmount: item.totalAmount, // 該項目的總金額
         pendingAmount: item.totalAmount, // 假設未付
         paymentDeadlineDisplay: paymentDeadlineDisplay.value,
@@ -130,15 +130,49 @@ const tableData = computed(() => {
   // 或者，如果 props.items[0] 代表主要產品，可以用 props.items[0].price
   const perParticipantAmount = props.items.length > 0 ? props.items[0].price : (props.totalAmount / props.participants.length);
 
-  return props.participants.map(pax => ({
-    // 假設出發日期來自第一個訂單項目 (如果有多個項目，此邏輯需調整)
-    departureDate: formatDate(props.items[0]?.startDate || 'N/A'),
-    travelerName: pax.name || pax.Name, // 後端回傳的參與者 DTO 中 Name 屬性
-    productAmount: Math.round(perParticipantAmount) || 0,
-    pendingAmount: Math.round(perParticipantAmount) || 0, // 假設目前都是未付
-    paymentDeadlineDisplay: paymentDeadlineDisplay.value,
-    orderStatusDisplay: orderStatusDisplay.value,
-  }));
+  return props.participants.map(pax => {
+    // 假設:
+    // 1. 參與者物件 (pax) 有一個屬性 (例如 `orderDetailId` 或 `OrderDetailID`) 可以用來關聯到 `props.items` 中的某個項目。
+    // 2. 訂單明細項目物件 (item in props.items) 也有一個對應的ID屬性 (例如 `orderDetailId` 或 `OrderDetailID`)。
+    // 3. 訂單明細項目物件 (item) 中的 `price` 屬性是該類型參與者的單人價格。
+    //    (注意：API返回的 OrderDetailItemDto 中的 `price` 通常是單價, `totalAmount` 是 `price * quantity`)
+
+    // 嘗試找到與當前參與者 (pax) 關聯的訂單明細項目 (item)
+    // 請確認您的 Participant DTO 和 OrderDetailItem DTO 中用於關聯的ID欄位名稱是否確實是 `orderDetailId` (小寫d)
+    const linkedItem = props.items.find(
+      item => String(item.orderDetailId) === String(pax.orderDetailId)
+    );
+
+    let participantAmount = 0;
+    let departureDateForItem = formatDate(props.items[0]?.startDate || 'N/A'); // 預設出發日期
+
+    if (linkedItem) {
+      // 從關聯到的 item 中獲取單價
+      // 如果 linkedItem.price 是該參與者類型的單價，則直接使用
+      // 如果 linkedItem 代表的是一組相同類型參與者的總和 (例如2個成人)，則需要進一步處理
+      // 但從您的截圖來看，每個明細項目似乎對應一個價格類型 ("成人", "兒童", "嬰兒") 且數量為1
+      // 所以，linkedItem.price 應該就是這位參與者的價格
+      participantAmount = linkedItem.price;
+      departureDateForItem = formatDate(linkedItem.startDate || props.items[0]?.startDate); // 使用關聯項目的出發日期
+    } else {
+      // 如果找不到關聯項目，這可能表示數據結構或關聯邏輯有問題
+      // 您可以在控制台打印警告，以幫助調試
+      console.warn(
+        `OrderItemsSummary: 找不到參與者 ${pax.name} (ID: ${pax.id}, 關聯 OrderDetailID: ${pax.orderDetailId}) 對應的訂單項目。請檢查資料完整性和關聯鍵。可用項目 OrderDetailIDs: ${props.items.map(i => i.orderDetailId).join(', ')}`
+      );
+      // 此時 participantAmount 會是 0，您可能需要根據業務邏輯決定如何處理這種情況
+    }
+
+    return {
+      // 假設出發日期來自第一個訂單項目 (如果有多個項目，此邏輯需調整)
+      departureDate: departureDateForItem,
+      travelerName: pax.name || pax.Name, // 從 Participant DTO 獲取旅客姓名
+      productAmount: Math.round(participantAmount) || 0,
+      pendingAmount: Math.round(participantAmount) || 0, // 假設未付金額與商品金額相同
+      paymentDeadlineDisplay: paymentDeadlineDisplay.value,
+      orderStatusDisplay: orderStatusDisplay.value,
+    };
+  });
 });
 
 </script>

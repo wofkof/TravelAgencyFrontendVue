@@ -3,7 +3,7 @@
   <el-card class="pickup-method">
      <h2 class="title">取件方式</h2>
     <el-radio-group v-model="orderFormStore.data.PickupMethodOption" @change="handlePickupMethodChange">
-      <el-radio :label="0">郵寄</el-radio>
+      <el-radio :value="0">郵寄</el-radio>
       <div v-if="orderFormStore.data.PickupMethodOption === 0" class="shipping-address">
         <el-form label-width="80px">
           <el-row :gutter="10">
@@ -42,7 +42,7 @@
           </el-form-item>
         </el-form>
       </div>
-      <el-radio :label="1">門市取件</el-radio>
+      <el-radio :value="1">門市取件</el-radio>
       <div v-if="orderFormStore.data.PickupMethodOption === 1" class="store-address">
         <el-form label-width="80px">
           <el-form-item label="門市地址">

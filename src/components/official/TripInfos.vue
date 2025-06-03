@@ -1,11 +1,16 @@
 <template>
   <div class="max-w-7xl mx-auto p-4 mb-5">
     <h1 class="mb-4 text-2xl font-bold">行程清單</h1>
-
+    <el-empty
+    v-if="trips.length === 0"
+    description="暫無行程"
+    image-size="120"
+    />
     <div
       v-for="(chunk, index) in visibleChunks"
       :key="index"
       class="mb-6 border rounded-lg shadow-md"
+      v-else
     >
       <!-- 區塊標題 -->
       <div class="bg-gray-100 p-3 font-semibold">

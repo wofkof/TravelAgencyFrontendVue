@@ -16,8 +16,10 @@
     >
       <el-button type="primary" @click="goToExplore">前往探索商品</el-button>
     </el-empty>
+    <h2 class="recommendations-title">熱門國內行程參考</h2>
     <RecommendedTrips
-      v-if="activeItems.length > 0 || expiredItems.length > 0"
+      :category="dynamicRecommendationCategory"
+      class="hot-itineraries-section"
     />
   </div>
 </template>
@@ -27,7 +29,6 @@
 import { storeToRefs } from 'pinia'; // 導入 Pinia 的輔助函數，用於將 store 中的 state 轉為 ref，保持響應性
 import { useCartStore } from '@/stores/ShoppingCart'; // 導入購物車相關的 Pinia store
 import { useRouter } from 'vue-router'; // 導入 Vue Router，用於導航
-
 // --- 組件導入 ---
 import ActiveCartItems from '@/components/ShoppingCart/ActiveCartItems.vue'; // 導入顯示活動項目的子組件
 import ReconfirmItems from '@/components/ShoppingCart/ReconfirmItems.vue'; // 導入顯示待確認項目的子組件
@@ -40,13 +41,24 @@ const cartStore = useCartStore();
 // 使用 storeToRefs 將 store 中的狀態 (activeItems, expiredItems, items) 解構為 ref
 // 這樣在模板中使用時能保持數據的響應性
 // items 可能用於判斷購物車整體狀態，例如是否完全為空
-const { activeItems, expiredItems, items } = storeToRefs(cartStore);
+const { activeItems, expiredItems} = storeToRefs(cartStore);
 
 const router = useRouter(); // 獲取路由實例
 
 const goToExplore = () => {
   router.push('/');
 };
+
+const dynamicRecommendationCategory = computed(() => {
+  if (activeItems.value.length > 0) {
+    const firstItemCategory = activeItems.value[0]?.category;
+
+    if (firstItemCategory && typeof firstItemCategory === 'string' && firstItemCategory.trim() !== '') {
+      return firstItemCategory;
+    }
+  }
+  return "Domestic";
+});
 </script>
 
 <style scoped>
@@ -64,5 +76,18 @@ const goToExplore = () => {
   align-items: center;
   margin-top: 40px;
   padding: 40px 0;
+}
+
+.hot-itineraries-section {
+  margin-top: 30px;
+}
+
+.recommendations-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  margin-top: 30px;
 }
 </style>
