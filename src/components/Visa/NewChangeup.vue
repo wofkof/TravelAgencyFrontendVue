@@ -48,7 +48,9 @@
                 <el-col :span="12">效期：10年</el-col>
                 <el-col :span="30" style="text-align: right;" styl="text-align: left;">
                   <el-col :span="24" style="text-align: right;">TWD 2,850</el-col>
+                  <el-button type="primary">
                    <el-button link size="large">選擇2</el-button>
+                  </el-button>
                 </el-col>
               </el-card>
             </el-row>
@@ -94,32 +96,18 @@ const handleSelect = (item) => {
 .visa-info-container {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* 讓每個卡片之間有點間距 */
-  padding: 30px; /* 讓內容不要太貼邊 */
+  gap: 10px;/* 讓每個卡片之間有點間距 */
+  padding: 30px;/* 讓內容不要太貼邊 */
   background-color: #f9f9f9;/* 幫 Footer 加個淺灰色背景 */
 }
 .visa-info-card {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
 }
 .item-title {
-  font-weight: bold; /* 讓標題粗體一點 */
+  font-weight: bold;/* 讓標題粗體一點 */
 }
 .item-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
   width: 450px;
-  margin-bottom: 10px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.item-info-card .el-col:nth-child(1) { width: 40%; }
-.item-info-card .el-col:nth-child(2) { width: 30%; }
-.item-info-card .el-col:nth-child(3) { width: 30%; text-align: right;}
-
-.error-message {
-  color: red;
-  font-weight: bold;
 }
 </style>
