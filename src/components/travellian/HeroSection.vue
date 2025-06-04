@@ -11,7 +11,7 @@
       <div class="search__group">
         <label for="keyword" class="search__lbl">關鍵字</label>
         <input
-          type="text"
+          type="link"
           id="keyword"
           v-model="search.keyword"
           class="search__input"

@@ -1,7 +1,6 @@
 <template>
   <div class="visa-info-container">
     <h3><el-icon><Avatar /></el-icon>印度簽證｜申辦項目</h3>
-
     <el-card class="visa-info-card">
       <el-row :gutter="2" align="middle">
         <el-col :span="5">
@@ -22,7 +21,6 @@
         </el-col>
       </el-row>
     </el-card>
-
     <el-card class="visa-info-card">
       <el-row :gutter="2" align="middle">
         <el-col :span="5">
@@ -43,7 +41,6 @@
         </el-col>
       </el-row>
     </el-card>
-
     <el-card class="visa-info-card">
       <el-row :gutter="2" align="middle">
         <el-col :span="5">
@@ -64,7 +61,6 @@
         </el-col>
       </el-row>
     </el-card>
-
     <el-card class="visa-info-card">
       <el-row :gutter="2" align="middle">
         <el-col :span="5">
@@ -85,7 +81,6 @@
         </el-col>
       </el-row>
     </el-card>
-
     <el-card class="visa-info-card">
       <el-row :gutter="2" align="middle">
         <el-col :span="5">
@@ -123,8 +118,7 @@ import { ArrowRight } from '@element-plus/icons-vue';
 }
 
 .visa-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
 }
 
 .item-title {
@@ -132,10 +126,7 @@ import { ArrowRight } from '@element-plus/icons-vue';
 }
 
 .item-info-card {
-  /* 可以調整卡片的樣式，例如陰影 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);/* 可以調整卡片的樣式，例如陰影 */
   width:450px;
 }
 </style>
-
- 

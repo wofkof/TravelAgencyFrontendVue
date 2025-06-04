@@ -64,7 +64,11 @@
         margin: 0;
       "
     >
-      <RecommendedTrips />
+    <div class="recommendations-container">
+      <h2 class="recommendations-title">熱門國內行程參考</h2>
+      <RecommendedTrips category="Domestic" />
+    </div>
+
     </div>
   </div>
 </template>
@@ -226,5 +230,29 @@ h1 {
   font-weight: bold;
   color: #333;
   margin-bottom: 6px;
+}
+
+.recommendations-container {
+  display: flex;
+  flex-direction: column; /* 讓標題和輪播圖垂直排列 */
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px; /* 與表單間隔開 */
+  margin-bottom: 40px; /* 底部也留些空間 */
+  padding: 0 15px; /* 左右留白 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.recommendations-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.backview h1, .backview .recommendations-title {
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 </style>

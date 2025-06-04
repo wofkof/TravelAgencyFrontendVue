@@ -38,7 +38,7 @@
                       <input
                         id="account"
                         v-model="form.account"
-                        type="text"
+                        type="link"
                         placeholder="travellian@example.com"
                         class="flex-1"
                         autocomplete="off"
@@ -56,7 +56,7 @@
                     <input
                       id="code"
                       v-model="form.code"
-                      type="text"
+                      type="link"
                       maxlength="6"
                       placeholder="請輸入 6 碼驗證碼"
                     />
