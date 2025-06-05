@@ -132,7 +132,7 @@ const addToCart = (itemFromList) => {
     productType: 'CustomTravel',
     name: itemFromList.title,
     details: `會員自訂行程 - ${itemFromList.title}. 共 ${itemFromList.days} 天, ${itemFromList.people} 人參與.`,
-    imageUrl: '/images/tours/custom-default.jpg',
+    imageUrl: '/images/customtravel.png',
     destinationCountryCode: 'CUSTOM',
 
     startDate: itemFromList.startDate,

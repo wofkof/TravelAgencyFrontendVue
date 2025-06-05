@@ -96,7 +96,7 @@ const getItemQuantity = (item) => {
         <ul class="cart-items-list-preview">
           <li v-for="item in activeItems" :key="item.id" class="cart-item-preview">
             <div class="item-image-preview">
-              <img :src="item.imageUrl || '/img/placeholder.png'" :alt="item.name">
+              <img :src="item.imageUrl || '/images/customtravel.png'" :alt="item.name">
             </div>
             <div class="item-details-preview">
               <div class="item-name-preview">{{ item.name }}</div>
