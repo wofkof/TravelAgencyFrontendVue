@@ -21,7 +21,15 @@
                 <tr>
                   <td class="px-4 py-2 border text-center">{{ order.orderId }}</td>
                   <td class="px-4 py-2 border text-center">{{ formatDate(order.createdAt) }}</td>
-                  <td class="px-4 py-2 border text-center">{{ order.description }}</td>
+                  <td class="px-4 py-2 border text-left"> 
+                    <div v-if="order.orderDetails && order.orderDetails.length">
+                      <div v-for="name in getUniqueProductNames(order.orderDetails)" :key="name">
+                        {{ name }}
+                      </div>
+                    </div>
+                    <div v-else>
+                      {{ order.description }} </div>
+                  </td>
                   <td v-if="activeTab === 'Awaiting'" class="px-4 py-2 border text-center align-middle">
                     <AwaitingOrderActionCell 
                     :order="order"
@@ -219,6 +227,19 @@ const toggleExpanded = async (orderId) => {
   } catch (err) {
     console.error('取得訂單詳情失敗', err);
   }
+};
+const getUniqueProductNames = (orderDetails) => {
+  if (!orderDetails || orderDetails.length === 0) {
+    return [];
+  }
+  // 使用 Set 來自動處理重複的名稱
+  const nameSet = new Set();
+  orderDetails.forEach(detail => {
+    // 從 "中國雪景7日遊 - 成人" 中提取 "中國雪景7日遊"
+    const mainName = detail.description.split(' - ')[0].trim();
+    nameSet.add(mainName);
+  });
+  return Array.from(nameSet);
 };
 
 const handleTabChange = (tab) => {
