@@ -120,31 +120,45 @@ export const useCartStore = defineStore('ShoppingCart', () => {
     );
 
     if (existingItem) {
-      // 商品已存在 (相同 productId 和相同 startDate)，合併數量
-      if (existingItem.options && productToAdd.options) {
-        productToAdd.options.forEach(newOpt => {
-          const existingOpt = existingItem.options.find(opt => opt.type === newOpt.type);
-          if (existingOpt) {
-            existingOpt.quantity += (newOpt.quantity || 0);
-          } else {
-            existingItem.options.push({ ...newOpt });
-            console.warn(`商品 ${existingItem.name} 中原無選項 ${newOpt.type}，已新增該選項並合併數量。`);
-          }
-        });
-      } else if (existingItem.quantity !== undefined && productToAdd.quantity !== undefined) {
-        existingItem.quantity += (productToAdd.quantity || 0);
-      } else {
-        console.warn("addItem: 無法合併不同結構的項目或缺少必要數量欄位。商品未有效更新。", productToAdd);
-      }
-      existingItem.selected = true; // 合併後也將其設為選中
+        // 商品已存在 (相同 productId 和相同 startDate)，合併數量
+        if (existingItem.options && productToAdd.options) {
+            productToAdd.options.forEach(newOpt => {
+                const existingOpt = existingItem.options.find(opt => opt.type === newOpt.type);
+                if (existingOpt) {
+                    existingOpt.quantity += (newOpt.quantity || 0);
+                } else {
+                    existingItem.options.push({ ...newOpt });
+                    console.warn(`商品 ${existingItem.name} 中原無選項 ${newOpt.type}，已新增該選項並合併數量。`);
+                }
+            });
+        } else if (existingItem.quantity !== undefined && productToAdd.quantity !== undefined) {
+            existingItem.quantity += (productToAdd.quantity || 0);
+        } else {
+            console.warn("addItem: 無法合併不同結構的項目或缺少必要數量欄位 (商品已存在但結構不符)。商品未有效更新。", productToAdd);
+        }
+        existingItem.selected = true; // 合併後也將其設為選中
     } else {
-      const newItem = {
+        // 商品不存在於購物車中，新增此商品
+
+        // --- 正確的位置：為新商品設定預設圖片 ---
+        let determinedImageUrl = productToAdd.imageUrl || null; // 先嘗試使用傳入的 imageUrl
+
+        // 檢查 productType 是否為「會員自訂行程」的特定類型 (假設是 'CustomTravel')
+        // 並且 determinedImageUrl 仍然是 null 或空 (falsy)
+        if (productToAdd.productType === 'CustomTravel' && !determinedImageUrl) {
+            determinedImageUrl = '/images/customtravel.png'; // 為「會員自訂行程」指定預設圖片
+        }
+        // (可選) 如果其他類型的商品也沒有圖片，可以給一個更通用的預設圖片
+        else if (!determinedImageUrl) {
+            determinedImageUrl = '/images/customtravel.png'; // 通用預設圖片
+        }
+    const newItem = {
         id: uuidv4(),
         productId: productToAdd.productId,
         productType: productToAdd.productType,
         name: productToAdd.name || '未命名商品',
         details: productToAdd.details || '',
-        imageUrl: productToAdd.imageUrl || null,
+        imageUrl: determinedImageUrl,
         destinationCountryCode: productToAdd.destinationCountryCode,
         startDate: formattedStartDate,
         endDate: formattedEndDate,

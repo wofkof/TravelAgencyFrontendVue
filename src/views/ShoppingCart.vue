@@ -49,16 +49,23 @@ const goToExplore = () => {
   router.push('/');
 };
 
-const dynamicRecommendationCategory = computed(() => {
-  if (activeItems.value.length > 0) {
-    const firstItemCategory = activeItems.value[0]?.category;
+    const dynamicRecommendationCategory = computed(() => {
+      if (activeItems.value.length > 0) {
+        const firstItemCategory = activeItems.value[0]?.category;
 
-    if (firstItemCategory && typeof firstItemCategory === 'string' && firstItemCategory.trim() !== '') {
-      return firstItemCategory;
-    }
-  }
-  return "Domestic";
-});
+        // 新增的條件：如果第一個商品的分類是 "客製化旅遊"
+        if (firstItemCategory === '客製化旅遊') {
+          return "Domestic"; // 則推薦國內行程
+        }
+
+        // 如果不是 "客製化旅遊"，且該分類是有效的字串
+        if (firstItemCategory && typeof firstItemCategory === 'string' && firstItemCategory.trim() !== '') {
+          return firstItemCategory; //則使用該商品的分類
+        }
+      }
+      // 如果購物車為空，或第一個商品的分類無效/為空（且不是 "客製化旅遊"）
+      return "Domestic"; // 預設也推薦國內行程
+    });
 </script>
 
 <style scoped>
