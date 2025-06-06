@@ -122,9 +122,9 @@ const addToCart = (itemFromList) => {
 
   const specificData = {
     memberId: authStore.memberId,
-    people: itemFromList.people || 0,
+    people: itemFromList.people || 0, // 仍然傳遞人數，供 OrderForm 頁面使用
     originalNote: itemFromList.title,
-    dailyActivities: itemFromList.dailyActivities || [], // <<-- 現在可以從 itemFromList 獲取
+    dailyActivities: itemFromList.dailyActivities || [],
   };
 
   const productToAdd = {
@@ -146,14 +146,21 @@ const addToCart = (itemFromList) => {
     options: [
       {
         type: '客製化專案',
+        // 【修正 1】: 數量固定為 1，代表 "1 個旅遊套餐"
         quantity: 1,
+        // 【修正 2】: 價格就是總價
         price: Number(itemFromList.totalAmount) || 0,
         unitLabel: `總計 (${itemFromList.people || 0}人)`
       }
     ],
+    // 我們需要一個方式告訴 OrderForm 總共有幾個人要填資料
+    // 可以直接在頂層傳遞，或讓 OrderForm 自己從 details 或 unitLabel 解析
+    // 這裡假設 OrderForm 頁面能處理這種情況
+    peopleCount: Number(itemFromList.people) || 0,
+
     category: '客製化旅遊',
     isFavorite: false,
-    productSpecificData: specificData, // specificData 現在包含了 dailyActivities
+    productSpecificData: specificData,
   };
 
   console.log("準備加入購物車的完整 productToAdd：", JSON.parse(JSON.stringify(productToAdd)));
